@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 import { readTime } from "@/lib/blogUtils";
+import NewsletterForm from "@/components/NewsletterForm";
 
 export const revalidate = 60; // refresh every 60s
 
@@ -181,19 +182,7 @@ export default async function BlogPage() {
           <p className="text-white/50 mb-8">
             Get the latest industry news, tips, and guides delivered to your inbox every week.
           </p>
-          <form className="flex gap-3">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-5 py-3.5 rounded-full transition-colors"
-            />
-            <button
-              type="submit"
-              className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-6 py-3.5 rounded-full text-sm transition-colors whitespace-nowrap"
-            >
-              Subscribe
-            </button>
-          </form>
+          <NewsletterForm />
         </div>
       </section>
     </>

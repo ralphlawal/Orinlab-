@@ -10,6 +10,7 @@ import {
   Music,
   MessageSquare,
   BookOpen,
+  Mail,
   LogOut,
   Loader2,
   Menu,
@@ -21,6 +22,7 @@ const navItems = [
   { label: "Releases", href: "/admin/releases", icon: <Music size={18} /> },
   { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} /> },
   { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} /> },
+  { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} /> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
