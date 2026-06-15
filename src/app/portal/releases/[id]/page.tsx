@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
-  Globe, Calendar, Mic2, FileText, Loader2,
+  Globe, Calendar, Mic2, FileText, Loader2, ExternalLink,
 } from "lucide-react";
 
 type Release = {
@@ -22,6 +22,7 @@ type Release = {
   review_notes: string | null;
   cover_art_url: string | null;
   audio_file_url: string | null;
+  store_links: Record<string, string> | null;
   songwriters: string;
   producers: string;
   featured_artists: string | null;
@@ -148,29 +149,52 @@ export default function ReleaseDetailPage() {
         )}
       </div>
 
-      {/* Approved — store links placeholder */}
+      {/* Approved — store links */}
       {release.status === "approved" && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
             <Globe size={18} className="text-[#007bff]" />
             <p className="text-white font-semibold">Store Links</p>
           </div>
-          <p className="text-white/40 text-sm leading-relaxed">
-            Your store links will appear here once your release is live on
-            streaming platforms. Our team will notify you by email when
-            everything is live.
-          </p>
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {["Spotify", "Apple Music", "Boomplay", "Audiomack", "YouTube Music", "Deezer"].map((p) => (
-              <div
-                key={p}
-                className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-center"
-              >
-                <p className="text-white/30 text-xs">{p}</p>
-                <p className="text-white/20 text-xs mt-1">Coming soon</p>
+
+          {release.store_links && Object.keys(release.store_links).length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {Object.entries(release.store_links).map(([key, url]) => {
+                const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] hover:border-[#007bff]/30 rounded-xl px-4 py-3 transition-all group"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+                    <span className="text-white/70 group-hover:text-white text-sm font-medium transition-colors flex-1">
+                      {label}
+                    </span>
+                    <ExternalLink size={13} className="text-white/20 group-hover:text-[#007bff] transition-colors" />
+                  </a>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              <p className="text-white/40 text-sm leading-relaxed">
+                Your store links will appear here once your release is live on
+                streaming platforms. Our team will notify you by email when
+                everything is live.
+              </p>
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {["Spotify", "Apple Music", "Boomplay", "Audiomack", "YouTube Music", "Deezer"].map((p) => (
+                  <div key={p} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-center">
+                    <p className="text-white/30 text-xs">{p}</p>
+                    <p className="text-white/20 text-xs mt-1">Coming soon</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       )}
 

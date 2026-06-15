@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2 } from "lucide-react";
+
+const PLATFORMS = [
+  { key: "spotify",       label: "Spotify" },
+  { key: "apple_music",   label: "Apple Music" },
+  { key: "boomplay",      label: "Boomplay" },
+  { key: "audiomack",     label: "Audiomack" },
+  { key: "youtube_music", label: "YouTube Music" },
+  { key: "deezer",        label: "Deezer" },
+  { key: "tidal",         label: "TIDAL" },
+  { key: "amazon_music",  label: "Amazon Music" },
+];
 
 type Release = {
   id: string;
@@ -32,6 +43,7 @@ type Release = {
   status: string;
   submitted_at: string;
   review_notes: string;
+  store_links: Record<string, string> | null;
 };
 
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -42,6 +54,9 @@ export default function ReleasesPage() {
   const [filter, setFilter] = useState<Filter>("pending");
   const [selected, setSelected] = useState<Release | null>(null);
   const [notes, setNotes] = useState("");
+  const [storeLinks, setStoreLinks] = useState<Record<string, string>>({});
+  const [savingLinks, setSavingLinks] = useState(false);
+  const [linksSaved, setLinksSaved] = useState(false);
   const [updating, setUpdating] = useState(false);
 
   async function load() {
@@ -54,6 +69,27 @@ export default function ReleasesPage() {
   }
 
   useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function openRelease(r: Release) {
+    setSelected(r);
+    setNotes(r.review_notes ?? "");
+    setStoreLinks(r.store_links ?? {});
+    setLinksSaved(false);
+  }
+
+  async function saveStoreLinks() {
+    if (!selected) return;
+    setSavingLinks(true);
+    // Filter out empty strings before saving
+    const filtered = Object.fromEntries(
+      Object.entries(storeLinks).filter(([, v]) => v.trim() !== "")
+    );
+    await supabase.from("releases").update({ store_links: filtered }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, store_links: filtered } : s);
+    setSavingLinks(false);
+    setLinksSaved(true);
+    load();
+  }
 
   async function updateStatus(id: string, status: "approved" | "rejected") {
     if (!selected) return;
@@ -77,6 +113,8 @@ export default function ReleasesPage() {
     setUpdating(false);
     setSelected(null);
     setNotes("");
+    setStoreLinks({});
+    setLinksSaved(false);
     load();
   }
 
@@ -156,14 +194,14 @@ export default function ReleasesPage() {
 
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
-                    onClick={() => { setSelected(r); setNotes(r.review_notes ?? ""); }}
+                    onClick={() => openRelease(r)}
                     className="text-xs font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
                   >
                     <ExternalLink size={13} /> Details
                   </button>
                   {r.status !== "approved" && (
                     <button
-                      onClick={() => { setSelected(r); setNotes(""); }}
+                      onClick={() => openRelease(r)}
                       className="text-xs font-medium bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
                     >
                       <CheckCircle2 size={13} /> Approve
@@ -171,7 +209,7 @@ export default function ReleasesPage() {
                   )}
                   {r.status !== "rejected" && (
                     <button
-                      onClick={() => { setSelected(r); setNotes(""); }}
+                      onClick={() => openRelease(r)}
                       className="text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
                     >
                       <XCircle size={13} /> Reject
@@ -277,6 +315,40 @@ export default function ReleasesPage() {
                 )}
               </Section>
 
+              {/* Store links — only for approved releases */}
+              {selected.status === "approved" && (
+                <Section title="Store Links">
+                  <p className="text-white/30 text-xs mb-3">
+                    Paste the streaming URLs once the release is live. Artists will see these in their portal.
+                  </p>
+                  <div className="space-y-2">
+                    {PLATFORMS.map((p) => (
+                      <div key={p.key} className="flex items-center gap-3">
+                        <span className="text-white/40 text-xs w-28 flex-shrink-0">{p.label}</span>
+                        <input
+                          type="url"
+                          placeholder="https://…"
+                          value={storeLinks[p.key] ?? ""}
+                          onChange={(e) => {
+                            setStoreLinks((prev) => ({ ...prev, [p.key]: e.target.value }));
+                            setLinksSaved(false);
+                          }}
+                          className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={saveStoreLinks}
+                    disabled={savingLinks}
+                    className="mt-3 flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors"
+                  >
+                    {savingLinks ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
+                    {linksSaved ? "Links Saved ✓" : "Save Store Links"}
+                  </button>
+                </Section>
+              )}
+
               {/* Review notes */}
               <div>
                 <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
@@ -295,7 +367,7 @@ export default function ReleasesPage() {
             {/* Actions */}
             <div className="p-6 border-t border-white/[0.06] flex gap-3">
               <button
-                onClick={() => { setSelected(null); setNotes(""); }}
+                onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setLinksSaved(false); }}
                 className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
               >
                 Cancel
