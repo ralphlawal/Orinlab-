@@ -25,7 +25,7 @@ function Hero() {
       <div className="relative z-10 max-w-4xl mx-auto">
         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white/70 text-xs font-medium px-4 py-2 rounded-full mb-8">
           <span className="w-2 h-2 bg-[#007bff] rounded-full animate-pulse" />
-          Now accepting artist submissions
+          Now accepting artist applications
         </div>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight mb-6">
@@ -34,8 +34,8 @@ function Hero() {
         </h1>
 
         <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Global music distribution and artist services built for independent
-          African artists. Keep ownership. Earn royalties. Grow your career.
+          Invitation-based global distribution for independent African artists.
+          Apply, get selected, and release to 150+ platforms — completely free.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -43,13 +43,13 @@ function Hero() {
             href="/submit"
             className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-4 rounded-full text-base transition-all duration-200 hover:shadow-[0_0_30px_rgba(0,123,255,0.4)]"
           >
-            Distribute Your Music
+            Apply for Distribution
           </Link>
           <Link
-            href="/about"
+            href="/pricing"
             className="flex items-center gap-2 text-white/70 hover:text-white font-medium px-6 py-4 rounded-full border border-white/10 hover:border-white/30 text-base transition-all duration-200"
           >
-            Learn More <ArrowRight size={16} />
+            How It Works <ArrowRight size={16} />
           </Link>
         </div>
 
@@ -213,8 +213,8 @@ function WhyOrinlabí() {
     },
     {
       icon: <ShieldCheck size={20} />,
-      title: "Transparent & Fair",
-      desc: "No hidden fees. Clear royalty splits. You keep what you earn.",
+      title: "Always Free",
+      desc: "No subscription, no hidden fees. Selected artists distribute at zero cost — ever.",
     },
   ];
 
@@ -229,9 +229,9 @@ function WhyOrinlabí() {
             The Platform African Artists Deserve.
           </h2>
           <p className="text-white/50 leading-relaxed mb-8">
-            Orinlabí was built with African creators in mind. We understand the
-            local music landscape, the global ambitions, and the tools needed to
-            bridge both worlds. You focus on the music — we handle the rest.
+            Orinlabí was built with African creators in mind. We don&apos;t believe
+            distribution should cost you money. Apply, get selected, and release
+            your music to the world — free. You focus on the art; we handle everything else.
           </p>
           <Link
             href="/about"
@@ -392,7 +392,7 @@ function FAQ() {
   const faqs = [
     {
       q: "How does Orinlabí distribute my music?",
-      a: "We review your submission, then deliver your release to 150+ platforms worldwide including Spotify, Apple Music, Boomplay, Audiomack, and more through our distribution infrastructure.",
+      a: "You submit an application with your release details. Our team reviews it and if selected, we deliver your music to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, Audiomack, and more — at no cost.",
     },
     {
       q: "Do I keep ownership of my music?",
@@ -412,7 +412,7 @@ function FAQ() {
     },
     {
       q: "Can I release an album or EP?",
-      a: "Yes. We support singles, EPs, and full albums. You can submit as many releases as your plan allows.",
+      a: "Yes. We support singles, EPs, and full albums. Once selected, you can submit releases to us and each one goes through our standard review and distribution process.",
     },
   ];
 
@@ -463,21 +463,21 @@ function CTA() {
             Ready to Release?
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-10">
-            Join hundreds of African artists distributing their music worldwide
-            with Orinlabí. Start your journey today.
+            Join selected African artists distributing their music worldwide
+            with Orinlabí — free, for those we believe in.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/submit"
               className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-10 py-4 rounded-full text-base transition-all duration-200 hover:shadow-[0_0_40px_rgba(0,123,255,0.4)]"
             >
-              Distribute Your Music
+              Apply Now
             </Link>
             <Link
               href="/pricing"
               className="text-white/60 hover:text-white font-medium px-6 py-4 rounded-full border border-white/10 hover:border-white/30 transition-all duration-200"
             >
-              View Pricing
+              How It Works
             </Link>
           </div>
         </div>

@@ -7,7 +7,7 @@ const navLinks = [
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
   { label: "Artists", href: "/artists" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "How It Works", href: "/pricing" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
@@ -45,8 +45,8 @@ export default function Footer() {
               />
             </Link>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
-              The leading African-owned music distribution and artist services
-              platform. Release. Grow. Own.
+              Invitation-based global distribution for African artists. Selected
+              artists distribute free. Always.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -121,13 +121,13 @@ export default function Footer() {
               Get Started
             </h4>
             <p className="text-white/50 text-sm mb-6 leading-relaxed">
-              Ready to release your music to the world? Submit your release today.
+              Think your music deserves a global audience? Apply to distribute with Orinlabí — free for selected artists.
             </p>
             <Link
               href="/submit"
               className="inline-block bg-[#007bff] hover:bg-[#0069d9] text-white text-sm font-semibold px-6 py-3 rounded-full transition-colors duration-200"
             >
-              Distribute Now
+              Apply Now
             </Link>
           </div>
         </div>

@@ -10,7 +10,7 @@ const links = [
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
   { label: "Artists", href: "/artists" },
-  { label: "Pricing", href: "/pricing" },
+  { label: "How It Works", href: "/pricing" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
@@ -70,7 +70,7 @@ export default function Navbar() {
             href="/submit"
             className="bg-[#007bff] hover:bg-[#0069d9] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors duration-200"
           >
-            Distribute Now
+            Apply Now
           </Link>
         </div>
 
@@ -105,7 +105,7 @@ export default function Navbar() {
             className="mt-6 block text-center bg-[#007bff] hover:bg-[#0069d9] text-white text-sm font-semibold px-5 py-3 rounded-full transition-colors duration-200"
             onClick={() => setOpen(false)}
           >
-            Distribute Now
+            Apply Now
           </Link>
         </div>
       )}

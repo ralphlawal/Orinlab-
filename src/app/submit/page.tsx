@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, Loader2, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const genres = [
@@ -35,7 +35,6 @@ export default function SubmitPage() {
     try {
       setState("uploading");
 
-      // Upload audio file
       let audioUrl = "";
       if (audioFile) {
         const ext = audioFile.name.split(".").pop();
@@ -48,7 +47,6 @@ export default function SubmitPage() {
         audioUrl = audioData.publicUrl;
       }
 
-      // Upload cover art
       let coverUrl = "";
       if (coverFile) {
         const ext = coverFile.name.split(".").pop();
@@ -63,13 +61,15 @@ export default function SubmitPage() {
 
       setState("saving");
 
-      // Save release to database
       const { error: dbError } = await supabase.from("releases").insert({
         artist_name: data.get("artistName"),
         legal_name: data.get("legalName"),
         email: data.get("email"),
         phone: data.get("phone"),
         country: data.get("country"),
+        artist_bio: data.get("artistBio"),
+        social_links: data.get("socialLinks"),
+        sample_url: data.get("sampleUrl"),
         release_type: data.get("releaseType"),
         song_title: data.get("songTitle"),
         album_title: data.get("albumTitle") || null,
@@ -90,20 +90,22 @@ export default function SubmitPage() {
 
       if (dbError) throw dbError;
 
-      // Send confirmation email to artist (non-blocking)
-      const releasePayload = {
-        artist_name: data.get("artistName"),
-        song_title: data.get("songTitle"),
-        release_type: data.get("releaseType"),
-        genre: data.get("genre"),
-        release_date: data.get("releaseDate"),
-        email: data.get("email"),
-      };
+      // Confirmation email — fire and forget
       fetch("/api/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "submission", release: releasePayload }),
-      }).catch(() => {}); // fire and forget
+        body: JSON.stringify({
+          type: "submission",
+          release: {
+            artist_name: data.get("artistName"),
+            song_title: data.get("songTitle"),
+            release_type: data.get("releaseType"),
+            genre: data.get("genre"),
+            release_date: data.get("releaseDate"),
+            email: data.get("email"),
+          },
+        }),
+      }).catch(() => {});
 
       setState("success");
     } catch (err) {
@@ -120,16 +122,20 @@ export default function SubmitPage() {
           <div className="w-20 h-20 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 size={40} className="text-[#007bff]" />
           </div>
-          <h2 className="text-3xl font-bold text-white mb-4">Release Submitted!</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Application Received!</h2>
           <p className="text-white/60 leading-relaxed">
-            Thank you for submitting your release to Orinlabí. Our team will
-            review your submission and get back to you within 24–48 hours.
+            Thank you for applying to distribute with Orinlabí. We review every
+            application carefully and reach out to selected artists within
+            <strong className="text-white"> 3–5 business days</strong>.
+          </p>
+          <p className="text-white/40 text-sm mt-4">
+            Check your email for a confirmation from info@orinlabi.com
           </p>
           <button
             onClick={() => { setState("idle"); setAgreed(false); setAudioFile(null); setCoverFile(null); }}
             className="mt-8 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3 rounded-full transition-colors"
           >
-            Submit Another Release
+            Submit Another Application
           </button>
         </div>
       </div>
@@ -140,23 +146,40 @@ export default function SubmitPage() {
 
   return (
     <>
+      {/* Header */}
       <section className="relative pt-32 pb-12 px-4 text-center">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
           <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-            Release Submission
+            Apply for Distribution
           </p>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
-            Submit Your Release.
+            Submit Your Application.
           </h1>
-          <p className="text-white/60">
-            Fill in your release details below. Our team reviews every
-            submission within 24–48 hours.
+          <p className="text-white/60 leading-relaxed max-w-lg mx-auto">
+            Orinlabí is invitation-based. Apply below and our team will review
+            your music. Selected artists receive free global distribution.
           </p>
         </div>
       </section>
 
-      <section className="py-8 px-4 pb-24">
+      {/* How it works */}
+      <section className="px-4 pb-10">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-[#007bff]/5 border border-[#007bff]/20 rounded-2xl p-5 flex gap-4">
+            <Info size={20} className="text-[#007bff] flex-shrink-0 mt-0.5" />
+            <div className="space-y-1 text-sm text-white/60 leading-relaxed">
+              <p><strong className="text-white">How it works:</strong></p>
+              <p>1. Fill in your details and upload your release below.</p>
+              <p>2. Our team reviews your application within 3–5 business days.</p>
+              <p>3. Selected artists receive free global distribution to 150+ platforms.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Form */}
+      <section className="py-4 px-4 pb-24">
         <div className="max-w-2xl mx-auto">
           {state === "error" && (
             <div className="mb-6 flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-5 py-4 rounded-xl">
@@ -180,6 +203,25 @@ export default function SubmitPage() {
                 <div className="sm:col-span-2">
                   <Select label="Country" name="country" options={countries} required />
                 </div>
+                <div className="sm:col-span-2">
+                  <TextArea
+                    label="About You / Your Music"
+                    name="artistBio"
+                    placeholder="Tell us about yourself, your sound, and your goals as an artist (2–4 sentences)"
+                    rows={3}
+                    required
+                  />
+                </div>
+                <Field
+                  label="Social Media Links"
+                  name="socialLinks"
+                  placeholder="Instagram, TikTok, Twitter — separate with commas"
+                />
+                <Field
+                  label="Sample of Your Work"
+                  name="sampleUrl"
+                  placeholder="Link to your music on YouTube, Spotify, SoundCloud, etc."
+                />
               </div>
             </div>
 
@@ -193,35 +235,26 @@ export default function SubmitPage() {
                 <Field label="Song / Release Title" name="songTitle" required />
                 <Field label="Album Title (if applicable)" name="albumTitle" />
                 <Select label="Genre" name="genre" options={genres} required />
-                <Field label="Release Date" name="releaseDate" type="date" required />
+                <Field label="Desired Release Date" name="releaseDate" type="date" required />
                 <Select label="Explicit Content" name="explicit" options={["No", "Yes"]} required />
               </div>
             </div>
 
             {/* Uploads */}
             <div>
-              <h2 className="text-white font-bold text-xl mb-6 pb-3 border-b border-white/10">
+              <h2 className="text-white font-bold text-xl mb-2 pb-3 border-b border-white/10">
                 Files & Uploads
               </h2>
+              <p className="text-white/30 text-xs mb-5">
+                Upload your audio and cover art so we can properly evaluate your release.
+              </p>
               <div className="grid sm:grid-cols-2 gap-5">
-                <FileUpload
-                  label="Audio File"
-                  name="audioFile"
-                  accept=".wav,.mp3,.flac"
+                <FileUpload label="Audio File" name="audioFile" accept=".wav,.mp3,.flac"
                   hint="WAV, MP3, or FLAC · Min. 16-bit / 44.1kHz"
-                  file={audioFile}
-                  onChange={setAudioFile}
-                  required
-                />
-                <FileUpload
-                  label="Cover Artwork"
-                  name="coverFile"
-                  accept=".jpg,.jpeg,.png"
+                  file={audioFile} onChange={setAudioFile} required />
+                <FileUpload label="Cover Artwork" name="coverFile" accept=".jpg,.jpeg,.png"
                   hint="JPG or PNG · Min. 3000×3000px"
-                  file={coverFile}
-                  onChange={setCoverFile}
-                  required
-                />
+                  file={coverFile} onChange={setCoverFile} required />
               </div>
             </div>
 
@@ -244,19 +277,20 @@ export default function SubmitPage() {
                 Rights & Publishing
               </h2>
               <div className="grid sm:grid-cols-2 gap-5">
-                <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Orinlabí or Your Name" required />
+                <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Your Name" required />
                 <Field label="Copyright Year" name="copyrightYear" placeholder="e.g. 2026" required />
                 <div className="sm:col-span-2">
-                  <Field label="Publishing Information" name="publishing" placeholder="Publisher name, PRO affiliation, etc." />
+                  <Field label="Publishing Information" name="publishing"
+                    placeholder="Publisher name, PRO affiliation, etc." />
                 </div>
               </div>
             </div>
 
-            {/* Confirmation */}
+            {/* Authorization */}
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
               <div className="flex items-center gap-2 mb-3">
                 <AlertCircle size={18} className="text-[#007bff]" />
-                <h3 className="text-white font-semibold">Distribution Authorization</h3>
+                <h3 className="text-white font-semibold">Authorization</h3>
               </div>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -267,11 +301,11 @@ export default function SubmitPage() {
                   required
                 />
                 <span className="text-white/60 text-sm leading-relaxed">
-                  I confirm that I own or control all rights to the music and
-                  artwork submitted, that this release does not infringe on any
-                  third-party rights, and that I authorize Orinlabí to distribute
-                  this content globally on my behalf. Public release credits will
-                  appear as ℗ 2026 Orinlabí / © 2026 Orinlabí as agreed.
+                  I confirm that I own or control all rights to the music and artwork
+                  submitted. I understand this is an application and selection is at
+                  Orinlabí&apos;s discretion. If selected, I authorize Orinlabí to
+                  distribute this content globally on my behalf, with public credits
+                  appearing as ℗ 2026 Orinlabí / © 2026 Orinlabí as agreed.
                 </span>
               </label>
             </div>
@@ -284,11 +318,9 @@ export default function SubmitPage() {
               {isLoading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
-                  {state === "uploading" ? "Uploading files…" : "Saving release…"}
+                  {state === "uploading" ? "Uploading files…" : "Submitting application…"}
                 </>
-              ) : (
-                "Submit Release"
-              )}
+              ) : "Submit Application"}
             </button>
           </form>
         </div>
@@ -297,7 +329,6 @@ export default function SubmitPage() {
   );
 }
 
-/* ── Field ── */
 function Field({ label, name, type = "text", placeholder, required }: {
   label: string; name: string; type?: string; placeholder?: string; required?: boolean;
 }) {
@@ -306,18 +337,26 @@ function Field({ label, name, type = "text", placeholder, required }: {
       <label className="block text-white/70 text-sm font-medium mb-2">
         {label}{required && <span className="text-[#007bff] ml-1">*</span>}
       </label>
-      <input
-        type={type}
-        name={name}
-        placeholder={placeholder}
-        required={required}
-        className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors duration-200"
-      />
+      <input type={type} name={name} placeholder={placeholder} required={required}
+        className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors duration-200" />
     </div>
   );
 }
 
-/* ── Select ── */
+function TextArea({ label, name, placeholder, rows, required }: {
+  label: string; name: string; placeholder?: string; rows?: number; required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-white/70 text-sm font-medium mb-2">
+        {label}{required && <span className="text-[#007bff] ml-1">*</span>}
+      </label>
+      <textarea name={name} placeholder={placeholder} rows={rows ?? 3} required={required}
+        className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors duration-200 resize-none" />
+    </div>
+  );
+}
+
 function Select({ label, name, options, required }: {
   label: string; name: string; options: string[]; required?: boolean;
 }) {
@@ -326,11 +365,8 @@ function Select({ label, name, options, required }: {
       <label className="block text-white/70 text-sm font-medium mb-2">
         {label}{required && <span className="text-[#007bff] ml-1">*</span>}
       </label>
-      <select
-        name={name}
-        required={required}
-        className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-sm px-4 py-3 rounded-xl transition-colors duration-200 appearance-none"
-      >
+      <select name={name} required={required}
+        className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-sm px-4 py-3 rounded-xl transition-colors duration-200 appearance-none">
         <option value="">Select…</option>
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
@@ -338,7 +374,6 @@ function Select({ label, name, options, required }: {
   );
 }
 
-/* ── FileUpload ── */
 function FileUpload({ label, name, accept, hint, file, onChange, required }: {
   label: string; name: string; accept: string; hint: string;
   file: File | null; onChange: (f: File | null) => void; required?: boolean;
@@ -362,14 +397,8 @@ function FileUpload({ label, name, accept, hint, file, onChange, required }: {
             <span className="text-white/20 text-xs text-center">{hint}</span>
           </>
         )}
-        <input
-          type="file"
-          name={name}
-          accept={accept}
-          required={required}
-          className="sr-only"
-          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-        />
+        <input type="file" name={name} accept={accept} required={required} className="sr-only"
+          onChange={(e) => onChange(e.target.files?.[0] ?? null)} />
       </label>
     </div>
   );
