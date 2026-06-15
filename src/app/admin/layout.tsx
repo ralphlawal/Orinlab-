@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Music,
   MessageSquare,
+  BookOpen,
   LogOut,
   Loader2,
   Menu,
@@ -19,6 +20,7 @@ const navItems = [
   { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
   { label: "Releases", href: "/admin/releases", icon: <Music size={18} /> },
   { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} /> },
+  { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} /> },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -90,7 +92,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               href={item.href}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                pathname === item.href
+                pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
                   ? "bg-[#007bff]/10 text-[#007bff]"
                   : "text-white/50 hover:text-white hover:bg-white/[0.05]"
               }`}

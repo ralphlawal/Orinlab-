@@ -23,6 +23,45 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Admin editor helpers */
+.label {
+  display: block;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+.input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.75rem;
+  color: #fff;
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.input:focus { border-color: #007bff; }
+.input::placeholder { color: rgba(255,255,255,0.25); }
+
+/* Blog post prose */
+.prose-orinlabi { color: rgba(255,255,255,0.7); font-size: 1.0625rem; line-height: 1.8; }
+.prose-orinlabi h1, .prose-orinlabi h2, .prose-orinlabi h3 { color: #fff; font-weight: 700; margin: 2rem 0 0.75rem; }
+.prose-orinlabi h1 { font-size: 1.875rem; }
+.prose-orinlabi h2 { font-size: 1.5rem; }
+.prose-orinlabi h3 { font-size: 1.25rem; }
+.prose-orinlabi p { margin: 0 0 1.25rem; }
+.prose-orinlabi strong { color: #fff; font-weight: 600; }
+.prose-orinlabi em { font-style: italic; }
+.prose-orinlabi a { color: #007bff; text-decoration: underline; }
+.prose-orinlabi ul, .prose-orinlabi ol { margin: 0 0 1.25rem 1.5rem; }
+.prose-orinlabi li { margin-bottom: 0.4rem; }
+.prose-orinlabi blockquote { border-left: 3px solid #007bff; padding-left: 1rem; color: rgba(255,255,255,0.5); font-style: italic; margin: 1.5rem 0; }
+.prose-orinlabi code { background: rgba(255,255,255,0.06); border-radius: 4px; padding: 2px 6px; font-size: 0.875em; }
+.prose-orinlabi hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 2rem 0; }
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
