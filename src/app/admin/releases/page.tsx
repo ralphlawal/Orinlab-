@@ -1,0 +1,322 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2 } from "lucide-react";
+
+type Release = {
+  id: string;
+  artist_name: string;
+  legal_name: string;
+  email: string;
+  phone: string;
+  country: string;
+  release_type: string;
+  song_title: string;
+  album_title: string;
+  genre: string;
+  release_date: string;
+  explicit: boolean;
+  audio_file_url: string;
+  cover_art_url: string;
+  songwriters: string;
+  producers: string;
+  featured_artists: string;
+  isrc: string;
+  copyright_owner: string;
+  copyright_year: string;
+  publishing_info: string;
+  status: string;
+  submitted_at: string;
+  review_notes: string;
+};
+
+type Filter = "all" | "pending" | "approved" | "rejected";
+
+export default function ReleasesPage() {
+  const [releases, setReleases] = useState<Release[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<Filter>("pending");
+  const [selected, setSelected] = useState<Release | null>(null);
+  const [notes, setNotes] = useState("");
+  const [updating, setUpdating] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    let query = supabase.from("releases").select("*").order("submitted_at", { ascending: false });
+    if (filter !== "all") query = query.eq("status", filter);
+    const { data } = await query;
+    setReleases(data ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function updateStatus(id: string, status: "approved" | "rejected") {
+    setUpdating(true);
+    await supabase.from("releases").update({
+      status,
+      review_notes: notes,
+      reviewed_at: new Date().toISOString(),
+    }).eq("id", id);
+    setUpdating(false);
+    setSelected(null);
+    setNotes("");
+    load();
+  }
+
+  return (
+    <div className="space-y-6 max-w-6xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-white font-bold text-2xl">Releases</h1>
+          <p className="text-white/40 text-sm mt-1">Review and manage artist submissions.</p>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl">
+          {(["pending", "approved", "rejected", "all"] as Filter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-colors ${
+                filter === f ? "bg-[#007bff] text-white" : "text-white/40 hover:text-white"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 size={28} className="text-[#007bff] animate-spin" />
+        </div>
+      ) : releases.length === 0 ? (
+        <div className="text-center py-20 text-white/30">
+          No {filter === "all" ? "" : filter} releases found.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {releases.map((r) => (
+            <div
+              key={r.id}
+              className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] rounded-2xl p-5 transition-colors"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className="text-white font-semibold">{r.song_title}</h3>
+                    <StatusBadge status={r.status} />
+                    {r.explicit && (
+                      <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full font-medium">
+                        Explicit
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                    <p className="text-white/60 text-sm">{r.artist_name}</p>
+                    <p className="text-white/30 text-sm">{r.genre} · {r.release_type}</p>
+                    <p className="text-white/30 text-sm">{r.country}</p>
+                    <p className="text-white/30 text-sm">
+                      Submitted {new Date(r.submitted_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-3 mt-3">
+                    {r.audio_file_url && (
+                      <a href={r.audio_file_url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs text-[#007bff] hover:underline">
+                        <FileAudio size={13} /> Audio
+                      </a>
+                    )}
+                    {r.cover_art_url && (
+                      <a href={r.cover_art_url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs text-[#007bff] hover:underline">
+                        <ImageIcon size={13} /> Cover Art
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => { setSelected(r); setNotes(r.review_notes ?? ""); }}
+                    className="text-xs font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+                  >
+                    <ExternalLink size={13} /> Details
+                  </button>
+                  {r.status !== "approved" && (
+                    <button
+                      onClick={() => { setSelected(r); setNotes(""); }}
+                      className="text-xs font-medium bg-green-500/10 hover:bg-green-500/20 text-green-400 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+                    >
+                      <CheckCircle2 size={13} /> Approve
+                    </button>
+                  )}
+                  {r.status !== "rejected" && (
+                    <button
+                      onClick={() => { setSelected(r); setNotes(""); }}
+                      className="text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+                    >
+                      <XCircle size={13} /> Reject
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Detail / action modal */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0d0d0d] border border-white/[0.08] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-white/[0.06] flex items-start justify-between">
+              <div>
+                <h3 className="text-white font-bold text-lg">{selected.song_title}</h3>
+                <p className="text-white/40 text-sm mt-0.5">{selected.artist_name}</p>
+              </div>
+              <StatusBadge status={selected.status} />
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Artist info */}
+              <Section title="Artist">
+                <Row label="Legal Name" value={selected.legal_name} />
+                <Row label="Email" value={selected.email} />
+                <Row label="Phone" value={selected.phone} />
+                <Row label="Country" value={selected.country} />
+              </Section>
+
+              {/* Release info */}
+              <Section title="Release">
+                <Row label="Type" value={selected.release_type} />
+                <Row label="Genre" value={selected.genre} />
+                <Row label="Release Date" value={selected.release_date} />
+                <Row label="Album" value={selected.album_title} />
+                <Row label="Explicit" value={selected.explicit ? "Yes" : "No"} />
+              </Section>
+
+              {/* Credits */}
+              <Section title="Credits">
+                <Row label="Songwriters" value={selected.songwriters} />
+                <Row label="Producers" value={selected.producers} />
+                <Row label="Featured" value={selected.featured_artists} />
+                <Row label="ISRC" value={selected.isrc} />
+              </Section>
+
+              {/* Rights */}
+              <Section title="Rights">
+                <Row label="Copyright Owner" value={selected.copyright_owner} />
+                <Row label="Year" value={selected.copyright_year} />
+                <Row label="Publishing" value={selected.publishing_info} />
+              </Section>
+
+              {/* Files */}
+              <Section title="Files">
+                {selected.audio_file_url && (
+                  <a href={selected.audio_file_url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-[#007bff] text-sm hover:underline">
+                    <FileAudio size={15} /> Listen to audio file
+                  </a>
+                )}
+                {selected.cover_art_url && (
+                  <>
+                    <a href={selected.cover_art_url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-[#007bff] text-sm hover:underline">
+                      <ImageIcon size={15} /> View cover art
+                    </a>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={selected.cover_art_url} alt="Cover" className="mt-3 w-32 h-32 object-cover rounded-xl border border-white/10" />
+                  </>
+                )}
+              </Section>
+
+              {/* Review notes */}
+              <div>
+                <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
+                  Review Notes (optional)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Add notes for the artist…"
+                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors"
+                />
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="p-6 border-t border-white/[0.06] flex gap-3">
+              <button
+                onClick={() => { setSelected(null); setNotes(""); }}
+                className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              {selected.status !== "approved" && (
+                <button
+                  onClick={() => updateStatus(selected.id, "approved")}
+                  disabled={updating}
+                  className="flex-1 text-sm font-semibold bg-green-500 hover:bg-green-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {updating ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
+                  Approve
+                </button>
+              )}
+              {selected.status !== "rejected" && (
+                <button
+                  onClick={() => updateStatus(selected.id, "rejected")}
+                  disabled={updating}
+                  className="flex-1 text-sm font-semibold bg-red-500 hover:bg-red-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {updating ? <Loader2 size={15} className="animate-spin" /> : <XCircle size={15} />}
+                  Reject
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    pending: "bg-yellow-400/10 text-yellow-400",
+    approved: "bg-green-400/10 text-green-400",
+    rejected: "bg-red-400/10 text-red-400",
+  };
+  return (
+    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${map[status] ?? "bg-white/10 text-white/40"}`}>
+      {status}
+    </span>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-3">{title}</p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex gap-3">
+      <span className="text-white/40 text-xs w-28 flex-shrink-0 pt-0.5">{label}</span>
+      <span className="text-white/80 text-xs">{value}</span>
+    </div>
+  );
+}
+
+function Clock({ size, className }: { size: number; className?: string }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+}
