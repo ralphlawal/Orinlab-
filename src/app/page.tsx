@@ -193,8 +193,8 @@ function Features() {
   );
 }
 
-/* ── Why Orinlabi ───────────────────────────────────────── */
-function WhyOrinlabi() {
+/* ── Why Orinlabí ───────────────────────────────────────── */
+function WhyOrinlabí() {
   const reasons = [
     {
       icon: <Users size={20} />,
@@ -229,7 +229,7 @@ function WhyOrinlabi() {
             The Platform African Artists Deserve.
           </h2>
           <p className="text-white/50 leading-relaxed mb-8">
-            Orinlabi was built with African creators in mind. We understand the
+            Orinlabí was built with African creators in mind. We understand the
             local music landscape, the global ambitions, and the tools needed to
             bridge both worlds. You focus on the music — we handle the rest.
           </p>
@@ -267,7 +267,7 @@ function Testimonials() {
       name: "Temi Adeyemi",
       role: "Afrobeats Artist, Lagos",
       quote:
-        "Orinlabi made my global debut possible. My single was live on Spotify, Apple Music, and Boomplay within 48 hours. The support team actually cares.",
+        "Orinlabí made my global debut possible. My single was live on Spotify, Apple Music, and Boomplay within 48 hours. The support team actually cares.",
       rating: 5,
     },
     {
@@ -294,7 +294,7 @@ function Testimonials() {
             Artist Stories
           </p>
           <h2 className="text-4xl sm:text-5xl font-bold text-white">
-            Artists Love Orinlabi.
+            Artists Love Orinlabí.
           </h2>
         </div>
 
@@ -348,7 +348,7 @@ function ArtistSpotlight() {
             Artist Spotlight.
           </h2>
           <p className="text-white/50 mt-4">
-            Independent artists achieving global reach through Orinlabi.
+            Independent artists achieving global reach through Orinlabí.
           </p>
         </div>
 
@@ -391,12 +391,12 @@ function ArtistSpotlight() {
 function FAQ() {
   const faqs = [
     {
-      q: "How does Orinlabi distribute my music?",
+      q: "How does Orinlabí distribute my music?",
       a: "We review your submission, then deliver your release to 150+ platforms worldwide including Spotify, Apple Music, Boomplay, Audiomack, and more through our distribution infrastructure.",
     },
     {
       q: "Do I keep ownership of my music?",
-      a: "Absolutely. You retain 100% ownership of your masters and copyright. Orinlabi only facilitates distribution and services — your music always belongs to you.",
+      a: "Absolutely. You retain 100% ownership of your masters and copyright. Orinlabí only facilitates distribution and services — your music always belongs to you.",
     },
     {
       q: "How long does it take for my music to go live?",
@@ -464,7 +464,7 @@ function CTA() {
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-10">
             Join hundreds of African artists distributing their music worldwide
-            with Orinlabi. Start your journey today.
+            with Orinlabí. Start your journey today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -492,7 +492,7 @@ export default function HomePage() {
       <Hero />
       <Platforms />
       <Features />
-      <WhyOrinlabi />
+      <WhyOrinlabí />
       <Testimonials />
       <ArtistSpotlight />
       <FAQ />

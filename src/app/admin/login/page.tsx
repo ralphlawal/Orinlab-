@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { Loader2, LogIn } from "lucide-react";
 
@@ -36,11 +37,23 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="w-12 h-12 bg-[#007bff] rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-lg">O</span>
+          <div className="flex items-center justify-center gap-2.5 mb-3">
+            <Image
+              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
+              alt="Orinlabí icon"
+              width={40}
+              height={40}
+              className="rounded-full object-contain"
+            />
+            <Image
+              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+              alt="Orinlabí"
+              width={110}
+              height={30}
+              className="object-contain"
+            />
           </div>
-          <h1 className="text-white font-bold text-2xl">Orinlabi Admin</h1>
-          <p className="text-white/40 text-sm mt-1">Sign in to your dashboard</p>
+          <p className="text-white/40 text-sm mt-2">Admin Dashboard — Sign in</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

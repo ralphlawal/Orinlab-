@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Music, Globe, ArrowRight, Star, Play } from "lucide-react";
 
 export const metadata = {
-  title: "Artists – Orinlabi",
+  title: "Artists – Orinlabí",
   description:
-    "Meet the independent African artists distributed and supported by Orinlabi.",
+    "Meet the independent African artists distributed and supported by Orinlabí.",
 };
 
 const artists = [
@@ -83,7 +83,7 @@ function Hero() {
         </h1>
         <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
           Independent African artists who are reaching the world through
-          Orinlabi. This is their story.
+          Orinlabí. This is their story.
         </p>
       </div>
     </section>
@@ -197,7 +197,7 @@ function CTA() {
         </h2>
         <p className="text-white/50 text-lg mb-10">
           Join the growing roster of African artists releasing their music
-          worldwide through Orinlabi.
+          worldwide through Orinlabí.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link

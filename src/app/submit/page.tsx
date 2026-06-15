@@ -90,6 +90,21 @@ export default function SubmitPage() {
 
       if (dbError) throw dbError;
 
+      // Send confirmation email to artist (non-blocking)
+      const releasePayload = {
+        artist_name: data.get("artistName"),
+        song_title: data.get("songTitle"),
+        release_type: data.get("releaseType"),
+        genre: data.get("genre"),
+        release_date: data.get("releaseDate"),
+        email: data.get("email"),
+      };
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "submission", release: releasePayload }),
+      }).catch(() => {}); // fire and forget
+
       setState("success");
     } catch (err) {
       console.error(err);
@@ -107,7 +122,7 @@ export default function SubmitPage() {
           </div>
           <h2 className="text-3xl font-bold text-white mb-4">Release Submitted!</h2>
           <p className="text-white/60 leading-relaxed">
-            Thank you for submitting your release to Orinlabi. Our team will
+            Thank you for submitting your release to Orinlabí. Our team will
             review your submission and get back to you within 24–48 hours.
           </p>
           <button
@@ -229,7 +244,7 @@ export default function SubmitPage() {
                 Rights & Publishing
               </h2>
               <div className="grid sm:grid-cols-2 gap-5">
-                <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Orinlabi or Your Name" required />
+                <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Orinlabí or Your Name" required />
                 <Field label="Copyright Year" name="copyrightYear" placeholder="e.g. 2026" required />
                 <div className="sm:col-span-2">
                   <Field label="Publishing Information" name="publishing" placeholder="Publisher name, PRO affiliation, etc." />
@@ -254,9 +269,9 @@ export default function SubmitPage() {
                 <span className="text-white/60 text-sm leading-relaxed">
                   I confirm that I own or control all rights to the music and
                   artwork submitted, that this release does not infringe on any
-                  third-party rights, and that I authorize Orinlabi to distribute
+                  third-party rights, and that I authorize Orinlabí to distribute
                   this content globally on my behalf. Public release credits will
-                  appear as ℗ 2026 Orinlabi / © 2026 Orinlabi as agreed.
+                  appear as ℗ 2026 Orinlabí / © 2026 Orinlabí as agreed.
                 </span>
               </label>
             </div>

@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Terms of Service – Orinlabi",
+  title: "Terms of Service – Orinlabí",
 };
 
 export default function TermsPage() {
@@ -15,7 +15,7 @@ export default function TermsPage() {
               1. Agreement to Terms
             </h2>
             <p>
-              By accessing or using Orinlabi services, you agree to be bound by
+              By accessing or using Orinlabí services, you agree to be bound by
               these Terms. If you do not agree, do not use our services.
             </p>
           </section>
@@ -25,9 +25,9 @@ export default function TermsPage() {
             </h2>
             <p>
               Artists retain full ownership of their masters and copyrights.
-              Orinlabi is granted a non-exclusive license to distribute your
+              Orinlabí is granted a non-exclusive license to distribute your
               music on your behalf. Public credits will appear as ℗ 2026
-              Orinlabi / © 2026 Orinlabi as specified in your distribution
+              Orinlabí / © 2026 Orinlabí as specified in your distribution
               agreement.
             </p>
           </section>
@@ -38,7 +38,7 @@ export default function TermsPage() {
             <p>
               You are responsible for ensuring all submitted content is original,
               does not infringe third-party rights, and complies with applicable
-              laws. Orinlabi reserves the right to reject content that violates
+              laws. Orinlabí reserves the right to reject content that violates
               platform policies.
             </p>
           </section>
@@ -48,7 +48,7 @@ export default function TermsPage() {
             </h2>
             <p>
               Royalties are paid monthly based on streaming reports received
-              from platforms. Orinlabi takes no commission on royalties under
+              from platforms. Orinlabí takes no commission on royalties under
               subscription plans. Specific terms are governed by your signed
               artist agreement.
             </p>

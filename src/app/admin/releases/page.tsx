@@ -53,12 +53,24 @@ export default function ReleasesPage() {
   useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function updateStatus(id: string, status: "approved" | "rejected") {
+    if (!selected) return;
     setUpdating(true);
+
+    const updatedRelease = { ...selected, review_notes: notes, status };
+
     await supabase.from("releases").update({
       status,
       review_notes: notes,
       reviewed_at: new Date().toISOString(),
     }).eq("id", id);
+
+    // Send email notification to artist
+    await fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: status, release: updatedRelease }),
+    }).catch(() => {});
+
     setUpdating(false);
     setSelected(null);
     setNotes("");

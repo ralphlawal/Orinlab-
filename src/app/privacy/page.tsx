@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Privacy Policy – Orinlabi",
+  title: "Privacy Policy – Orinlabí",
 };
 
 export default function PrivacyPage() {
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
             <p>
               We use your information to provide and improve our services,
               process transactions, send notifications about your releases, and
-              communicate with you about Orinlabi services.
+              communicate with you about Orinlabí services.
             </p>
           </section>
           <section>

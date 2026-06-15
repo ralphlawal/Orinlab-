@@ -2,9 +2,9 @@ import Link from "next/link";
 import { ArrowRight, Heart, Globe, Target, Lightbulb, Users, ShieldCheck } from "lucide-react";
 
 export const metadata = {
-  title: "About – Orinlabi",
+  title: "About – Orinlabí",
   description:
-    "Learn about Orinlabi's story, mission, and vision to build the leading African-owned music distribution platform.",
+    "Learn about Orinlabí's story, mission, and vision to build the leading African-owned music distribution platform.",
 };
 
 function Hero() {
@@ -19,7 +19,7 @@ function Hero() {
           Built For African Artists.
         </h1>
         <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-          Orinlabi is more than a music distributor. It is a complete artist
+          Orinlabí is more than a music distributor. It is a complete artist
           growth ecosystem designed to empower independent African creators to
           release globally, earn fairly, and own their legacy.
         </p>
@@ -38,7 +38,7 @@ function Story() {
               <span className="text-[#007bff] font-bold text-4xl">O</span>
             </div>
             <p className="text-white/30 text-sm uppercase tracking-widest">
-              Orinlabi
+              Orinlabí
             </p>
             <p className="text-white/20 text-xs mt-2">
               A Ralph Lawal Group Company
@@ -55,7 +55,7 @@ function Story() {
           </h2>
           <div className="space-y-5 text-white/60 leading-relaxed">
             <p>
-              Orinlabi was founded by Ralph Lawal with a clear vision: to build
+              Orinlabí was founded by Ralph Lawal with a clear vision: to build
               the infrastructure that African artists deserve — one that values
               their art, protects their ownership, and amplifies their voice to
               the world.
@@ -67,7 +67,7 @@ function Story() {
               structures, and platforms not built with their needs in mind.
             </p>
             <p>
-              Orinlabi changes that. Starting with Ditto Music's distribution
+              Orinlabí changes that. Starting with Ditto Music's distribution
               infrastructure and a full suite of artist services, we are
               building the platform that will power the next generation of
               African musical talent.
@@ -89,13 +89,13 @@ function FounderMessage() {
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-3xl p-10">
           <div className="text-white/70 text-lg leading-relaxed space-y-5 italic">
             <p>
-              &ldquo;I built Orinlabi because I believe African music is a global
+              &ldquo;I built Orinlabí because I believe African music is a global
               force that deserves global infrastructure. Too many talented
               artists are releasing music without the tools, support, or
               knowledge to build a sustainable career from it.
             </p>
             <p>
-              Orinlabi is my answer to that problem. It is a platform where
+              Orinlabí is my answer to that problem. It is a platform where
               artists can distribute their music worldwide, receive real
               marketing support, and grow their careers — while keeping every
               right to the music they create.
@@ -109,7 +109,7 @@ function FounderMessage() {
           <div className="mt-8 pt-8 border-t border-white/10">
             <p className="text-white font-bold text-lg">Ralph Lawal</p>
             <p className="text-white/40 text-sm mt-1">
-              Founder & CEO, Orinlabi · Ralph Lawal Group
+              Founder & CEO, Orinlabí · Ralph Lawal Group
             </p>
           </div>
         </div>
@@ -223,7 +223,7 @@ function Roadmap() {
     { phase: "Phase 2", title: "Dashboard", desc: "Artist dashboard with release tracking, royalty visibility, and reports.", status: "upcoming" },
     { phase: "Phase 3", title: "Royalty Portal", desc: "Full royalty portal with payment processing and detailed analytics.", status: "upcoming" },
     { phase: "Phase 4", title: "Publishing", desc: "Publishing services and sync licensing for African creators.", status: "upcoming" },
-    { phase: "Phase 5", title: "Full Platform", desc: "Complete independent distribution infrastructure owned by Orinlabi.", status: "upcoming" },
+    { phase: "Phase 5", title: "Full Platform", desc: "Complete independent distribution infrastructure owned by Orinlabí.", status: "upcoming" },
   ];
 
   return (

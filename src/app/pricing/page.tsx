@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CheckCircle2, X, ArrowRight } from "lucide-react";
 
 export const metadata = {
-  title: "Pricing – Orinlabi",
+  title: "Pricing – Orinlabí",
   description:
     "Simple, transparent pricing for African artists. Starter, Pro, and Label plans.",
 };

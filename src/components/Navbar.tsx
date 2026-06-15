@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -32,13 +33,21 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-[#007bff] rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-sm">O</span>
-          </div>
-          <span className="text-white font-bold text-xl tracking-tight">
-            Orinlabi
-          </span>
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
+            alt="Orinlabí icon"
+            width={36}
+            height={36}
+            className="rounded-full object-contain"
+          />
+          <Image
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+            alt="Orinlabí"
+            width={100}
+            height={28}
+            className="object-contain hidden sm:block"
+          />
         </Link>
 
         {/* Desktop links */}

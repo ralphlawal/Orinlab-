@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Clock, Tag } from "lucide-react";
 
 export const metadata = {
-  title: "Blog – Orinlabi",
+  title: "Blog – Orinlabí",
   description:
     "Music industry news, artist tips, marketing guides, distribution insights, and success stories for African artists.",
 };
@@ -113,7 +113,7 @@ function Hero() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
       <div className="relative z-10 max-w-2xl mx-auto">
         <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-          The Orinlabi Blog
+          The Orinlabí Blog
         </p>
         <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6">
           Knowledge for Artists.

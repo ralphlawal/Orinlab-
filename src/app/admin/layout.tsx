@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard,
@@ -61,12 +62,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         } lg:translate-x-0`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-white/[0.06]">
-          <div className="w-8 h-8 bg-[#007bff] rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">O</span>
-          </div>
+        <div className="flex items-center gap-2.5 px-4 py-5 border-b border-white/[0.06]">
+          <Image
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
+            alt="Orinlabí icon"
+            width={30}
+            height={30}
+            className="rounded-full object-contain flex-shrink-0"
+          />
           <div>
-            <p className="text-white font-bold text-sm leading-none">Orinlabi</p>
+            <Image
+              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+              alt="Orinlabí"
+              width={80}
+              height={20}
+              className="object-contain"
+            />
             <p className="text-white/30 text-xs mt-0.5">Admin Panel</p>
           </div>
         </div>

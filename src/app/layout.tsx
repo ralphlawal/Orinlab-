@@ -11,7 +11,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Orinlabi – Release Your Music Worldwide",
+  title: "Orinlabí – Release Your Music Worldwide",
   description:
     "Global music distribution and artist services built for independent African artists. Release. Grow. Own.",
   keywords: [
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     "music marketing services",
   ],
   openGraph: {
-    title: "Orinlabi – Release Your Music Worldwide",
+    title: "Orinlabí – Release Your Music Worldwide",
     description:
       "Global music distribution and artist services built for independent African artists.",
-    siteName: "Orinlabi",
+    siteName: "Orinlabí",
     type: "website",
   },
 };

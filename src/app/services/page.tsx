@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Services – Orinlabi",
+  title: "Services – Orinlabí",
   description:
     "Music distribution, marketing, release strategy, playlist promotion, brand development, and graphics design for African artists.",
 };
@@ -182,7 +182,7 @@ function CTA() {
           Ready to Get Started?
         </h2>
         <p className="text-white/50 text-lg mb-10">
-          Submit your music today and let Orinlabi handle the rest.
+          Submit your music today and let Orinlabí handle the rest.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
