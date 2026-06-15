@@ -1,13 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MessageCircle, AtSign, MapPin, CheckCircle2 } from "lucide-react";
+import { Mail, MessageCircle, AtSign, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const { error: dbError } = await supabase.from("contact_messages").insert({
+      name: data.get("name"),
+      email: data.get("email"),
+      subject: data.get("subject"),
+      message: data.get("message"),
+      inquiry_type: data.get("inquiryType") || null,
+    });
+    setLoading(false);
+    if (dbError) { setError("Something went wrong. Please try again."); return; }
     setSent(true);
   }
 
@@ -168,11 +184,15 @@ export default function ContactPage() {
                   </select>
                 </div>
 
+                {error && (
+                  <p className="text-red-400 text-sm">{error}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold py-4 rounded-full transition-all duration-200"
+                  disabled={loading}
+                  className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-4 rounded-full transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  Send Message
+                  {loading ? <><Loader2 size={18} className="animate-spin" /> Sending…</> : "Send Message"}
                 </button>
               </form>
             )}
