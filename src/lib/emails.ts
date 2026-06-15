@@ -19,11 +19,15 @@ const base = (content: string) => `
             <td style="padding-bottom:32px;" align="center">
               <table cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="width:36px;height:36px;background:#007bff;border-radius:50%;text-align:center;vertical-align:middle;">
-                    <span style="color:#ffffff;font-weight:700;font-size:16px;line-height:36px;">O</span>
+                  <td style="vertical-align:middle;">
+                    <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
+                      alt="Orinlabí" width="36" height="36"
+                      style="border-radius:50%;display:block;" />
                   </td>
-                  <td style="padding-left:10px;color:#ffffff;font-weight:700;font-size:18px;vertical-align:middle;">
-                    Orinlabí
+                  <td style="padding-left:10px;vertical-align:middle;">
+                    <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+                      alt="Orinlabí" height="22"
+                      style="display:block;" />
                   </td>
                 </tr>
               </table>
