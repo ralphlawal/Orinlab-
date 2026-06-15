@@ -46,19 +46,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/admin/login");
   }
 
-  // Don't wrap the login page
-  if (pathname === "/admin/login") return <>{children}</>;
+  // Login page — full-screen overlay, no chrome
+  if (pathname === "/admin/login") {
+    return (
+      <div className="fixed inset-0 z-[60] bg-black">
+        {children}
+      </div>
+    );
+  }
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#050505]">
         <Loader2 size={32} className="text-[#007bff] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] flex">
+    <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-60 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${
@@ -66,28 +72,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         } lg:translate-x-0`}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-4 py-5 border-b border-white/[0.06]">
+        <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
           <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
-            alt="Orinlabí icon"
-            width={30}
-            height={30}
-            className="rounded-full object-contain flex-shrink-0"
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+            alt="Orinlabí"
+            width={96}
+            height={26}
+            className="object-contain"
           />
-          <div>
-            <Image
-              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-              alt="Orinlabí"
-              width={80}
-              height={20}
-              className="object-contain"
-            />
-            <p className="text-white/30 text-xs mt-0.5">Admin Panel</p>
-          </div>
+          <p className="text-white/30 text-xs mt-1.5">Admin Panel</p>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -126,9 +123,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-60 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-6 py-4 flex items-center gap-4">
+        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-6 py-4 flex items-center gap-4">
           <button
             className="lg:hidden text-white/60 hover:text-white"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -140,7 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </h2>
         </header>
 
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

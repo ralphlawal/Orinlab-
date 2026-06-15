@@ -31,16 +31,17 @@ export default function PortalLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-black">
+    <div className="fixed inset-0 z-[60] bg-black flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex justify-center mb-10">
           <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
             alt="Orinlabí"
-            width={48}
-            height={48}
-            className="rounded-full object-contain"
+            width={140}
+            height={38}
+            className="object-contain"
+            priority
           />
         </div>
 

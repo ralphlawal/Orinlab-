@@ -33,27 +33,21 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-black">
+    <div className="w-full min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="flex items-center justify-center gap-2.5 mb-3">
-            <Image
-              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
-              alt="Orinlabí icon"
-              width={40}
-              height={40}
-              className="rounded-full object-contain"
-            />
+          <div className="flex justify-center mb-3">
             <Image
               src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
               alt="Orinlabí"
-              width={110}
-              height={30}
+              width={140}
+              height={38}
               className="object-contain"
+              priority
             />
           </div>
-          <p className="text-white/40 text-sm mt-2">Admin Dashboard — Sign in</p>
+          <p className="text-white/40 text-sm mt-3">Admin Dashboard — Sign in</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

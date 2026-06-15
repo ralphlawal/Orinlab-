@@ -30,19 +30,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <Image
-                src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
-                alt="Orinlabí icon"
-                width={32}
-                height={32}
-                className="rounded-full object-contain"
-              />
+            <Link href="/" className="inline-flex mb-4">
               <Image
                 src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
                 alt="Orinlabí"
-                width={90}
-                height={24}
+                width={110}
+                height={30}
                 className="object-contain"
               />
             </Link>
@@ -137,7 +130,16 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-white/30 text-xs">
-            ℗ 2026 Orinlabí · © 2026 Orinlabí · A Ralph Lawal Group Company
+            ℗ 2026 Orinlabí · © 2026 Orinlabí · A{" "}
+            <a
+              href="https://ralphlawalgroup.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white/60 transition-colors"
+            >
+              Ralph Lawal Group
+            </a>{" "}
+            Company
           </p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="text-white/30 hover:text-white/60 text-xs transition-colors">
