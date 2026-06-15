@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { AtSign, Mail, MessageCircle } from "lucide-react";
+import { AtSign, Mail, MessageCircle, X } from "lucide-react";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -52,7 +52,7 @@ export default function Footer() {
                 <Mail size={16} className="text-white/70" />
               </a>
               <a
-                href="https://wa.me/2348000000000"
+                href="https://wa.me/2348114691172"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 bg-white/5 hover:bg-[#007bff] rounded-full flex items-center justify-center transition-colors duration-200"
@@ -61,13 +61,22 @@ export default function Footer() {
                 <MessageCircle size={16} className="text-white/70" />
               </a>
               <a
-                href="https://instagram.com/orinlabi"
+                href="https://instagram.com/orinlabimusic"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 bg-white/5 hover:bg-[#007bff] rounded-full flex items-center justify-center transition-colors duration-200"
                 aria-label="Instagram"
               >
                 <AtSign size={16} className="text-white/70" />
+              </a>
+              <a
+                href="https://x.com/orinlabimusic"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 bg-white/5 hover:bg-[#007bff] rounded-full flex items-center justify-center transition-colors duration-200"
+                aria-label="X"
+              >
+                <X size={16} className="text-white/70" />
               </a>
             </div>
           </div>

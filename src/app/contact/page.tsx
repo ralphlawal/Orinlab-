@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MessageCircle, AtSign, MapPin, CheckCircle2, Loader2 } from "lucide-react";
+import { Mail, MessageCircle, AtSign, MapPin, CheckCircle2, Loader2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function ContactPage() {
@@ -24,6 +24,23 @@ export default function ContactPage() {
     });
     setLoading(false);
     if (dbError) { setError("Something went wrong. Please try again."); return; }
+
+    // Notify admin — fire and forget
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "new-contact",
+        data: {
+          name: data.get("name"),
+          email: data.get("email"),
+          subject: data.get("subject"),
+          message: data.get("message"),
+          inquiry_type: data.get("inquiryType") || null,
+        },
+      }),
+    }).catch(() => {});
+
     setSent(true);
   }
 
@@ -70,15 +87,21 @@ export default function ContactPage() {
               />
               <ContactDetail
                 icon={<MessageCircle size={20} />}
-                label="WhatsApp"
-                value="+234 800 000 0000"
-                href="https://wa.me/2348000000000"
+                label="WhatsApp / Phone"
+                value="+234 811 469 1172"
+                href="https://wa.me/2348114691172"
               />
               <ContactDetail
                 icon={<AtSign size={20} />}
-                label="AtSign"
-                value="@orinlabi"
-                href="https://instagram.com/orinlabi"
+                label="Instagram"
+                value="@orinlabimusic"
+                href="https://instagram.com/orinlabimusic"
+              />
+              <ContactDetail
+                icon={<X size={20} />}
+                label="X (Twitter)"
+                value="@orinlabimusic"
+                href="https://x.com/orinlabimusic"
               />
               <ContactDetail
                 icon={<MapPin size={20} />}
@@ -93,17 +116,25 @@ export default function ContactPage() {
               <p className="text-white/30 text-xs uppercase tracking-widest mb-4">
                 Follow Us
               </p>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <a
-                  href="https://instagram.com/orinlabi"
+                  href="https://instagram.com/orinlabimusic"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2.5 rounded-full transition-all duration-200"
                 >
-                  <AtSign size={16} /> AtSign
+                  <AtSign size={16} /> Instagram
                 </a>
                 <a
-                  href="https://wa.me/2348000000000"
+                  href="https://x.com/orinlabimusic"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2.5 rounded-full transition-all duration-200"
+                >
+                  <X size={16} /> X
+                </a>
+                <a
+                  href="https://wa.me/2348114691172"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2.5 rounded-full transition-all duration-200"

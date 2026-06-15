@@ -90,7 +90,7 @@ export default function SubmitPage() {
 
       if (dbError) throw dbError;
 
-      // Confirmation email — fire and forget
+      // Confirmation email to artist — fire and forget
       fetch("/api/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,6 +103,24 @@ export default function SubmitPage() {
             genre: data.get("genre"),
             release_date: data.get("releaseDate"),
             email: data.get("email"),
+          },
+        }),
+      }).catch(() => {});
+
+      // Notify admin — fire and forget
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "new-submission",
+          data: {
+            artist_name: data.get("artistName"),
+            song_title: data.get("songTitle"),
+            release_type: data.get("releaseType"),
+            genre: data.get("genre"),
+            email: data.get("email"),
+            phone: data.get("phone"),
+            country: data.get("country"),
           },
         }),
       }).catch(() => {});
