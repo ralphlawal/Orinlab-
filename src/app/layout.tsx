@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const sora = Sora({
   variable: "--font-sora",
@@ -58,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${sora.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-black text-white">
+        <ScrollToTop />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Heart, Globe, Target, Lightbulb, Users, ShieldCheck } from "lucide-react";
 
 export const metadata = {
@@ -34,13 +35,14 @@ function Story() {
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-3xl p-10 aspect-square flex items-center justify-center">
           <div className="text-center">
-            <div className="w-24 h-24 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-[#007bff] font-bold text-4xl">O</span>
-            </div>
-            <p className="text-white/30 text-sm uppercase tracking-widest">
-              Orinlabí
-            </p>
-            <p className="text-white/20 text-xs mt-2">
+            <Image
+              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+              alt="Orinlabí"
+              width={180}
+              height={50}
+              className="object-contain mx-auto"
+            />
+            <p className="text-white/20 text-xs mt-8">
               A Ralph Lawal Group Company
             </p>
           </div>
@@ -67,10 +69,9 @@ function Story() {
               structures, and platforms not built with their needs in mind.
             </p>
             <p>
-              Orinlabí changes that. Starting with Ditto Music's distribution
-              infrastructure and a full suite of artist services, we are
-              building the platform that will power the next generation of
-              African musical talent.
+              Orinlabí changes that. With our global distribution network and a
+              full suite of artist services, we are building the platform that
+              will power the next generation of African musical talent.
             </p>
           </div>
         </div>
@@ -288,7 +289,7 @@ function CTA() {
             href="/submit"
             className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-4 rounded-full transition-all duration-200"
           >
-            Start Distributing
+            Apply Now
           </Link>
           <Link
             href="/contact"
