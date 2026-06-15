@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Music, MessageSquare, Clock, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { Music, MessageSquare, Clock, CheckCircle2, XCircle, ArrowRight, Mail } from "lucide-react";
 
 type Release = {
   id: string;
@@ -28,10 +28,11 @@ type Stats = {
   approved: number;
   rejected: number;
   messages: number;
+  subscribers: number;
 };
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ pending: 0, approved: 0, rejected: 0, messages: 0 });
+  const [stats, setStats] = useState<Stats>({ pending: 0, approved: 0, rejected: 0, messages: 0, subscribers: 0 });
   const [recentReleases, setRecentReleases] = useState<Release[]>([]);
   const [recentMessages, setRecentMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
         { count: approved },
         { count: rejected },
         { count: messages },
+        { count: subscribers },
         { data: releases },
         { data: msgs },
       ] = await Promise.all([
@@ -50,6 +52,7 @@ export default function AdminDashboard() {
         supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "approved"),
         supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "rejected"),
         supabase.from("contact_messages").select("*", { count: "exact", head: true }),
+        supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("active", true),
         supabase.from("releases").select("id,artist_name,song_title,genre,release_type,status,submitted_at").order("submitted_at", { ascending: false }).limit(5),
         supabase.from("contact_messages").select("id,name,email,subject,created_at").order("created_at", { ascending: false }).limit(5),
       ]);
@@ -59,6 +62,7 @@ export default function AdminDashboard() {
         approved: approved ?? 0,
         rejected: rejected ?? 0,
         messages: messages ?? 0,
+        subscribers: subscribers ?? 0,
       });
       setRecentReleases(releases ?? []);
       setRecentMessages(msgs ?? []);
@@ -83,11 +87,12 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard icon={<Clock size={20} />} label="Pending" value={stats.pending} color="text-yellow-400" bg="bg-yellow-400/10" />
         <StatCard icon={<CheckCircle2 size={20} />} label="Approved" value={stats.approved} color="text-green-400" bg="bg-green-400/10" />
         <StatCard icon={<XCircle size={20} />} label="Rejected" value={stats.rejected} color="text-red-400" bg="bg-red-400/10" />
         <StatCard icon={<MessageSquare size={20} />} label="Messages" value={stats.messages} color="text-[#007bff]" bg="bg-[#007bff]/10" />
+        <StatCard icon={<Mail size={20} />} label="Subscribers" value={stats.subscribers} color="text-purple-400" bg="bg-purple-400/10" />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

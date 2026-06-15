@@ -147,7 +147,7 @@ function ServiceList() {
                 href="/submit"
                 className="inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-6 py-3 rounded-full transition-colors duration-200 text-sm"
               >
-                Get Started <ArrowRight size={16} />
+                Apply Now <ArrowRight size={16} />
               </Link>
             </div>
 
@@ -182,20 +182,20 @@ function CTA() {
           Ready to Get Started?
         </h2>
         <p className="text-white/50 text-lg mb-10">
-          Submit your music today and let Orinlabí handle the rest.
+          Apply to join Orinlabí. Selected artists receive all of these services — free.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/submit"
             className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-4 rounded-full transition-all duration-200"
           >
-            Submit a Release
+            Apply for Distribution
           </Link>
           <Link
             href="/pricing"
             className="flex items-center gap-2 text-white/60 hover:text-white font-medium transition-colors"
           >
-            View Pricing <ArrowRight size={16} />
+            How It Works <ArrowRight size={16} />
           </Link>
         </div>
       </div>

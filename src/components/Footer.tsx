@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
   { label: "Check Status", href: "/status" },
+  { label: "Artist Portal", href: "/portal" },
 ];
 
 const services = [
