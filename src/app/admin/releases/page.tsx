@@ -11,6 +11,9 @@ type Release = {
   email: string;
   phone: string;
   country: string;
+  artist_bio: string;
+  social_links: string;
+  sample_url: string;
   release_type: string;
   song_title: string;
   album_title: string;
@@ -201,6 +204,34 @@ export default function ReleasesPage() {
                 <Row label="Phone" value={selected.phone} />
                 <Row label="Country" value={selected.country} />
               </Section>
+
+              {/* Application details */}
+              {(selected.artist_bio || selected.social_links || selected.sample_url) && (
+                <Section title="Application">
+                  {selected.artist_bio && (
+                    <div>
+                      <span className="text-white/40 text-xs block mb-1">About the Artist</span>
+                      <p className="text-white/80 text-xs leading-relaxed">{selected.artist_bio}</p>
+                    </div>
+                  )}
+                  {selected.social_links && (
+                    <Row label="Social Links" value={selected.social_links} />
+                  )}
+                  {selected.sample_url && (
+                    <div className="flex gap-3">
+                      <span className="text-white/40 text-xs w-28 flex-shrink-0 pt-0.5">Sample Work</span>
+                      <a
+                        href={selected.sample_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#007bff] text-xs hover:underline break-all"
+                      >
+                        {selected.sample_url}
+                      </a>
+                    </div>
+                  )}
+                </Section>
+              )}
 
               {/* Release info */}
               <Section title="Release">

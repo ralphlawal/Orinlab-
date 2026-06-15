@@ -14,8 +14,8 @@ type Release = {
   genre: string;
   release_date: string;
   status: "pending" | "approved" | "rejected";
-  admin_notes: string | null;
-  created_at: string;
+  review_notes: string | null;
+  submitted_at: string;
   cover_art_url: string | null;
 };
 
@@ -61,9 +61,9 @@ export default function StatusPage() {
 
     const { data } = await supabase
       .from("releases")
-      .select("id,song_title,release_type,genre,release_date,status,admin_notes,created_at,cover_art_url")
+      .select("id,song_title,release_type,genre,release_date,status,review_notes,submitted_at,cover_art_url")
       .eq("email", email.trim().toLowerCase())
-      .order("created_at", { ascending: false });
+      .order("submitted_at", { ascending: false });
 
     setReleases(data ?? []);
     setSearched(true);
@@ -197,12 +197,12 @@ export default function StatusPage() {
                           </div>
 
                           {/* Admin note */}
-                          {r.admin_notes && (
+                          {r.review_notes && (
                             <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-4">
                               <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
                                 Note from Orinlabí
                               </p>
-                              <p className="text-white/70 text-sm leading-relaxed">{r.admin_notes}</p>
+                              <p className="text-white/70 text-sm leading-relaxed">{r.review_notes}</p>
                             </div>
                           )}
 
@@ -216,7 +216,7 @@ export default function StatusPage() {
                             </div>
                             <div className="flex items-center gap-2 text-white/40 text-xs">
                               <Globe size={13} />
-                              Submitted: {new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                              Submitted: {new Date(r.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                             </div>
                           </div>
 
