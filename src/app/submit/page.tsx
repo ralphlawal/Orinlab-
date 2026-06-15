@@ -171,7 +171,7 @@ export default function SubmitPage() {
   return (
     <>
       {/* Header */}
-      <section className="relative pt-32 pb-12 px-4 text-center">
+      <section className="relative pt-32 pb-12 px-4 text-center overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
           <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
