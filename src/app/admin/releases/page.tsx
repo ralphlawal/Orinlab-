@@ -48,6 +48,24 @@ type Release = {
 
 type Filter = "all" | "pending" | "approved" | "rejected";
 
+type ArtistProfile = {
+  artist_type: string | null;
+  artist_image_url: string | null;
+  spotify_artist_id: string | null;
+  apple_music_artist_id: string | null;
+  audiomack_id: string | null;
+  boomplay_id: string | null;
+  soundcloud_id: string | null;
+  deezer_id: string | null;
+  amazon_id: string | null;
+  instagram_handle: string | null;
+  x_handle: string | null;
+  tiktok_username: string | null;
+  youtube_channel: string | null;
+  facebook_url: string | null;
+  website_url: string | null;
+};
+
 export default function ReleasesPage() {
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,6 +76,7 @@ export default function ReleasesPage() {
   const [savingLinks, setSavingLinks] = useState(false);
   const [linksSaved, setLinksSaved] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [artistProfile, setArtistProfile] = useState<ArtistProfile | null | undefined>(undefined);
 
   async function load() {
     setLoading(true);
@@ -75,6 +94,13 @@ export default function ReleasesPage() {
     setNotes(r.review_notes ?? "");
     setStoreLinks(r.store_links ?? {});
     setLinksSaved(false);
+    setArtistProfile(undefined); // loading state
+    supabase
+      .from("artist_profiles")
+      .select("*")
+      .eq("email", r.email)
+      .single()
+      .then(({ data }) => setArtistProfile((data as ArtistProfile) ?? null));
   }
 
   async function saveStoreLinks() {
@@ -115,6 +141,7 @@ export default function ReleasesPage() {
     setNotes("");
     setStoreLinks({});
     setLinksSaved(false);
+    setArtistProfile(undefined);
     load();
   }
 
@@ -315,6 +342,48 @@ export default function ReleasesPage() {
                 )}
               </Section>
 
+              {/* Distribution Profile */}
+              <Section title="Distribution Profile">
+                {artistProfile === undefined ? (
+                  <div className="flex items-center gap-2 text-white/30 text-xs">
+                    <Loader2 size={12} className="animate-spin" /> Loading…
+                  </div>
+                ) : artistProfile === null ? (
+                  <p className="text-white/25 text-xs italic">
+                    Artist hasn&apos;t completed their distribution profile yet.
+                    {selected.status === "approved" && " They have a prompt to do so in their portal."}
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {artistProfile.artist_type && (
+                      <Row label="Type" value={artistProfile.artist_type} />
+                    )}
+                    {artistProfile.artist_image_url && (
+                      <div className="flex gap-3">
+                        <span className="text-white/40 text-xs w-28 flex-shrink-0 pt-0.5">Photo</span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={artistProfile.artist_image_url} alt="" className="w-16 h-16 object-cover rounded-xl border border-white/10" />
+                      </div>
+                    )}
+                    <p className="text-white/30 text-xs uppercase tracking-widest pt-1">Platform IDs</p>
+                    <Row label="Spotify" value={artistProfile.spotify_artist_id} />
+                    <Row label="Apple Music" value={artistProfile.apple_music_artist_id} />
+                    <Row label="Audiomack" value={artistProfile.audiomack_id} />
+                    <Row label="Boomplay" value={artistProfile.boomplay_id} />
+                    <Row label="Deezer" value={artistProfile.deezer_id} />
+                    <Row label="SoundCloud" value={artistProfile.soundcloud_id} />
+                    <Row label="Amazon" value={artistProfile.amazon_id} />
+                    <p className="text-white/30 text-xs uppercase tracking-widest pt-1">Social</p>
+                    <Row label="Instagram" value={artistProfile.instagram_handle ? `@${artistProfile.instagram_handle}` : null} />
+                    <Row label="X" value={artistProfile.x_handle ? `@${artistProfile.x_handle}` : null} />
+                    <Row label="TikTok" value={artistProfile.tiktok_username} />
+                    <Row label="YouTube" value={artistProfile.youtube_channel} />
+                    <Row label="Facebook" value={artistProfile.facebook_url} />
+                    <Row label="Website" value={artistProfile.website_url} />
+                  </div>
+                )}
+              </Section>
+
               {/* Store links — only for approved releases */}
               {selected.status === "approved" && (
                 <Section title="Store Links">
@@ -367,7 +436,7 @@ export default function ReleasesPage() {
             {/* Actions */}
             <div className="p-6 border-t border-white/[0.06] flex gap-3">
               <button
-                onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setLinksSaved(false); }}
+                onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setLinksSaved(false); setArtistProfile(undefined); }}
                 className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
               >
                 Cancel

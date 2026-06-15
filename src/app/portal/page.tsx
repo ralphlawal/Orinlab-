@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
   Music2, Clock, CheckCircle2, XCircle,
-  ChevronRight, Loader2, ArrowRight,
+  ChevronRight, Loader2, ArrowRight, UserCircle2,
 } from "lucide-react";
 
 type Release = {
@@ -30,21 +30,34 @@ export default function PortalDashboard() {
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [artistName, setArtistName] = useState("");
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data } = await supabase
-        .from("releases")
-        .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at")
-        .eq("email", session.user.email!)
-        .order("submitted_at", { ascending: false });
+      const [releasesRes, profileRes] = await Promise.all([
+        supabase
+          .from("releases")
+          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name")
+          .eq("email", session.user.email!)
+          .order("submitted_at", { ascending: false }),
+        supabase
+          .from("artist_profiles")
+          .select("spotify_artist_id,instagram_handle")
+          .eq("email", session.user.email!)
+          .single(),
+      ]);
 
-      if (data && data.length > 0) {
+      const data = releasesRes.data ?? [];
+      if (data.length > 0) {
         setArtistName((data[0] as unknown as { artist_name?: string }).artist_name ?? "");
       }
+
+      const hasApproved = data.some((r: Release) => r.status === "approved");
+      const profileFilled = !!(profileRes.data?.spotify_artist_id || profileRes.data?.instagram_handle);
+      setShowProfileBanner(hasApproved && !profileFilled);
 
       setReleases((data as Release[]) ?? []);
       setLoading(false);
@@ -63,7 +76,7 @@ export default function PortalDashboard() {
   return (
     <section className="max-w-3xl mx-auto px-4 py-12">
       {/* Header */}
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="text-white font-bold text-3xl">
           {artistName ? `Welcome back, ${artistName}.` : "Your Releases"}
         </h1>
@@ -71,6 +84,27 @@ export default function PortalDashboard() {
           Track the status of your applications and approved distributions.
         </p>
       </div>
+
+      {/* Profile completion banner */}
+      {showProfileBanner && (
+        <div className="mb-8 bg-[#007bff]/10 border border-[#007bff]/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <UserCircle2 size={20} className="text-[#007bff] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-white font-semibold text-sm">Complete your distribution profile</p>
+              <p className="text-white/50 text-xs mt-1">
+                Your release was approved! We need your platform IDs and social handles to finalise your distribution setup.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/portal/profile"
+            className="flex-shrink-0 bg-[#007bff] hover:bg-[#0069d9] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors whitespace-nowrap"
+          >
+            Complete Profile →
+          </Link>
+        </div>
+      )}
 
       {releases.length === 0 ? (
         <div className="text-center py-20">

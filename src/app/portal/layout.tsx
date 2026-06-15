@@ -74,10 +74,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <div className="w-6 h-6 bg-[#007bff]/20 rounded-lg flex items-center justify-center">
               <Music2 size={13} className="text-[#007bff]" />
             </div>
-            <span className="text-white/60 text-xs font-medium">Artist Portal</span>
-            <span className="text-white/20 text-xs">·</span>
+            <span className="text-white/60 text-xs font-medium hidden sm:block">Artist Portal</span>
+            <span className="text-white/20 text-xs hidden sm:block">·</span>
             <Link href="/portal" className={`text-xs font-medium transition-colors ${pathname === "/portal" ? "text-white" : "text-white/40 hover:text-white"}`}>
               My Releases
+            </Link>
+            <span className="text-white/20 text-xs">·</span>
+            <Link href="/portal/profile" className={`text-xs font-medium transition-colors ${pathname.startsWith("/portal/profile") ? "text-white" : "text-white/40 hover:text-white"}`}>
+              My Profile
             </Link>
           </div>
           <div className="flex items-center gap-3">
