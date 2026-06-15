@@ -131,9 +131,15 @@ export default function SubmitPage() {
           <p className="text-white/40 text-sm mt-4">
             Check your email for a confirmation from info@orinlabi.com
           </p>
+          <a
+            href="/status"
+            className="mt-3 inline-block text-[#007bff] text-sm hover:underline"
+          >
+            Track your application status →
+          </a>
           <button
             onClick={() => { setState("idle"); setAgreed(false); setAudioFile(null); setCoverFile(null); }}
-            className="mt-8 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3 rounded-full transition-colors"
+            className="mt-8 block w-full bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3 rounded-full transition-colors"
           >
             Submit Another Application
           </button>
