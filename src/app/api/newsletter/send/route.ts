@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const html = `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Orinlabí</title></head>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><title>Orinlabí</title></head>
 <body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0" style="background:#f0f0f0;padding:0;">
     <tr><td align="center" bgcolor="#f0f0f0" style="background:#f0f0f0;">
