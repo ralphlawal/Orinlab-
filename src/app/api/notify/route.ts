@@ -195,6 +195,56 @@ export async function POST(req: NextRequest) {
         ${btn("View in Admin Panel", "https://orinlabi.com/admin/releases", "#ef4444")}`
       );
 
+    } else if (type === "release-approved") {
+      const reviewedDate = data.reviewed_at
+        ? new Date(data.reviewed_at).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" })
+        : "—";
+      subject = `✓ Approved — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = wrap(
+        "#16a34a",
+        "Decision Logged",
+        `Release Approved: ${esc(data.song_title)}`,
+        "You approved this release. This email is your admin record.",
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Artist",       data.artist_name)}
+          ${row("Legal Name",   data.legal_name)}
+          ${row("Email",        data.email)}
+          ${row("Release",      data.song_title)}
+          ${row("Type",         data.release_type)}
+          ${row("Genre",        data.genre)}
+          ${row("Country",      data.country)}
+          ${row("Decision",     "APPROVED")}
+          ${row("Reviewed At",  reviewedDate)}
+          ${data.review_notes ? row("Notes to Artist", data.review_notes) : ""}
+        </table>
+        ${btn("Open in Admin Panel", `https://orinlabi.com/admin/releases`, "#16a34a")}`
+      );
+
+    } else if (type === "release-rejected") {
+      const reviewedDate = data.reviewed_at
+        ? new Date(data.reviewed_at).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" })
+        : "—";
+      subject = `✗ Rejected — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = wrap(
+        "#f59e0b",
+        "Decision Logged",
+        `Release Not Selected: ${esc(data.song_title)}`,
+        "You rejected this release. This email is your admin record.",
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Artist",       data.artist_name)}
+          ${row("Legal Name",   data.legal_name)}
+          ${row("Email",        data.email)}
+          ${row("Release",      data.song_title)}
+          ${row("Type",         data.release_type)}
+          ${row("Genre",        data.genre)}
+          ${row("Country",      data.country)}
+          ${row("Decision",     "NOT SELECTED")}
+          ${row("Reviewed At",  reviewedDate)}
+          ${data.review_notes ? row("Reason / Notes", data.review_notes) : ""}
+        </table>
+        ${btn("Open in Admin Panel", `https://orinlabi.com/admin/releases`, "#f59e0b")}`
+      );
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }

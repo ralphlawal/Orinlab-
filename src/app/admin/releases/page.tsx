@@ -214,6 +214,27 @@ export default function ReleasesPage() {
       body: JSON.stringify({ type: status, release: updatedRelease }),
     }).catch(() => {});
 
+    // Admin record copy
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: status === "approved" ? "release-approved" : "release-rejected",
+        data: {
+          artist_name:  selected.artist_name,
+          legal_name:   selected.legal_name,
+          email:        selected.email,
+          song_title:   selected.song_title,
+          release_type: selected.release_type,
+          genre:        selected.genre,
+          country:      selected.country,
+          review_notes: notes || null,
+          reviewed_at:  new Date().toISOString(),
+          release_id:   selected.id,
+        },
+      }),
+    }).catch(() => {});
+
     setUpdating(false);
     setSelected(null);
     setNotes("");
