@@ -23,7 +23,18 @@ export default function PortalLoginPage() {
     });
 
     if (authError) {
-      setError(authError.message);
+      // "Email link is invalid or has expired" → Supabase redirect URL not in allowlist
+      // "Signups not allowed" → Supabase auth settings blocking new users
+      const msg = authError.message.toLowerCase();
+      if (msg.includes("not allowed") || msg.includes("disabled")) {
+        setError("Sign-ins are currently restricted. Please contact info@orinlabi.com for access.");
+      } else if (msg.includes("rate limit") || msg.includes("too many")) {
+        setError("Too many attempts. Please wait a few minutes and try again.");
+      } else if (msg.includes("invalid email") || msg.includes("unable to validate")) {
+        setError("That email address doesn't look valid. Please check and try again.");
+      } else {
+        setError(authError.message || "Something went wrong. Please try again or contact info@orinlabi.com.");
+      }
       setState("error");
     } else {
       setState("sent");

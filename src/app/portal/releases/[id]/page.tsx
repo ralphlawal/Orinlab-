@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
   Globe, Calendar, Mic2, FileText, Loader2, ExternalLink, Trash2,
-  BarChart2, DollarSign, PenLine,
+  BarChart2, DollarSign, PenLine, Share2, Copy, Star,
 } from "lucide-react";
 
 type Release = {
@@ -71,6 +71,7 @@ export default function ReleaseDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [takedownState, setTakedownState] = useState<"idle" | "confirm" | "sent">("idle");
   const [sendingTakedown, setSendingTakedown] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -303,6 +304,97 @@ export default function ReleaseDetailPage() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* Smart link — only when store links exist */}
+      {release.status === "approved" && release.store_links && Object.keys(release.store_links).length > 0 && (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Share2 size={18} className="text-[#007bff]" />
+            <p className="text-white font-semibold">Share Your Music</p>
+          </div>
+          <p className="text-white/40 text-sm mb-4">
+            One link that shows all your streaming platforms. Share it everywhere.
+          </p>
+          <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
+            <span className="text-white/60 text-sm flex-1 truncate font-mono text-xs">
+              https://orinlabi.com/listen/{release.id}
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`https://orinlabi.com/listen/${release.id}`);
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#007bff] hover:text-white transition-colors flex-shrink-0"
+            >
+              {linkCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+              {linkCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <a
+            href={`/listen/${release.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-2 text-white/30 hover:text-white/60 text-xs transition-colors"
+          >
+            <ExternalLink size={12} /> Preview link
+          </a>
+        </div>
+      )}
+
+      {/* Spotify for Artists / Apple Music for Artists guidance */}
+      {release.status === "approved" && release.store_links && release.store_links.spotify && (
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-3">
+            <Star size={18} className="text-green-400" />
+            <p className="text-white font-semibold">Claim Your Artist Profile</p>
+          </div>
+          <p className="text-white/40 text-sm leading-relaxed mb-5">
+            Now that your music is live, claim your official artist profile on Spotify and Apple Music. This lets you update your photo, bio, and access your streaming stats directly.
+          </p>
+          <div className="space-y-3">
+            <a
+              href="https://artists.spotify.com/claim"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full bg-[#1db954]/10 border border-[#1db954]/20 hover:border-[#1db954]/40 rounded-xl px-4 py-3.5 transition-all group"
+            >
+              <div>
+                <p className="text-white font-medium text-sm">Spotify for Artists</p>
+                <p className="text-white/40 text-xs mt-0.5">Claim your profile at artists.spotify.com/claim</p>
+              </div>
+              <ExternalLink size={14} className="text-white/20 group-hover:text-[#1db954] transition-colors flex-shrink-0" />
+            </a>
+            <a
+              href="https://artists.apple.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full bg-[#fc3c44]/10 border border-[#fc3c44]/20 hover:border-[#fc3c44]/40 rounded-xl px-4 py-3.5 transition-all group"
+            >
+              <div>
+                <p className="text-white font-medium text-sm">Apple Music for Artists</p>
+                <p className="text-white/40 text-xs mt-0.5">Claim your profile at artists.apple.com</p>
+              </div>
+              <ExternalLink size={14} className="text-white/20 group-hover:text-[#fc3c44] transition-colors flex-shrink-0" />
+            </a>
+            <a
+              href="https://boomplay.com/artist-claim"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full bg-[#f5a623]/10 border border-[#f5a623]/20 hover:border-[#f5a623]/40 rounded-xl px-4 py-3.5 transition-all group"
+            >
+              <div>
+                <p className="text-white font-medium text-sm">Boomplay Artist Account</p>
+                <p className="text-white/40 text-xs mt-0.5">Claim your Boomplay artist page</p>
+              </div>
+              <ExternalLink size={14} className="text-white/20 group-hover:text-[#f5a623] transition-colors flex-shrink-0" />
+            </a>
+          </div>
+          <p className="text-white/20 text-xs mt-4 leading-relaxed">
+            You&apos;ll need the email you used to submit your release to verify ownership. It usually takes 1–2 days after your music goes live.
+          </p>
         </div>
       )}
 

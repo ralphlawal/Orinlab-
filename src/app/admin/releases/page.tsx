@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2 } from "lucide-react";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2 } from "lucide-react";
 
 const PLATFORMS = [
   { key: "spotify",       label: "Spotify" },
@@ -599,6 +599,23 @@ export default function ReleasesPage() {
                       {liveNotified ? "Artist Notified ✓" : "Email Artist: Music is Live"}
                     </button>
                   </div>
+                  {/* Smart link preview — shown once at least one link is saved */}
+                  {selected.store_links && Object.keys(selected.store_links).length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-white/[0.06]">
+                      <p className="text-white/30 text-xs mb-2 flex items-center gap-1.5">
+                        <Share2 size={11} /> Fan smart link
+                      </p>
+                      <a
+                        href={`https://orinlabi.com/listen/${selected.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#007bff] text-xs hover:underline font-mono break-all"
+                      >
+                        orinlabi.com/listen/{selected.id}
+                      </a>
+                    </div>
+                  )}
+
                 </Section>
               )}
 
