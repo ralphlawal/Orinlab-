@@ -239,7 +239,15 @@ export default function ReleasesPage() {
     setSelected(null);
     setNotes("");
     setStoreLinks({});
+    setStreams({});
+    setRoyalties("");
+    setEditIsrc("");
+    setEditUpc("");
     setLinksSaved(false);
+    setStreamsSaved(false);
+    setRoyaltiesSaved(false);
+    setMetaSaved(false);
+    setLiveNotified(false);
     setArtistProfile(undefined);
     load();
   }
