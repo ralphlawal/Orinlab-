@@ -21,6 +21,7 @@ export default function NewsletterPage() {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ sent: number; failed: number } | null>(null);
   const [sendError, setSendError] = useState("");
+  const [totalActive, setTotalActive] = useState(0);
 
   async function load() {
     setLoading(true);
@@ -30,8 +31,12 @@ export default function NewsletterPage() {
       .order("subscribed_at", { ascending: false });
     if (filter === "active") query = query.eq("active", true);
     if (filter === "inactive") query = query.eq("active", false);
-    const { data } = await query;
+    const [{ data }, { count }] = await Promise.all([
+      query,
+      supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("active", true),
+    ]);
     setSubscribers(data ?? []);
+    setTotalActive(count ?? 0);
     setLoading(false);
   }
 
@@ -64,7 +69,7 @@ export default function NewsletterPage() {
     URL.revokeObjectURL(url);
   }
 
-  const activeCount = subscribers.filter((s) => s.active).length;
+  const activeCount = totalActive;
 
   async function sendCampaign() {
     if (!subject.trim() || !body.trim()) {

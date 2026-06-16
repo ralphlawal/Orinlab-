@@ -456,8 +456,9 @@ export default function ReleasesPage() {
                     </button>
                     <button
                       onClick={notifyLive}
-                      disabled={notifyingLive || liveNotified}
+                      disabled={notifyingLive || liveNotified || !Object.values(storeLinks).some((v) => v.trim())}
                       className="flex items-center gap-2 text-xs font-semibold bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 text-green-400 px-4 py-2 rounded-lg transition-colors"
+                      title={!Object.values(storeLinks).some((v) => v.trim()) ? "Add at least one store link first" : ""}
                     >
                       {notifyingLive ? <Loader2 size={12} className="animate-spin" /> : null}
                       {liveNotified ? "Artist Notified ✓" : "Email Artist: Music is Live"}
