@@ -37,6 +37,7 @@ type Release = {
   producers: string;
   featured_artists: string;
   isrc: string;
+  upc: string | null;
   copyright_owner: string;
   copyright_year: string;
   publishing_info: string;
@@ -44,6 +45,8 @@ type Release = {
   submitted_at: string;
   review_notes: string;
   store_links: Record<string, string> | null;
+  streams: Record<string, number> | null;
+  royalties_usd: number | null;
 };
 
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -77,6 +80,16 @@ export default function ReleasesPage() {
   const [linksSaved, setLinksSaved] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null | undefined>(undefined);
+  const [streams, setStreams] = useState<Record<string, number>>({});
+  const [savingStreams, setSavingStreams] = useState(false);
+  const [streamsSaved, setStreamsSaved] = useState(false);
+  const [royalties, setRoyalties] = useState("");
+  const [savingRoyalties, setSavingRoyalties] = useState(false);
+  const [royaltiesSaved, setRoyaltiesSaved] = useState(false);
+  const [editIsrc, setEditIsrc] = useState("");
+  const [editUpc, setEditUpc] = useState("");
+  const [savingMeta, setSavingMeta] = useState(false);
+  const [metaSaved, setMetaSaved] = useState(false);
   const [search, setSearch] = useState("");
   const [notifyingLive, setNotifyingLive] = useState(false);
   const [liveNotified, setLiveNotified] = useState(false);
@@ -108,9 +121,16 @@ export default function ReleasesPage() {
     setSelected(r);
     setNotes(r.review_notes ?? "");
     setStoreLinks(r.store_links ?? {});
+    setStreams(r.streams ?? {});
+    setRoyalties(r.royalties_usd?.toString() ?? "");
+    setEditIsrc(r.isrc ?? "");
+    setEditUpc(r.upc ?? "");
     setLinksSaved(false);
+    setStreamsSaved(false);
+    setRoyaltiesSaved(false);
+    setMetaSaved(false);
     setLiveNotified(false);
-    setArtistProfile(undefined); // loading state
+    setArtistProfile(undefined);
     supabase
       .from("artist_profiles")
       .select("*")
@@ -131,6 +151,37 @@ export default function ReleasesPage() {
     setSavingLinks(false);
     setLinksSaved(true);
     load();
+  }
+
+  async function saveStreams() {
+    if (!selected) return;
+    setSavingStreams(true);
+    const filtered = Object.fromEntries(
+      Object.entries(streams).filter(([, v]) => v > 0)
+    );
+    await supabase.from("releases").update({ streams: filtered }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, streams: filtered } : s);
+    setSavingStreams(false);
+    setStreamsSaved(true);
+  }
+
+  async function saveRoyalties() {
+    if (!selected) return;
+    setSavingRoyalties(true);
+    const val = parseFloat(royalties) || 0;
+    await supabase.from("releases").update({ royalties_usd: val }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, royalties_usd: val } : s);
+    setSavingRoyalties(false);
+    setRoyaltiesSaved(true);
+  }
+
+  async function saveMeta() {
+    if (!selected) return;
+    setSavingMeta(true);
+    await supabase.from("releases").update({ isrc: editIsrc || null, upc: editUpc || null }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, isrc: editIsrc, upc: editUpc || null } : s);
+    setSavingMeta(false);
+    setMetaSaved(true);
   }
 
   async function saveNotes() {
@@ -346,7 +397,36 @@ export default function ReleasesPage() {
                 <Row label="Songwriters" value={selected.songwriters} />
                 <Row label="Producers" value={selected.producers} />
                 <Row label="Featured" value={selected.featured_artists} />
-                <Row label="ISRC" value={selected.isrc} />
+              </Section>
+
+              {/* Metadata — editable */}
+              <Section title="Metadata">
+                <p className="text-white/30 text-xs mb-3">ISRC and UPC can be assigned or corrected here after submission.</p>
+                <div className="space-y-2">
+                  {[
+                    { key: "isrc", label: "ISRC", value: editIsrc, set: setEditIsrc, placeholder: "e.g. USRC11700609" },
+                    { key: "upc", label: "UPC", value: editUpc, set: setEditUpc, placeholder: "12-digit barcode (albums)" },
+                  ].map(({ key, label, value, set, placeholder }) => (
+                    <div key={key} className="flex items-center gap-3">
+                      <span className="text-white/40 text-xs w-28 flex-shrink-0">{label}</span>
+                      <input
+                        type="text"
+                        placeholder={placeholder}
+                        value={value}
+                        onChange={(e) => { set(e.target.value); setMetaSaved(false); }}
+                        className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors font-mono"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={saveMeta}
+                  disabled={savingMeta}
+                  className="mt-3 flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  {savingMeta ? <Loader2 size={12} className="animate-spin" /> : null}
+                  {metaSaved ? "Saved ✓" : "Save Metadata"}
+                </button>
               </Section>
 
               {/* Rights */}
@@ -467,6 +547,74 @@ export default function ReleasesPage() {
                 </Section>
               )}
 
+              {/* Streams — approved releases only */}
+              {selected.status === "approved" && (
+                <Section title="Stream Counts">
+                  <p className="text-white/30 text-xs mb-3">
+                    Update after each DSP reporting period. Artists see these totals in their portal.
+                  </p>
+                  <div className="space-y-2">
+                    {PLATFORMS.map((p) => (
+                      <div key={p.key} className="flex items-center gap-3">
+                        <span className="text-white/40 text-xs w-28 flex-shrink-0">{p.label}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={streams[p.key] ?? ""}
+                          onChange={(e) => {
+                            const n = parseInt(e.target.value) || 0;
+                            setStreams((prev) => ({ ...prev, [p.key]: n }));
+                            setStreamsSaved(false);
+                          }}
+                          className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={saveStreams}
+                    disabled={savingStreams}
+                    className="mt-3 flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors"
+                  >
+                    {savingStreams ? <Loader2 size={12} className="animate-spin" /> : null}
+                    {streamsSaved ? "Saved ✓" : "Save Stream Counts"}
+                  </button>
+                </Section>
+              )}
+
+              {/* Royalties — approved releases only */}
+              {selected.status === "approved" && (
+                <Section title="Royalties">
+                  <p className="text-white/30 text-xs mb-3">
+                    Total earnings to display in the artist portal. Update after each payout cycle.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-white/40 text-xs w-28 flex-shrink-0">Total (USD)</span>
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-xs">$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={royalties}
+                        onChange={(e) => { setRoyalties(e.target.value); setRoyaltiesSaved(false); }}
+                        className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs pl-7 pr-3 py-2 rounded-lg transition-colors"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={saveRoyalties}
+                    disabled={savingRoyalties}
+                    className="mt-3 flex items-center gap-2 text-xs font-semibold bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 text-green-400 px-4 py-2 rounded-lg transition-colors"
+                  >
+                    {savingRoyalties ? <Loader2 size={12} className="animate-spin" /> : null}
+                    {royaltiesSaved ? "Saved ✓" : "Save Royalties"}
+                  </button>
+                </Section>
+              )}
+
               {/* Review notes */}
               <div>
                 <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
@@ -495,7 +643,7 @@ export default function ReleasesPage() {
               </button>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setLinksSaved(false); setArtistProfile(undefined); }}
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setArtistProfile(undefined); }}
                   className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
                   Cancel

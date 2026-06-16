@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
   Globe, Calendar, Mic2, FileText, Loader2, ExternalLink, Trash2,
+  BarChart2, DollarSign,
 } from "lucide-react";
 
 type Release = {
@@ -23,6 +24,9 @@ type Release = {
   cover_art_url: string | null;
   audio_file_url: string | null;
   store_links: Record<string, string> | null;
+  streams: Record<string, number> | null;
+  royalties_usd: number | null;
+  upc: string | null;
   songwriters: string;
   producers: string;
   featured_artists: string | null;
@@ -262,6 +266,54 @@ export default function ReleaseDetailPage() {
         </div>
       )}
 
+      {/* Streams */}
+      {release.status === "approved" && release.streams && Object.values(release.streams).some((v) => v > 0) && (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <BarChart2 size={18} className="text-[#007bff]" />
+            <p className="text-white font-semibold">Stream Analytics</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {Object.entries(release.streams)
+              .filter(([, v]) => v > 0)
+              .sort(([, a], [, b]) => b - a)
+              .map(([key, count]) => {
+                const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                return (
+                  <div key={key} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+                    <p className="text-white/40 text-xs mb-1">{label}</p>
+                    <p className="text-white font-bold text-lg">{fmtStreams(count)}</p>
+                    <p className="text-white/25 text-xs">streams</p>
+                  </div>
+                );
+              })}
+          </div>
+          <p className="text-white/20 text-xs mt-4">
+            Stream counts are updated monthly from DSP reports.
+          </p>
+        </div>
+      )}
+
+      {/* Royalties */}
+      {release.status === "approved" && release.royalties_usd != null && release.royalties_usd > 0 && (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <DollarSign size={18} className="text-green-400" />
+            <p className="text-white font-semibold">Earnings</p>
+          </div>
+          <div className="flex items-end gap-2 mb-2">
+            <span className="text-green-400 text-3xl font-bold">
+              ${release.royalties_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-white/30 text-sm mb-1">USD</span>
+          </div>
+          <p className="text-white/30 text-xs">
+            Total royalties earned as reported by streaming platforms. Payouts are processed on a monthly basis — contact us at{" "}
+            <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">info@orinlabi.com</a> to arrange your payout.
+          </p>
+        </div>
+      )}
+
       {/* Release details */}
       <div className="grid sm:grid-cols-2 gap-5">
         <InfoCard icon={<Calendar size={16} />} title="Release Info">
@@ -280,6 +332,7 @@ export default function ReleaseDetailPage() {
           <Row label="Producers" value={release.producers} />
           <Row label="Featured" value={release.featured_artists} />
           <Row label="ISRC" value={release.isrc} />
+          <Row label="UPC" value={release.upc} />
         </InfoCard>
 
         <InfoCard icon={<FileText size={16} />} title="Rights">
@@ -299,6 +352,12 @@ export default function ReleaseDetailPage() {
       </div>
     </section>
   );
+}
+
+function fmtStreams(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
 }
 
 function InfoCard({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
