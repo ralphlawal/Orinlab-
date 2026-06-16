@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
   Globe, Calendar, Mic2, FileText, Loader2, ExternalLink, Trash2,
-  BarChart2, DollarSign,
+  BarChart2, DollarSign, PenLine,
 } from "lucide-react";
 
 type Release = {
@@ -27,6 +27,7 @@ type Release = {
   streams: Record<string, number> | null;
   royalties_usd: number | null;
   upc: string | null;
+  contract_signed_at: string | null;
   songwriters: string;
   producers: string;
   featured_artists: string | null;
@@ -154,6 +155,45 @@ export default function ReleaseDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Contract signing — approved releases only */}
+      {release.status === "approved" && (
+        <div className={`border rounded-2xl p-5 ${release.contract_signed_at ? "bg-green-500/5 border-green-500/15" : "bg-[#007bff]/5 border-[#007bff]/20"}`}>
+          <div className="flex items-start gap-3">
+            {release.contract_signed_at ? (
+              <CheckCircle2 size={18} className="text-green-400 flex-shrink-0 mt-0.5" />
+            ) : (
+              <PenLine size={18} className="text-[#007bff] flex-shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1">
+              {release.contract_signed_at ? (
+                <>
+                  <p className="text-green-400 font-semibold text-sm mb-1">Distribution Agreement Signed</p>
+                  <p className="text-white/40 text-xs">
+                    Signed on{" "}
+                    {new Date(release.contract_signed_at).toLocaleDateString("en-GB", {
+                      day: "numeric", month: "long", year: "numeric",
+                    })}. A PDF copy was sent to your email.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-white/80 font-semibold text-sm mb-1">Sign Your Distribution Agreement</p>
+                  <p className="text-white/40 text-xs leading-relaxed mb-4">
+                    Your release has been approved. Please read and sign the distribution agreement to complete your onboarding. The signed contract will be emailed to you and Orinlabí.
+                  </p>
+                  <Link
+                    href={`/portal/contract/${release.id}`}
+                    className="inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0066dd] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors"
+                  >
+                    <PenLine size={13} /> Read & Sign Contract
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Takedown request — approved releases only */}
       {release.status === "approved" && (

@@ -47,6 +47,8 @@ type Release = {
   store_links: Record<string, string> | null;
   streams: Record<string, number> | null;
   royalties_usd: number | null;
+  contract_signed_at: string | null;
+  contract_signature: string | null;
 };
 
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -499,6 +501,30 @@ export default function ReleasesPage() {
                     <Row label="Facebook" value={artistProfile.facebook_url} />
                     <Row label="Website" value={artistProfile.website_url} />
                   </div>
+                )}
+              </Section>
+
+              {/* Contract status */}
+              <Section title="Distribution Agreement">
+                {selected.contract_signed_at ? (
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-green-400 text-xs font-semibold">Signed</p>
+                      <p className="text-white/40 text-xs mt-0.5">
+                        By {selected.contract_signature ?? "—"} on{" "}
+                        {new Date(selected.contract_signed_at).toLocaleDateString("en-GB", {
+                          day: "numeric", month: "long", year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-white/30 text-xs italic">
+                    {selected.status === "approved"
+                      ? "Artist has not signed the contract yet. They will see a prompt in their portal."
+                      : "Contract becomes available after approval."}
+                  </p>
                 )}
               </Section>
 
