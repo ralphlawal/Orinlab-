@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
-  Globe, Calendar, Mic2, FileText, Loader2, ExternalLink,
+  Globe, Calendar, Mic2, FileText, Loader2, ExternalLink, Trash2,
 } from "lucide-react";
 
 type Release = {
@@ -64,6 +64,8 @@ export default function ReleaseDetailPage() {
   const [release, setRelease] = useState<Release | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [takedownState, setTakedownState] = useState<"idle" | "confirm" | "sent">("idle");
+  const [sendingTakedown, setSendingTakedown] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -148,6 +150,68 @@ export default function ReleaseDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Takedown request — approved releases only */}
+      {release.status === "approved" && (
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <Trash2 size={16} className="text-red-400/60 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-white/50 text-sm font-medium mb-1">Request Takedown</p>
+              <p className="text-white/30 text-xs leading-relaxed mb-4">
+                If you want this release removed from all streaming platforms, submit a takedown request. Processing takes 3–5 business days.
+              </p>
+
+              {takedownState === "sent" ? (
+                <div className="flex items-center gap-2 text-green-400 text-xs">
+                  <CheckCircle2 size={14} /> Takedown request sent. Our team will be in touch.
+                </div>
+              ) : takedownState === "confirm" ? (
+                <div className="space-y-3">
+                  <p className="text-white/60 text-xs font-medium">Are you sure? This will remove your release from all platforms worldwide.</p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={async () => {
+                        setSendingTakedown(true);
+                        await fetch("/api/notify", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            type: "takedown-request",
+                            data: {
+                              artist_name: release.artist_name,
+                              song_title: release.song_title,
+                              release_type: release.release_type,
+                              release_id: release.id,
+                            },
+                          }),
+                        }).catch(() => {});
+                        setSendingTakedown(false);
+                        setTakedownState("sent");
+                      }}
+                      disabled={sendingTakedown}
+                      className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
+                    >
+                      {sendingTakedown ? <Loader2 size={13} className="animate-spin" /> : null}
+                      Yes, request takedown
+                    </button>
+                    <button onClick={() => setTakedownState("idle")} className="text-white/30 hover:text-white text-xs transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setTakedownState("confirm")}
+                  className="flex items-center gap-2 border border-red-400/20 hover:border-red-400/40 text-red-400/60 hover:text-red-400 text-xs font-medium px-4 py-2 rounded-xl transition-all"
+                >
+                  <Trash2 size={13} /> Request Takedown
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Approved — store links */}
       {release.status === "approved" && (

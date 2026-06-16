@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { submissionEmail, approvalEmail, rejectionEmail } from "@/lib/emails";
+import { submissionEmail, approvalEmail, rejectionEmail, liveEmail } from "@/lib/emails";
 
 const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
 
@@ -41,6 +41,14 @@ export async function POST(req: NextRequest) {
         artistName: release.artist_name,
         songTitle: release.song_title,
         notes: release.review_notes,
+      });
+    } else if (type === "live") {
+      subject = `Your music is live — ${release.song_title} 🎉`;
+      html = liveEmail({
+        artistName: release.artist_name,
+        songTitle: release.song_title,
+        releaseType: release.release_type,
+        storeLinks: release.store_links ?? {},
       });
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });

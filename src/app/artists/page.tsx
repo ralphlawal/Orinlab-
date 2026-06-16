@@ -10,10 +10,14 @@ export const metadata = {
     "Meet the independent African artists distributed and supported by Orinlabí.",
 };
 
+function slugify(name: string) {
+  return encodeURIComponent(name.trim());
+}
+
 async function getApprovedArtists() {
   const { data } = await supabase
     .from("releases")
-    .select("artist_name,genre,country,artist_bio,song_title,cover_art_url,submitted_at")
+    .select("artist_name,genre,country,artist_bio,song_title,cover_art_url,submitted_at,email")
     .eq("status", "approved")
     .order("submitted_at", { ascending: false });
 
@@ -21,12 +25,29 @@ async function getApprovedArtists() {
 
   // Deduplicate by artist_name — keep the most recent entry per artist
   const seen = new Set<string>();
-  return data.filter((r) => {
+  const artists = data.filter((r) => {
     const key = r.artist_name.toLowerCase().trim();
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+
+  // Fetch artist profiles for photo
+  const emails = artists.map((a) => a.email).filter(Boolean);
+  let profileMap: Record<string, string> = {};
+  if (emails.length) {
+    const { data: profiles } = await supabase
+      .from("artist_profiles")
+      .select("email,artist_image_url")
+      .in("email", emails);
+    if (profiles) {
+      for (const p of profiles) {
+        if (p.artist_image_url) profileMap[p.email] = p.artist_image_url;
+      }
+    }
+  }
+
+  return artists.map((a) => ({ ...a, profile_image_url: profileMap[a.email] ?? null }));
 }
 
 export default async function ArtistsPage() {
@@ -81,18 +102,21 @@ export default async function ArtistsPage() {
             <EmptyState />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {artists.map((a) => (
-                <div
+              {artists.map((a) => {
+                const heroImg = a.profile_image_url ?? a.cover_art_url;
+                return (
+                <Link
                   key={a.artist_name}
-                  className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-3xl overflow-hidden transition-all duration-300"
+                  href={`/artists/${slugify(a.artist_name)}`}
+                  className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-3xl overflow-hidden transition-all duration-300 block"
                 >
                   {/* Cover / avatar area */}
                   <div className="relative aspect-[4/3] bg-gradient-to-br from-[#007bff]/20 via-[#007bff]/5 to-black overflow-hidden flex items-center justify-center">
-                    {a.cover_art_url ? (
+                    {heroImg ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={a.cover_art_url}
-                        alt={`${a.artist_name} cover`}
+                        src={heroImg}
+                        alt={`${a.artist_name}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
@@ -140,8 +164,9 @@ export default async function ArtistsPage() {
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
+                </Link>
+                );
+              })}
             </div>
           )}
         </div>

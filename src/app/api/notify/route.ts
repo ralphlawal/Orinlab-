@@ -113,6 +113,32 @@ export async function POST(req: NextRequest) {
             </div>
           </div>
         </div>`;
+    } else if (type === "takedown-request") {
+      subject = `⚠️ Takedown request — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = `
+        <div style="font-family:Arial,sans-serif;max-width:580px;margin:0 auto;background:#f0f0f0;">
+          <div style="background:#050505;padding:20px 28px;border-radius:12px 12px 0 0;">
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+              alt="Orinlabí" width="110" height="30" style="display:block;border:0;" />
+          </div>
+          <div style="background:#ef4444;height:3px;font-size:1px;line-height:1px;">&nbsp;</div>
+          <div style="background:#ffffff;padding:28px;border-radius:0 0 12px 12px;">
+            <p style="color:#ef4444;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin:0 0 6px">Takedown Request</p>
+            <h2 style="margin:0 0 4px;font-size:20px;color:#111111;">An artist has requested a takedown</h2>
+            <p style="color:#888888;font-size:13px;margin:0 0 24px">Action required — process the removal from all streaming platforms.</p>
+            <table style="width:100%;border-collapse:collapse;border-top:1px solid #eeeeee;">
+              ${row("Artist", data.artist_name)}
+              ${row("Release", data.song_title)}
+              ${row("Type", data.release_type)}
+              ${row("Release ID", data.release_id)}
+            </table>
+            <div style="margin-top:24px">
+              <a href="https://orinlabi.com/admin/releases" style="background:#ef4444;color:#fff;text-decoration:none;padding:12px 24px;border-radius:100px;font-size:14px;font-weight:700;display:inline-block">
+                View in Admin Panel →
+              </a>
+            </div>
+          </div>
+        </div>`;
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }

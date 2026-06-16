@@ -61,7 +61,10 @@ export async function POST(req: NextRequest) {
         </tr>
         <tr>
           <td bgcolor="#f0f0f0" style="background:#f0f0f0;padding:20px 32px;text-align:center;color:#999999;font-size:12px;line-height:1.6;font-family:Arial,sans-serif;">
-            You subscribed with ${email}. To unsubscribe, reply to this email.<br/>
+            You subscribed with ${email}.<br/>
+            <a href="https://orinlabi.com/unsubscribe?email=${encodeURIComponent(email)}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
+            &nbsp;·&nbsp;
+            <a href="https://orinlabi.com" style="color:#999999;text-decoration:none;">orinlabi.com</a><br/>
             ℗ 2026 Orinlabí &nbsp;·&nbsp; A Ralph Lawal Group Company
           </td>
         </tr>

@@ -77,6 +77,9 @@ export default function ReleasesPage() {
   const [linksSaved, setLinksSaved] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null | undefined>(undefined);
+  const [search, setSearch] = useState("");
+  const [notifyingLive, setNotifyingLive] = useState(false);
+  const [liveNotified, setLiveNotified] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -89,11 +92,24 @@ export default function ReleasesPage() {
 
   useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  async function notifyLive() {
+    if (!selected) return;
+    setNotifyingLive(true);
+    await fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "live", release: { ...selected, store_links: storeLinks } }),
+    }).catch(() => {});
+    setNotifyingLive(false);
+    setLiveNotified(true);
+  }
+
   function openRelease(r: Release) {
     setSelected(r);
     setNotes(r.review_notes ?? "");
     setStoreLinks(r.store_links ?? {});
     setLinksSaved(false);
+    setLiveNotified(false);
     setArtistProfile(undefined); // loading state
     supabase
       .from("artist_profiles")
@@ -162,19 +178,28 @@ export default function ReleasesPage() {
           <p className="text-white/40 text-sm mt-1">Review and manage artist submissions.</p>
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-2 bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl">
-          {(["pending", "approved", "rejected", "all"] as Filter[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-colors ${
-                filter === f ? "bg-[#007bff] text-white" : "text-white/40 hover:text-white"
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {/* Search */}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search artist or title…"
+            className="bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/25 text-sm px-4 py-2 rounded-xl transition-colors w-full sm:w-52"
+          />
+          {/* Filter tabs */}
+          <div className="flex gap-2 bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl">
+            {(["pending", "approved", "rejected", "all"] as Filter[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-colors ${
+                  filter === f ? "bg-[#007bff] text-white" : "text-white/40 hover:text-white"
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -188,7 +213,7 @@ export default function ReleasesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {releases.map((r) => (
+          {releases.filter((r) => !search || r.artist_name.toLowerCase().includes(search.toLowerCase()) || r.song_title.toLowerCase().includes(search.toLowerCase())).map((r) => (
             <div
               key={r.id}
               className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] rounded-2xl p-5 transition-colors"
@@ -334,10 +359,14 @@ export default function ReleasesPage() {
               {/* Files */}
               <Section title="Files">
                 {selected.audio_file_url && (
-                  <a href={selected.audio_file_url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[#007bff] text-sm hover:underline">
-                    <FileAudio size={15} /> Listen to audio file
-                  </a>
+                  <>
+                    {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                    <audio controls src={selected.audio_file_url} className="w-full mt-1 rounded-xl" style={{ height: 36 }} />
+                    <a href={selected.audio_file_url} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-[#007bff] text-xs hover:underline mt-1">
+                      <FileAudio size={13} /> Open file in new tab
+                    </a>
+                  </>
                 )}
                 {selected.cover_art_url && (
                   <>
@@ -416,14 +445,24 @@ export default function ReleasesPage() {
                       </div>
                     ))}
                   </div>
-                  <button
-                    onClick={saveStoreLinks}
-                    disabled={savingLinks}
-                    className="mt-3 flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors"
-                  >
-                    {savingLinks ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
-                    {linksSaved ? "Links Saved ✓" : "Save Store Links"}
-                  </button>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      onClick={saveStoreLinks}
+                      disabled={savingLinks}
+                      className="flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors"
+                    >
+                      {savingLinks ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
+                      {linksSaved ? "Links Saved ✓" : "Save Store Links"}
+                    </button>
+                    <button
+                      onClick={notifyLive}
+                      disabled={notifyingLive || liveNotified}
+                      className="flex items-center gap-2 text-xs font-semibold bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 text-green-400 px-4 py-2 rounded-lg transition-colors"
+                    >
+                      {notifyingLive ? <Loader2 size={12} className="animate-spin" /> : null}
+                      {liveNotified ? "Artist Notified ✓" : "Email Artist: Music is Live"}
+                    </button>
+                  </div>
                 </Section>
               )}
 

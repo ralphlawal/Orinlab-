@@ -70,22 +70,22 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       {/* Portal top bar */}
       <div className="bg-black/80 border-b border-white/[0.06] backdrop-blur sticky top-16 z-30">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-none min-w-0">
             <div className="w-6 h-6 bg-[#007bff]/20 rounded-lg flex items-center justify-center">
               <Music2 size={13} className="text-[#007bff]" />
             </div>
             <span className="text-white/60 text-xs font-medium hidden sm:block">Artist Portal</span>
-            <span className="text-white/20 text-xs hidden sm:block">·</span>
-            <Link href="/portal" className={`text-xs font-medium transition-colors ${pathname === "/portal" ? "text-white" : "text-white/40 hover:text-white"}`}>
-              My Releases
+            <span className="text-white/20 text-xs hidden sm:block flex-shrink-0">·</span>
+            <Link href="/portal" className={`text-xs font-medium transition-colors flex-shrink-0 ${pathname === "/portal" ? "text-white" : "text-white/40 hover:text-white"}`}>
+              Releases
             </Link>
-            <span className="text-white/20 text-xs">·</span>
-            <Link href="/portal/assets" className={`text-xs font-medium transition-colors ${pathname.startsWith("/portal/assets") ? "text-white" : "text-white/40 hover:text-white"}`}>
-              My Assets
+            <span className="text-white/20 text-xs flex-shrink-0">·</span>
+            <Link href="/portal/assets" className={`text-xs font-medium transition-colors flex-shrink-0 ${pathname.startsWith("/portal/assets") ? "text-white" : "text-white/40 hover:text-white"}`}>
+              Assets
             </Link>
-            <span className="text-white/20 text-xs">·</span>
-            <Link href="/portal/profile" className={`text-xs font-medium transition-colors ${pathname.startsWith("/portal/profile") ? "text-white" : "text-white/40 hover:text-white"}`}>
-              My Profile
+            <span className="text-white/20 text-xs flex-shrink-0">·</span>
+            <Link href="/portal/profile" className={`text-xs font-medium transition-colors flex-shrink-0 ${pathname.startsWith("/portal/profile") ? "text-white" : "text-white/40 hover:text-white"}`}>
+              Profile
             </Link>
           </div>
           <div className="flex items-center gap-3">

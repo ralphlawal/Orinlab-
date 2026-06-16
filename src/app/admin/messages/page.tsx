@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, CheckCheck } from "lucide-react";
+
+const READ_KEY = "orinlabi_read_messages";
 
 type Message = {
   id: string;
@@ -18,6 +20,23 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Message | null>(null);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(READ_KEY) ?? "[]") as string[];
+      setReadIds(new Set(stored));
+    } catch { /* ignore */ }
+  }, []);
+
+  function markRead(id: string) {
+    setReadIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      try { localStorage.setItem(READ_KEY, JSON.stringify([...next])); } catch { /* ignore */ }
+      return next;
+    });
+  }
 
   useEffect(() => {
     supabase
@@ -47,16 +66,19 @@ export default function MessagesPage() {
         <div className="text-center py-20 text-white/30">No messages yet.</div>
       ) : (
         <div className="space-y-3">
-          {messages.map((m) => (
+          {messages.map((m) => {
+            const isRead = readIds.has(m.id);
+            return (
             <button
               key={m.id}
-              onClick={() => setSelected(m)}
-              className="w-full text-left bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl p-5 transition-all duration-200"
+              onClick={() => { setSelected(m); markRead(m.id); }}
+              className={`w-full text-left hover:bg-white/[0.06] border rounded-2xl p-5 transition-all duration-200 ${isRead ? "bg-white/[0.02] border-white/[0.04]" : "bg-white/[0.05] border-white/[0.1] hover:border-[#007bff]/30"}`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 min-w-0">
-                  <div className="w-10 h-10 bg-[#007bff]/10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-10 h-10 bg-[#007bff]/10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 relative">
                     <Mail size={16} className="text-[#007bff]" />
+                    {!isRead && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#007bff] rounded-full" />}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-3 flex-wrap">
@@ -74,16 +96,16 @@ export default function MessagesPage() {
                     <p className="text-white/40 text-sm mt-1 truncate">{m.message}</p>
                   </div>
                 </div>
-                <p className="text-white/30 text-xs flex-shrink-0 mt-1">
-                  {new Date(m.created_at).toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <p className="text-white/30 text-xs mt-1">
+                    {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                  {isRead && <CheckCheck size={13} className="text-white/20" />}
+                </div>
               </div>
             </button>
-          ))}
+            );
+          })}
         </div>
       )}
 

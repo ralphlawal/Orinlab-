@@ -130,7 +130,43 @@ export function approvalEmail(data: {
   `);
 }
 
-/* ── 3. Rejection ── */
+/* ── 3. Release Live ── */
+export function liveEmail(data: {
+  artistName: string;
+  songTitle: string;
+  releaseType: string;
+  storeLinks: Record<string, string>;
+}) {
+  const platformNames: Record<string, string> = {
+    spotify: "Spotify", apple_music: "Apple Music", boomplay: "Boomplay",
+    audiomack: "Audiomack", youtube_music: "YouTube Music", deezer: "Deezer",
+    tidal: "TIDAL", amazon_music: "Amazon Music",
+  };
+  const linkRows = Object.entries(data.storeLinks)
+    .filter(([, url]) => url?.trim())
+    .map(([key, url]) => {
+      const label = platformNames[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      return `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><a href="${url}" style="color:#007bff;font-size:14px;font-weight:600;text-decoration:none;font-family:Arial,sans-serif;">${label} &rarr;</a></td></tr>`;
+    })
+    .join("");
+
+  return base(`
+    ${badge("Your Music is Live!", "#16a34a", "#dcfce7")}
+    ${h1(`${data.songTitle} is streaming worldwide, ${data.artistName}!`)}
+    ${p(`Your ${data.releaseType.toLowerCase()} is officially live on streaming platforms around the world. Start sharing your links and let your fans know.`)}
+    ${divider()}
+    <p style="margin:0 0 12px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">STREAMING LINKS</p>
+    <table cellpadding="0" cellspacing="0" width="100%">${linkRows}</table>
+    ${divider()}
+    ${p("Log in to your Artist Portal to see all your streaming links and check your distribution details.")}
+    ${btn("Open My Portal", "https://orinlabi.com/portal/login")}
+    <p style="margin:16px 0 0;font-size:13px;color:#999999;font-family:Arial,sans-serif;">
+      Questions? Email us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>
+    </p>
+  `);
+}
+
+/* ── 4. Rejection ── */
 export function rejectionEmail(data: {
   artistName: string;
   songTitle: string;
