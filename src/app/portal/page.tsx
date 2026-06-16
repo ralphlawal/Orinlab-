@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
   Music2, Clock, CheckCircle2, XCircle,
-  ChevronRight, Loader2, ArrowRight, UserCircle2,
+  ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
 } from "lucide-react";
 
 type Release = {
@@ -76,13 +76,23 @@ export default function PortalDashboard() {
   return (
     <section className="max-w-3xl mx-auto px-4 py-12">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-white font-bold text-3xl">
-          {artistName ? `Welcome back, ${artistName}.` : "Your Releases"}
-        </h1>
-        <p className="text-white/40 text-sm mt-2">
-          Track the status of your applications and approved distributions.
-        </p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-white font-bold text-3xl">
+            {artistName ? `Welcome back, ${artistName}.` : "Your Releases"}
+          </h1>
+          <p className="text-white/40 text-sm mt-2">
+            Track the status of your applications and approved distributions.
+          </p>
+        </div>
+        {releases.some((r) => r.status === "approved") && (
+          <Link
+            href="/portal/releases/new"
+            className="flex-shrink-0 inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-5 py-2.5 rounded-full text-sm transition-colors"
+          >
+            <PlusCircle size={16} /> New Release
+          </Link>
+        )}
       </div>
 
       {/* Profile completion banner */}
@@ -166,15 +176,24 @@ export default function PortalDashboard() {
             );
           })}
 
-          {/* Apply again CTA */}
+          {/* Submit more music CTA */}
           <div className="mt-8 pt-8 border-t border-white/[0.06] text-center">
             <p className="text-white/30 text-sm mb-4">Have more music to release?</p>
-            <Link
-              href="/submit"
-              className="inline-flex items-center gap-2 border border-white/10 hover:border-[#007bff]/40 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all"
-            >
-              Submit Another Application <ArrowRight size={15} />
-            </Link>
+            {releases.some((r) => r.status === "approved") ? (
+              <Link
+                href="/portal/releases/new"
+                className="inline-flex items-center gap-2 border border-[#007bff]/30 hover:border-[#007bff]/60 text-[#007bff]/70 hover:text-[#007bff] font-medium px-6 py-3 rounded-full text-sm transition-all"
+              >
+                <PlusCircle size={15} /> Submit a New Release <ArrowRight size={15} />
+              </Link>
+            ) : (
+              <Link
+                href="/submit"
+                className="inline-flex items-center gap-2 border border-white/10 hover:border-[#007bff]/40 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all"
+              >
+                Submit Another Application <ArrowRight size={15} />
+              </Link>
+            )}
           </div>
         </div>
       )}

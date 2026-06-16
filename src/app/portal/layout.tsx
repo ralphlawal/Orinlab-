@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { LogOut, Loader2, Music2 } from "lucide-react";
+import { LogOut, Loader2, Music2, PlusCircle } from "lucide-react";
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -86,6 +86,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <span className="text-white/20 text-xs flex-shrink-0">·</span>
             <Link href="/portal/profile" className={`text-xs font-medium transition-colors flex-shrink-0 ${pathname.startsWith("/portal/profile") ? "text-white" : "text-white/40 hover:text-white"}`}>
               Profile
+            </Link>
+            <span className="text-white/20 text-xs flex-shrink-0">·</span>
+            <Link href="/portal/releases/new" className={`flex items-center gap-1 text-xs font-medium transition-colors flex-shrink-0 ${pathname.startsWith("/portal/releases/new") ? "text-[#007bff]" : "text-white/40 hover:text-[#007bff]"}`}>
+              <PlusCircle size={11} /> New Release
             </Link>
           </div>
           <div className="flex items-center gap-3">
