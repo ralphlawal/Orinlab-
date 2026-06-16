@@ -75,7 +75,7 @@ export default function SubmitPage() {
       const { error: dbError } = await supabase.from("releases").insert({
         artist_name: data.get("artistName"),
         legal_name: data.get("legalName"),
-        email: data.get("email"),
+        email: (data.get("email") as string)?.toLowerCase().trim(),
         phone: data.get("phone"),
         country: data.get("country"),
         artist_bio: data.get("artistBio"),

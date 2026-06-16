@@ -29,45 +29,40 @@ export async function POST(req: NextRequest) {
       subject: "Welcome to the Orinlabí Blog",
       html: `
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#000;padding:40px 20px;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#0a0a0a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;max-width:560px;width:100%;">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Orinlabí</title></head>
+<body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0" style="background:#f0f0f0;padding:0;">
+    <tr><td align="center" bgcolor="#f0f0f0" style="background:#f0f0f0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
-          <td style="background:#007bff;padding:32px 40px;text-align:center;">
-            <p style="margin:0;color:#fff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">Orinlabí</p>
-            <p style="margin:6px 0 0;color:rgba(255,255,255,0.7);font-size:13px;">The Blog</p>
+          <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:16px 16px 0 0;" align="left">
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+              alt="Orinlabí" width="130" height="35" style="display:block;border:0;outline:none;" />
           </td>
         </tr>
+        <tr><td bgcolor="#007bff" style="background:#007bff;height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
         <tr>
-          <td style="padding:40px;">
-            <h2 style="margin:0 0 16px;color:#fff;font-size:22px;font-weight:700;">You're subscribed!</h2>
-            <p style="margin:0 0 20px;color:rgba(255,255,255,0.6);font-size:15px;line-height:1.7;">
-              Thanks for subscribing to the Orinlabí Blog. You'll get the latest
-              music industry news, artist tips, marketing guides, and distribution
-              insights delivered straight to your inbox.
+          <td bgcolor="#ffffff" style="background:#ffffff;padding:36px 32px;border-radius:0 0 16px 16px;">
+            <span style="display:inline-block;background:#e8f0fe;color:#007bff;font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;margin-bottom:20px;font-family:Arial,sans-serif;">Subscribed ✓</span>
+            <h2 style="margin:0 0 12px;color:#111111;font-size:22px;font-weight:700;font-family:Arial,sans-serif;">You're on the list!</h2>
+            <p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.7;font-family:Arial,sans-serif;">
+              Thanks for subscribing to the Orinlabí Blog. You'll get the latest music industry news, artist tips, marketing guides, and distribution insights — straight to your inbox.
             </p>
-            <p style="margin:0 0 32px;color:rgba(255,255,255,0.6);font-size:15px;line-height:1.7;">
+            <hr style="border:none;border-top:1px solid #eeeeee;margin:24px 0;"/>
+            <p style="margin:0 0 24px;color:#555555;font-size:14px;line-height:1.7;font-family:Arial,sans-serif;">
               In the meantime, explore our latest posts on the blog.
             </p>
-            <div style="text-align:center;">
-              <a href="https://orinlabi.com/blog"
-                style="background:#007bff;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:14px 32px;border-radius:100px;display:inline-block;">
-                Visit the Blog
-              </a>
-            </div>
+            <a href="https://orinlabi.com/blog"
+              style="display:inline-block;background:#007bff;color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;padding:14px 30px;border-radius:999px;font-family:Arial,sans-serif;">
+              Visit the Blog
+            </a>
           </td>
         </tr>
         <tr>
-          <td style="padding:24px 40px;border-top:1px solid rgba(255,255,255,0.06);text-align:center;">
-            <p style="margin:0;color:rgba(255,255,255,0.25);font-size:12px;">
-              You subscribed with ${email}. To unsubscribe, reply to this email.
-            </p>
-            <p style="margin:8px 0 0;color:rgba(255,255,255,0.15);font-size:11px;">
-              ℗ 2026 Orinlabí · A Ralph Lawal Group Company
-            </p>
+          <td bgcolor="#f0f0f0" style="background:#f0f0f0;padding:20px 32px;text-align:center;color:#999999;font-size:12px;line-height:1.6;font-family:Arial,sans-serif;">
+            You subscribed with ${email}. To unsubscribe, reply to this email.<br/>
+            ℗ 2026 Orinlabí &nbsp;·&nbsp; A Ralph Lawal Group Company
           </td>
         </tr>
       </table>

@@ -117,6 +117,15 @@ export default function ReleasesPage() {
     load();
   }
 
+  async function saveNotes() {
+    if (!selected) return;
+    setUpdating(true);
+    await supabase.from("releases").update({ review_notes: notes }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, review_notes: notes } : s);
+    setUpdating(false);
+    load();
+  }
+
   async function updateStatus(id: string, status: "approved" | "rejected") {
     if (!selected) return;
     setUpdating(true);
@@ -434,33 +443,44 @@ export default function ReleasesPage() {
             </div>
 
             {/* Actions */}
-            <div className="p-6 border-t border-white/[0.06] flex gap-3">
+            <div className="p-6 border-t border-white/[0.06] space-y-3">
+              {/* Save notes without changing status */}
               <button
-                onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setLinksSaved(false); setArtistProfile(undefined); }}
-                className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
+                onClick={saveNotes}
+                disabled={updating}
+                className="w-full text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
-                Cancel
+                {updating ? <Loader2 size={13} className="animate-spin" /> : null}
+                Save Notes
               </button>
-              {selected.status !== "approved" && (
+              <div className="flex gap-3">
                 <button
-                  onClick={() => updateStatus(selected.id, "approved")}
-                  disabled={updating}
-                  className="flex-1 text-sm font-semibold bg-green-500 hover:bg-green-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setLinksSaved(false); setArtistProfile(undefined); }}
+                  className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
-                  {updating ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
-                  Approve
+                  Cancel
                 </button>
-              )}
-              {selected.status !== "rejected" && (
-                <button
-                  onClick={() => updateStatus(selected.id, "rejected")}
-                  disabled={updating}
-                  className="flex-1 text-sm font-semibold bg-red-500 hover:bg-red-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  {updating ? <Loader2 size={15} className="animate-spin" /> : <XCircle size={15} />}
-                  Reject
-                </button>
-              )}
+                {selected.status !== "approved" && (
+                  <button
+                    onClick={() => updateStatus(selected.id, "approved")}
+                    disabled={updating}
+                    className="flex-1 text-sm font-semibold bg-green-500 hover:bg-green-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    {updating ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
+                    Approve
+                  </button>
+                )}
+                {selected.status !== "rejected" && (
+                  <button
+                    onClick={() => updateStatus(selected.id, "rejected")}
+                    disabled={updating}
+                    className="flex-1 text-sm font-semibold bg-red-500 hover:bg-red-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    {updating ? <Loader2 size={15} className="animate-spin" /> : <XCircle size={15} />}
+                    Reject
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -501,6 +521,3 @@ function Row({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-function Clock({ size, className }: { size: number; className?: string }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-}
