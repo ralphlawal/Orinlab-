@@ -15,11 +15,13 @@ import {
   Loader2,
   Menu,
   X,
+  Palette,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
   { label: "Releases", href: "/admin/releases", icon: <Music size={18} /> },
+  { label: "Assets", href: "/admin/assets", icon: <Palette size={18} /> },
   { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} /> },
   { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} /> },
   { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} /> },

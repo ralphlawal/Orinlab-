@@ -80,6 +80,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               My Releases
             </Link>
             <span className="text-white/20 text-xs">·</span>
+            <Link href="/portal/assets" className={`text-xs font-medium transition-colors ${pathname.startsWith("/portal/assets") ? "text-white" : "text-white/40 hover:text-white"}`}>
+              My Assets
+            </Link>
+            <span className="text-white/20 text-xs">·</span>
             <Link href="/portal/profile" className={`text-xs font-medium transition-colors ${pathname.startsWith("/portal/profile") ? "text-white" : "text-white/40 hover:text-white"}`}>
               My Profile
             </Link>
