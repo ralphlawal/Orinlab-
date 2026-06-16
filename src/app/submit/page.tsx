@@ -29,6 +29,17 @@ export default function SubmitPage() {
     e.preventDefault();
     if (!agreed) return;
 
+    if (!audioFile) {
+      setErrorMsg("Please upload your audio file before submitting.");
+      setState("error");
+      return;
+    }
+    if (!coverFile) {
+      setErrorMsg("Please upload your cover artwork before submitting.");
+      setState("error");
+      return;
+    }
+
     const form = e.currentTarget;
     const data = new FormData(form);
 
@@ -126,9 +137,20 @@ export default function SubmitPage() {
       }).catch(() => {});
 
       setState("success");
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg("Something went wrong. Please try again or contact support.");
+      const msg = err && typeof err === "object" && "message" in err
+        ? String((err as { message: unknown }).message)
+        : "";
+      if (msg.toLowerCase().includes("storage") || msg.toLowerCase().includes("bucket")) {
+        setErrorMsg("File upload failed. Please check your files and try again.");
+      } else if (msg.toLowerCase().includes("row-level") || msg.toLowerCase().includes("policy") || msg.toLowerCase().includes("permission")) {
+        setErrorMsg("Submission blocked by a permissions error. Please contact info@orinlabi.com.");
+      } else if (msg) {
+        setErrorMsg(`Submission failed: ${msg}`);
+      } else {
+        setErrorMsg("Something went wrong. Please try again or contact info@orinlabi.com.");
+      }
       setState("error");
     }
   }
