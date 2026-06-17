@@ -127,21 +127,64 @@ export async function POST(req: NextRequest) {
     let html    = "";
 
     if (type === "new-submission") {
-      subject = `New application — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      const isAlbum = data.release_type === "Album" || data.release_type === "EP";
+      const tracks: { track_number: number; title: string; audio_file_url: string }[] =
+        Array.isArray(data.tracks) ? data.tracks : [];
+
+      const coverBlock = data.cover_art_url
+        ? `<div style="margin:20px 0 8px;">
+            <p style="margin:0 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Cover Art</p>
+            <a href="${esc(data.cover_art_url)}" target="_blank">
+              <img src="${esc(data.cover_art_url)}" alt="Cover Art" width="160" height="160"
+                style="display:block;border-radius:10px;object-fit:cover;border:1px solid #eeeeee;" />
+            </a>
+            <a href="${esc(data.cover_art_url)}" style="display:inline-block;margin-top:6px;color:#007bff;font-size:12px;font-family:Arial,sans-serif;">Download cover art ↗</a>
+          </div>`
+        : "";
+
+      const tracksBlock = isAlbum && tracks.length > 0
+        ? `<div style="margin:24px 0 0;">
+            <p style="margin:0 0 10px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Tracks (${tracks.length})</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eeeeee;border-radius:10px;overflow:hidden;">
+              ${tracks.map(t => `
+              <tr>
+                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;font-family:Arial,sans-serif;">
+                  <span style="color:#007bff;font-size:11px;font-weight:700;margin-right:10px;">${t.track_number}</span>
+                  <span style="color:#111111;font-size:13px;">${esc(t.title)}</span>
+                </td>
+                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;text-align:right;">
+                  <a href="${esc(t.audio_file_url)}" style="color:#007bff;font-size:12px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;">Download ↗</a>
+                </td>
+              </tr>`).join("")}
+            </table>
+          </div>`
+        : data.audio_file_url
+          ? `<div style="margin:20px 0 0;">
+              <p style="margin:0 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Audio File</p>
+              <a href="${esc(data.audio_file_url)}" style="display:inline-block;background:#f0f7ff;border:1px solid #cce0ff;border-radius:8px;padding:10px 18px;color:#007bff;font-size:13px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif;">
+                ▶ Download audio file ↗
+              </a>
+            </div>`
+          : "";
+
+      subject = `New ${isAlbum ? data.release_type : "release"} — ${esc(data.artist_name)} · ${esc(isAlbum ? (data.album_title || data.song_title) : data.song_title)}`;
       html = wrap(
         "#007bff",
-        "Admin Alert",
-        "New Distribution Application",
-        "An artist just applied to distribute with Orinlabí.",
+        "New Submission",
+        isAlbum ? `New ${data.release_type}: ${esc(data.album_title || data.song_title)}` : `New Release: ${esc(data.song_title)}`,
+        `${esc(data.artist_name)} just submitted ${isAlbum ? `a${data.release_type === "EP" ? "n" : ""} ${data.release_type}` : "a single"} for distribution.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
-          ${row("Artist Name",   data.artist_name)}
-          ${row("Song Title",    data.song_title)}
+          ${row("Artist",        data.artist_name)}
+          ${isAlbum ? row(`${data.release_type} Title`, data.album_title || data.song_title) : row("Song Title", data.song_title)}
           ${row("Release Type",  data.release_type)}
           ${row("Genre",         data.genre)}
+          ${data.release_date ? row("Desired Date", data.release_date) : ""}
           ${row("Email",         data.email)}
           ${row("Phone",         data.phone)}
           ${row("Country",       data.country)}
         </table>
+        ${coverBlock}
+        ${tracksBlock}
         ${btn("Review in Admin Panel", "https://orinlabi.com/admin/releases")}`
       );
 
