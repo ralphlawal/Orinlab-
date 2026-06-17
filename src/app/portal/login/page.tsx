@@ -4,47 +4,69 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Mail, CheckCircle2 } from "lucide-react";
+import { Loader2, Mail, KeyRound } from "lucide-react";
 
 export default function PortalLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Redirect already-authenticated users straight to the portal
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace("/portal");
     });
   }, [router]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function sendCode(e: React.FormEvent) {
     e.preventDefault();
-    setState("loading");
+    setLoading(true);
+    setError("");
 
     const { error: authError } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        shouldCreateUser: true,
-      },
+      options: { shouldCreateUser: true },
     });
+
+    setLoading(false);
 
     if (authError) {
       const msg = authError.message.toLowerCase();
-      if (msg.includes("not allowed") || msg.includes("disabled")) {
-        setError("Sign-ins are currently restricted. Please contact info@orinlabi.com for access.");
-      } else if (msg.includes("rate limit") || msg.includes("too many")) {
+      if (msg.includes("rate limit") || msg.includes("too many")) {
         setError("Too many attempts. Please wait a few minutes and try again.");
       } else if (msg.includes("invalid email") || msg.includes("unable to validate")) {
         setError("That email address doesn't look valid. Please check and try again.");
       } else {
-        setError(authError.message || "Something went wrong. Please try again or contact info@orinlabi.com.");
+        setError(authError.message || "Something went wrong. Please try again.");
       }
-      setState("error");
     } else {
-      setState("sent");
+      setStep("code");
+    }
+  }
+
+  async function verifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: code.trim(),
+      type: "email",
+    });
+
+    setLoading(false);
+
+    if (verifyError) {
+      if (verifyError.message.toLowerCase().includes("expired") || verifyError.message.toLowerCase().includes("invalid")) {
+        setError("That code is invalid or has expired. Request a new one.");
+      } else {
+        setError(verifyError.message || "Could not verify the code. Please try again.");
+      }
+    } else {
+      router.replace("/portal");
     }
   }
 
@@ -63,38 +85,16 @@ export default function PortalLoginPage() {
           />
         </div>
 
-        {state === "sent" ? (
-          <div className="text-center">
-            <div className="w-16 h-16 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 size={32} className="text-[#007bff]" />
-            </div>
-            <h2 className="text-white font-bold text-2xl mb-3">Check your email</h2>
-            <p className="text-white/50 leading-relaxed text-sm">
-              We sent a login link to{" "}
-              <strong className="text-white">{email}</strong>.
-              Click it to access your artist portal.
-            </p>
-            <p className="text-white/30 text-xs mt-4">
-              Didn&apos;t get it? Check your spam folder or{" "}
-              <button
-                onClick={() => setState("idle")}
-                className="text-[#007bff] hover:underline"
-              >
-                try again
-              </button>
-              .
-            </p>
-          </div>
-        ) : (
+        {step === "email" ? (
           <>
             <div className="text-center mb-8">
               <h1 className="text-white font-bold text-2xl mb-2">Artist Portal</h1>
               <p className="text-white/50 text-sm">
-                Enter the email you used to apply. We&apos;ll send you a login link.
+                Enter your email and we&apos;ll send you a 6-digit login code.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={sendCode} className="space-y-4">
               <div>
                 <label className="block text-white/60 text-xs font-medium mb-2">
                   Email Address
@@ -104,25 +104,24 @@ export default function PortalLoginPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); setState("idle"); }}
+                    onChange={(e) => { setEmail(e.target.value); setError(""); }}
                     placeholder="your@email.com"
                     required
+                    autoFocus
                     className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm pl-10 pr-4 py-3.5 rounded-xl transition-colors"
                   />
                 </div>
               </div>
 
-              {state === "error" && (
-                <p className="text-red-400 text-xs">{error}</p>
-              )}
+              {error && <p className="text-red-400 text-xs">{error}</p>}
 
               <button
                 type="submit"
-                disabled={state === "loading"}
+                disabled={loading}
                 className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
-                {state === "loading" && <Loader2 size={16} className="animate-spin" />}
-                Send Login Link
+                {loading && <Loader2 size={16} className="animate-spin" />}
+                Send Code
               </button>
             </form>
 
@@ -132,6 +131,58 @@ export default function PortalLoginPage() {
                 Apply for distribution
               </a>
             </p>
+          </>
+        ) : (
+          <>
+            <div className="text-center mb-8">
+              <div className="w-14 h-14 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                <KeyRound size={26} className="text-[#007bff]" />
+              </div>
+              <h1 className="text-white font-bold text-2xl mb-2">Enter your code</h1>
+              <p className="text-white/50 text-sm leading-relaxed">
+                We sent a 6-digit code to{" "}
+                <strong className="text-white">{email}</strong>.
+                <br />Check your inbox (and spam folder).
+              </p>
+            </div>
+
+            <form onSubmit={verifyCode} className="space-y-4">
+              <div>
+                <label className="block text-white/60 text-xs font-medium mb-2">
+                  6-Digit Code
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="\d{6}"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(""); }}
+                  placeholder="000000"
+                  required
+                  autoFocus
+                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-center text-2xl font-bold tracking-[0.5em] py-4 rounded-xl transition-colors"
+                />
+              </div>
+
+              {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={loading || code.length !== 6}
+                className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {loading && <Loader2 size={16} className="animate-spin" />}
+                Sign In
+              </button>
+            </form>
+
+            <button
+              onClick={() => { setStep("email"); setCode(""); setError(""); }}
+              className="w-full text-center text-white/30 hover:text-white/60 text-xs mt-5 transition-colors"
+            >
+              Use a different email or resend code
+            </button>
           </>
         )}
       </div>
