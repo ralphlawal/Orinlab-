@@ -31,7 +31,7 @@ async function getArtist(slug: string) {
   if (email) {
     const { data } = await supabase
       .from("artist_profiles")
-      .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id")
+      .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id,bio,country")
       .eq("email", email)
       .maybeSingle();
     profile = data;
@@ -48,6 +48,9 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const { releases, profile, artistName } = data;
   const latest = releases[0];
   const heroImg = profile?.artist_image_url ?? latest.cover_art_url;
+  // Prefer up-to-date profile data over original application data
+  const displayBio = (profile as { bio?: string | null } | null)?.bio || latest.artist_bio;
+  const displayCountry = (profile as { country?: string | null } | null)?.country || latest.country;
 
   const socials = [
     profile?.instagram_handle && { label: "Instagram", href: `https://instagram.com/${profile.instagram_handle}`, handle: `@${profile.instagram_handle}` },
@@ -96,15 +99,15 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                     {latest.genre}
                   </span>
                 )}
-                {latest.country && (
+                {displayCountry && (
                   <span className="flex items-center gap-1.5 bg-white/[0.05] border border-white/[0.08] text-white/50 text-xs px-3 py-1.5 rounded-full">
-                    <Globe size={11} /> {latest.country}
+                    <Globe size={11} /> {displayCountry}
                   </span>
                 )}
               </div>
 
-              {latest.artist_bio && (
-                <p className="text-white/60 text-base leading-relaxed mb-6 max-w-xl">{latest.artist_bio}</p>
+              {displayBio && (
+                <p className="text-white/60 text-base leading-relaxed mb-6 max-w-xl">{displayBio}</p>
               )}
 
               {/* Socials */}

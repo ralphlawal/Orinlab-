@@ -93,12 +93,30 @@ export default function AdminAssetsPage() {
   async function save() {
     if (!selected) return;
     setSaving(true);
+    const wasCompleted = selected.status === "completed";
     await supabase.from("asset_requests").update({
       status,
       admin_notes: adminNotes || null,
       delivered_assets: Object.keys(delivered).length ? delivered : null,
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
+
+    // Email artist the first time their request is marked completed
+    if (status === "completed" && !wasCompleted) {
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "asset-completed",
+          data: {
+            email: selected.email,
+            asset_types: selected.asset_types,
+            delivered_assets: Object.keys(delivered).length ? delivered : null,
+          },
+        }),
+      }).catch(() => {});
+    }
+
     setSaving(false);
     setSaveOk(true);
     setSelected((s) => s ? { ...s, status, admin_notes: adminNotes || null, delivered_assets: Object.keys(delivered).length ? delivered : null } : s);

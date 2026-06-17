@@ -185,12 +185,13 @@ export default function ProfilePage() {
       return;
     }
 
-    // Sync artist name to all their releases
-    if (profile.artist_name) {
-      await supabase
-        .from("releases")
-        .update({ artist_name: profile.artist_name })
-        .eq("email", email);
+    // Sync identity fields to releases (powers the public artist showcase pages)
+    const releaseSync: Record<string, string> = {};
+    if (profile.artist_name) releaseSync.artist_name = profile.artist_name;
+    if (profile.bio)         releaseSync.artist_bio  = profile.bio;
+    if (profile.country)     releaseSync.country     = profile.country;
+    if (Object.keys(releaseSync).length > 0) {
+      await supabase.from("releases").update(releaseSync).eq("email", email);
     }
 
     setProfile(p => ({ ...p, artist_image_url: imageUrl }));

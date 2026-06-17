@@ -32,22 +32,35 @@ async function getApprovedArtists() {
     return true;
   });
 
-  // Fetch artist profiles for photo
+  // Fetch artist profiles for photo, bio, and country (prefer profile data over application data)
   const emails = artists.map((a) => a.email).filter(Boolean);
-  let profileMap: Record<string, string> = {};
+  type PMap = { artist_image_url: string | null; bio: string | null; country: string | null };
+  let profileMap: Record<string, PMap> = {};
   if (emails.length) {
     const { data: profiles } = await supabase
       .from("artist_profiles")
-      .select("email,artist_image_url")
+      .select("email,artist_image_url,bio,country")
       .in("email", emails);
     if (profiles) {
       for (const p of profiles) {
-        if (p.artist_image_url) profileMap[p.email] = p.artist_image_url;
+        profileMap[p.email] = {
+          artist_image_url: p.artist_image_url ?? null,
+          bio: p.bio ?? null,
+          country: p.country ?? null,
+        };
       }
     }
   }
 
-  return artists.map((a) => ({ ...a, profile_image_url: profileMap[a.email] ?? null }));
+  return artists.map((a) => {
+    const prof = profileMap[a.email];
+    return {
+      ...a,
+      profile_image_url: prof?.artist_image_url ?? null,
+      artist_bio: prof?.bio || a.artist_bio,
+      country: prof?.country || a.country,
+    };
+  });
 }
 
 export default async function ArtistsPage() {

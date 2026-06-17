@@ -299,6 +299,28 @@ export async function POST(req: NextRequest) {
         ${btn("Open Chat in Admin Panel", "https://orinlabi.com/admin/messages")}`
       );
 
+    } else if (type === "asset-completed") {
+      const assetList = (data.asset_types as string[])
+        .map((id: string) => `<li style="margin-bottom:6px;color:#ffffff;">${esc(id.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()))}</li>`)
+        .join("");
+      const deliveredLinks = data.delivered_assets
+        ? Object.entries(data.delivered_assets as Record<string, string>)
+            .map(([k, url]) => btn(k.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()), url))
+            .join("")
+        : "";
+      subject = "Your requested assets are ready — Orinlabí";
+      html = wrap(
+        "#007bff",
+        "Assets Ready",
+        "Your requested creative assets are ready to download",
+        "Log in to your portal to access your files.",
+        `<ul style="padding-left:20px;margin:0 0 16px;">${assetList}</ul>
+        ${deliveredLinks}
+        ${btn("Go to My Assets", "https://orinlabi.com/portal/assets")}`
+      );
+      await resend.emails.send({ from: FROM, to: data.email, subject, html });
+      return NextResponse.json({ success: true });
+
     } else if (type === "admin-message") {
       subject = `New message from Orinlabí`;
       html = wrap(
