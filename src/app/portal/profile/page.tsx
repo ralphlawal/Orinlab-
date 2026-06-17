@@ -115,8 +115,25 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
+const FIELD_LABELS: Partial<Record<keyof Profile, string>> = {
+  artist_name: "Artist Name", bio: "Bio", artist_type: "Artist Type",
+  genre: "Genre", country: "Country", phone: "Phone", record_label: "Record Label",
+  artist_image_url: "Profile Photo URL", spotify_artist_id: "Spotify Artist ID",
+  apple_music_artist_id: "Apple Music Artist ID", audiomack_id: "Audiomack ID",
+  boomplay_id: "Boomplay ID", soundcloud_id: "SoundCloud ID",
+  deezer_id: "Deezer ID", amazon_id: "Amazon Music ID",
+  instagram_handle: "Instagram", x_handle: "X / Twitter",
+  tiktok_username: "TikTok", youtube_channel: "YouTube Channel",
+  facebook_url: "Facebook URL", website_url: "Website",
+  payout_method: "Payout Method", bank_name: "Bank Name",
+  bank_account_name: "Account Name", bank_account_number: "Account Number",
+  bank_country: "Bank Country", paypal_email: "PayPal Email",
+  mobile_money_provider: "Mobile Money Provider", mobile_money_number: "Mobile Money Number",
+};
+
 export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile>(EMPTY);
+  const [originalProfile, setOriginalProfile] = useState<Profile>(EMPTY);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -149,6 +166,7 @@ export default function ProfilePage() {
       }
 
       setProfile(merged);
+      setOriginalProfile(merged);
       setHasApproved((approvedRes.data?.length ?? 0) > 0);
       setLoading(false);
     }
@@ -218,15 +236,25 @@ export default function ProfilePage() {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
 
-    // Notify Ralph — fire and forget
-    fetch("/api/notify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "profile-updated",
-        data: { email, artist_name: profile.artist_name, country: profile.country, genre: profile.genre },
-      }),
-    }).catch(() => {});
+    // Build field-level diff and notify Ralph — fire and forget
+    const changes: { field: string; from: string; to: string }[] = [];
+    for (const [key, label] of Object.entries(FIELD_LABELS)) {
+      const k = key as keyof Profile;
+      const oldVal = String(originalProfile[k] ?? "").trim();
+      const newVal = String((k === "artist_image_url" ? imageUrl : profile[k]) ?? "").trim();
+      if (oldVal !== newVal) changes.push({ field: label!, from: oldVal, to: newVal });
+    }
+    if (changes.length > 0) {
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "profile-updated",
+          data: { email, artist_name: profile.artist_name, changes },
+        }),
+      }).catch(() => {});
+    }
+    setOriginalProfile({ ...profile, artist_image_url: imageUrl });
   }
 
   if (loading) {

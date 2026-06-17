@@ -3,6 +3,11 @@ import { Resend } from "resend";
 
 const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
 const ADMIN  = process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com";
+// Second inbox: the super admin login email (ralph@orinlabi.com)
+const ADMIN2 = (
+  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
+).trim().toLowerCase();
 const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
 
 function esc(s: unknown): string {
@@ -174,19 +179,30 @@ export async function POST(req: NextRequest) {
         isAlbum ? `New ${data.release_type}: ${esc(data.album_title || data.song_title)}` : `New Release: ${esc(data.song_title)}`,
         `${esc(data.artist_name)} just submitted ${isAlbum ? `a${data.release_type === "EP" ? "n" : ""} ${data.release_type}` : "a single"} for distribution.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
-          ${row("Artist",        data.artist_name)}
+          ${row("Artist",          data.artist_name)}
+          ${row("Email",           data.email)}
           ${isAlbum ? row(`${data.release_type} Title`, data.album_title || data.song_title) : row("Song Title", data.song_title)}
-          ${row("Release Type",  data.release_type)}
-          ${row("Genre",         data.genre)}
-          ${data.release_date ? row("Desired Date", data.release_date) : ""}
-          ${row("Email",         data.email)}
-          ${row("Phone",         data.phone)}
-          ${row("Country",       data.country)}
+          ${row("Release Type",    data.release_type)}
+          ${row("Genre",           data.genre)}
+          ${data.release_date      ? row("Desired Date",    data.release_date)      : ""}
+          ${data.explicit          ? row("Explicit",        data.explicit)          : ""}
+          ${data.language          ? row("Language",        data.language)          : ""}
+          ${data.isrc              ? row("ISRC",            data.isrc)              : ""}
+          ${data.songwriters       ? row("Songwriters",     data.songwriters)       : ""}
+          ${data.producers         ? row("Producers",       data.producers)         : ""}
+          ${data.featured_artists  ? row("Featured",        data.featured_artists)  : ""}
+          ${data.copyright_owner   ? row("Copyright Owner", data.copyright_owner)   : ""}
+          ${data.copyright_year    ? row("Copyright Year",  data.copyright_year)    : ""}
+          ${data.publishing_info   ? row("Publishing",      data.publishing_info)   : ""}
         </table>
         ${coverBlock}
         ${tracksBlock}
         ${btn("Review in Admin Panel", "https://orinlabi.com/admin/releases")}`
       );
+      // Send to both admin inboxes
+      if (ADMIN2 && ADMIN2 !== ADMIN) {
+        await resend.emails.send({ from: FROM, to: ADMIN2, subject, html });
+      }
 
     } else if (type === "new-contact") {
       subject = `New message — ${esc(data.name)} · ${esc(data.subject)}`;
@@ -428,19 +444,35 @@ export async function POST(req: NextRequest) {
 
     } else if (type === "profile-updated") {
       const updatedTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+      const changes: { field: string; from: string; to: string }[] = Array.isArray(data.changes) ? data.changes : [];
+      const changesBlock = changes.length > 0
+        ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">What Changed</p>
+           <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eeeeee;border-radius:10px;overflow:hidden;">
+             <tr style="background:#f7f7f7;">
+               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;width:130px;">Field</td>
+               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Before</td>
+               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">After</td>
+             </tr>
+             ${changes.map(c => `
+             <tr>
+               <td style="padding:10px 12px;border-top:1px solid #f0f0f0;font-size:12px;color:#666;font-family:Arial,sans-serif;font-weight:600;">${esc(c.field)}</td>
+               <td style="padding:10px 12px;border-top:1px solid #f0f0f0;font-size:12px;color:#999;font-family:Arial,sans-serif;text-decoration:line-through;">${esc(c.from) || "<em>empty</em>"}</td>
+               <td style="padding:10px 12px;border-top:1px solid #f0f0f0;font-size:13px;color:#111;font-family:Arial,sans-serif;font-weight:700;">${esc(c.to) || "<em>cleared</em>"}</td>
+             </tr>`).join("")}
+           </table>`
+        : "";
       subject = `Profile updated — ${esc(data.artist_name || data.email)}`;
       html = wrap(
         "#007bff",
         "Portal Activity",
         "Artist Profile Updated",
-        `An artist just updated their profile.`,
+        `${esc(data.artist_name || data.email)} just updated their profile — ${changes.length} field${changes.length !== 1 ? "s" : ""} changed.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
-          ${row("Artist",  data.artist_name || "—")}
-          ${row("Email",   data.email)}
-          ${data.country ? row("Country", data.country) : ""}
-          ${data.genre   ? row("Genre",   data.genre)   : ""}
-          ${row("Time",    updatedTime + " UTC")}
+          ${row("Artist", data.artist_name || "—")}
+          ${row("Email",  data.email)}
+          ${row("Time",   updatedTime + " UTC")}
         </table>
+        ${changesBlock}
         ${btn("View in Admin", "https://orinlabi.com/admin/artists")}`
       );
 
