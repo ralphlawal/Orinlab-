@@ -48,24 +48,29 @@ export default function PortalMessagesPage() {
     load();
   }, []);
 
-  // Real-time — new messages on this thread
+  // Poll every 4 s for new messages (reliable fallback for realtime)
   useEffect(() => {
     if (!email) return;
-    const ch = supabase
-      .channel(`portal-msgs-${email}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages",
-        filter: `artist_email=eq.${email}`,
-      }, (payload) => {
-        const m = payload.new as Msg;
-        setMsgs((prev) => prev.find(x => x.id === m.id) ? prev : [...prev, m]);
-        if (m.sender === "admin") {
+    const poll = async () => {
+      const { data } = await supabase
+        .from("messages").select("*")
+        .eq("artist_email", email)
+        .order("created_at", { ascending: true });
+      if (!data) return;
+      setMsgs((prev) => {
+        const ids = new Set(prev.map(m => m.id));
+        const fresh = (data as Msg[]).filter(m => !ids.has(m.id));
+        if (fresh.length === 0) return prev;
+        // Mark newly arrived admin messages as read
+        fresh.filter(m => m.sender === "admin").forEach(m => {
           supabase.from("messages").update({ read_at: new Date().toISOString() })
             .eq("id", m.id).then(() => {});
-        }
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+        });
+        return [...prev, ...fresh];
+      });
+    };
+    const id = setInterval(poll, 4000);
+    return () => clearInterval(id);
   }, [email]);
 
   useEffect(() => {

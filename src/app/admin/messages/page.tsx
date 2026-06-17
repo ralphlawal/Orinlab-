@@ -128,56 +128,47 @@ function ArtistChats() {
     load();
   }, []);
 
-  // Real-time — any new message updates thread list + current thread
+  // Poll every 4 s — refresh open thread + thread list unread counts
   useEffect(() => {
-    const ch = supabase
-      .channel("admin-chat")
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages",
-      }, (payload) => {
-        const m = payload.new as ChatMsg;
+    const poll = async () => {
+      // Refresh unread counts on all threads
+      const { data: allMsgs } = await supabase
+        .from("messages").select("artist_email,sender,read_at,content,created_at");
+      if (allMsgs) {
+        setThreads(prev => prev.map(t => {
+          const mine = (allMsgs as ChatMsg[]).filter(m => m.artist_email === t.email);
+          const unread = mine.filter(m => m.sender === "artist" && !m.read_at).length;
+          const last = mine[mine.length - 1];
+          return { ...t, unread, lastContent: last?.content ?? t.lastContent, lastAt: last?.created_at ?? t.lastAt };
+        }));
+      }
 
-        // Update threads list
-        setThreads((prev) => {
-          const idx = prev.findIndex(t => t.email === m.artist_email);
-          if (idx === -1) {
-            // New artist — add to top
-            return [{
-              email: m.artist_email,
-              name: m.artist_name ?? m.artist_email,
-              unread: m.sender === "artist" ? 1 : 0,
-              lastContent: m.content,
-              lastAt: m.created_at,
-            }, ...prev];
-          }
-          const updated = [...prev];
-          const t = { ...updated[idx] };
-          t.lastContent = m.content;
-          t.lastAt = m.created_at;
-          if (m.sender === "artist") t.unread = (t.unread ?? 0) + 1;
-          updated.splice(idx, 1);
-          return [t, ...updated];
-        });
+      // Refresh open thread
+      setSelected(sel => {
+        if (!sel) return sel;
+        supabase.from("messages").select("*")
+          .eq("artist_email", sel.email)
+          .order("created_at", { ascending: true })
+          .then(({ data }) => {
+            if (!data) return;
+            setMsgs(prev => {
+              const ids = new Set(prev.map(m => m.id));
+              const fresh = (data as ChatMsg[]).filter(m => !ids.has(m.id));
+              if (fresh.length === 0) return prev;
+              // Auto-mark new artist messages as read
+              fresh.filter(m => m.sender === "artist").forEach(m => {
+                supabase.from("messages").update({ read_at: new Date().toISOString() })
+                  .eq("id", m.id).then(() => {});
+              });
+              return [...prev, ...fresh];
+            });
+          });
+        return sel;
+      });
+    };
 
-        // Append to current thread if it matches
-        setSelected((sel) => {
-          if (sel?.email === m.artist_email) {
-            setMsgs((prev) => prev.find(x => x.id === m.id) ? prev : [...prev, m]);
-            // Mark as read since admin is viewing
-            if (m.sender === "artist") {
-              supabase.from("messages").update({ read_at: new Date().toISOString() })
-                .eq("id", m.id).then(() => {});
-              setThreads(prev => prev.map(t =>
-                t.email === m.artist_email ? { ...t, unread: 0 } : t
-              ));
-            }
-          }
-          return sel;
-        });
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(ch); };
+    const id = setInterval(poll, 4000);
+    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {

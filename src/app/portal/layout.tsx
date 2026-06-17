@@ -12,22 +12,15 @@ function useUnreadCount(email: string | null) {
   useEffect(() => {
     if (!email) return;
 
-    supabase.from("messages")
-      .select("id", { count: "exact", head: true })
-      .eq("artist_email", email).eq("sender", "admin").is("read_at", null)
-      .then(({ count: c }) => setCount(c ?? 0));
+    const fetchCount = () =>
+      supabase.from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("artist_email", email).eq("sender", "admin").is("read_at", null)
+        .then(({ count: c }) => setCount(c ?? 0));
 
-    const ch = supabase.channel(`unread-${email}`)
-      .on("postgres_changes", {
-        event: "INSERT", schema: "public", table: "messages",
-        filter: `artist_email=eq.${email}`,
-      }, (payload) => {
-        const m = payload.new as { sender: string };
-        if (m.sender === "admin") setCount(n => n + 1);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(ch); };
+    fetchCount();
+    const id = setInterval(fetchCount, 5000);
+    return () => clearInterval(id);
   }, [email]);
 
   return count;
