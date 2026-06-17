@@ -58,7 +58,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${sora.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-black text-white">
+      <body className="min-h-full flex flex-col bg-black text-white overflow-x-hidden">
         <ScrollToTop />
         <Navbar />
         <main className="flex-1">{children}</main>

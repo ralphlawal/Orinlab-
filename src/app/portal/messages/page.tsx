@@ -131,7 +131,7 @@ export default function PortalMessagesPage() {
   }
 
   return (
-    <section className="max-w-2xl mx-auto px-4 py-8 flex flex-col" style={{ height: "calc(100svh - 7rem)" }}>
+    <section className="max-w-2xl mx-auto px-4 py-8 flex flex-col h-[calc(100svh-7rem)] md:h-[calc(100svh-8rem)]">
       <div className="mb-5 flex-shrink-0">
         <h1 className="text-white font-bold text-2xl">Messages</h1>
         <p className="text-white/40 text-sm mt-1">

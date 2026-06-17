@@ -100,9 +100,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <>
+    <div className="pt-16 md:pt-20">
       {/* Portal top bar */}
-      <div className="bg-black/90 border-b border-white/[0.06] backdrop-blur sticky top-16 z-30">
+      <div className="bg-black/90 border-b border-white/[0.06] backdrop-blur sticky top-16 md:top-20 z-30">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-12">
           {/* Nav links — horizontally scrollable on mobile */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1 min-w-0 pr-3">
@@ -147,6 +147,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       </div>
 
       {children}
-    </>
+    </div>
   );
 }
