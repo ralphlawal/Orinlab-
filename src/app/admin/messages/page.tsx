@@ -79,6 +79,7 @@ function ArtistChats() {
   const [loadingMsgs, setLoadingMsgs] = useState(false);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
 
@@ -212,16 +213,34 @@ function ArtistChats() {
     const content = text.trim();
     if (!content || !selected || sending) return;
     setSending(true);
+    setSendError("");
     setText("");
 
-    const { error } = await supabase.from("messages").insert({
+    // Optimistic update
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg: ChatMsg = {
+      id: tempId,
       artist_email: selected.email,
       artist_name: selected.name,
       sender: "admin",
       content,
-    });
+      created_at: new Date().toISOString(),
+      read_at: null,
+    };
+    setMsgs((prev) => [...prev, tempMsg]);
 
-    if (!error) {
+    const { data: inserted, error } = await supabase
+      .from("messages")
+      .insert({ artist_email: selected.email, artist_name: selected.name, sender: "admin", content })
+      .select()
+      .single();
+
+    if (error) {
+      setMsgs((prev) => prev.filter((m) => m.id !== tempId));
+      setSendError(error.message || "Failed to send. Please try again.");
+      setText(content);
+    } else if (inserted) {
+      setMsgs((prev) => prev.map((m) => m.id === tempId ? (inserted as ChatMsg) : m));
       fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -348,21 +367,26 @@ function ArtistChats() {
             </div>
 
             {/* Input */}
-            <div className="flex gap-3 px-5 py-4 border-t border-white/[0.06] flex-shrink-0">
-              <input
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } }}
-                placeholder={`Message ${selected.name}…`}
-                className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
-              />
-              <button
-                onClick={sendMsg}
-                disabled={!text.trim() || sending}
-                className="bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white p-3 rounded-xl transition-colors flex-shrink-0"
-              >
-                {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-              </button>
+            <div className="px-5 py-4 border-t border-white/[0.06] flex-shrink-0">
+              {sendError && (
+                <p className="text-red-400 text-xs mb-2">{sendError}</p>
+              )}
+              <div className="flex gap-3">
+                <input
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } }}
+                  placeholder={`Message ${selected.name}…`}
+                  className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+                />
+                <button
+                  onClick={sendMsg}
+                  disabled={!text.trim() || sending}
+                  className="bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white p-3 rounded-xl transition-colors flex-shrink-0"
+                >
+                  {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
+              </div>
             </div>
           </>
         )}

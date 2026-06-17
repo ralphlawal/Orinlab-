@@ -18,6 +18,7 @@ export default function PortalMessagesPage() {
   const [artistName, setArtistName] = useState("");
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -75,16 +76,33 @@ export default function PortalMessagesPage() {
     const content = text.trim();
     if (!content || !email || sending) return;
     setSending(true);
+    setSendError("");
     setText("");
 
-    const { error } = await supabase.from("messages").insert({
-      artist_email: email,
+    // Optimistic update — show message immediately
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg: Msg = {
+      id: tempId,
       sender: "artist",
       content,
-      artist_name: artistName,
-    });
+      created_at: new Date().toISOString(),
+    };
+    setMsgs((prev) => [...prev, tempMsg]);
 
-    if (!error) {
+    const { data: inserted, error } = await supabase
+      .from("messages")
+      .insert({ artist_email: email, sender: "artist", content, artist_name: artistName })
+      .select()
+      .single();
+
+    if (error) {
+      // Remove the optimistic message and show the error
+      setMsgs((prev) => prev.filter((m) => m.id !== tempId));
+      setSendError(error.message || "Failed to send. Please try again.");
+      setText(content);
+    } else if (inserted) {
+      // Replace temp with the real persisted message
+      setMsgs((prev) => prev.map((m) => m.id === tempId ? (inserted as Msg) : m));
       fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -143,7 +161,11 @@ export default function PortalMessagesPage() {
       </div>
 
       {/* Input bar */}
-      <div className="flex gap-3 pt-4 border-t border-white/[0.06] flex-shrink-0">
+      <div className="flex-shrink-0 pt-4 border-t border-white/[0.06]">
+      {sendError && (
+        <p className="text-red-400 text-xs mb-2 px-1">{sendError}</p>
+      )}
+      <div className="flex gap-3">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -158,6 +180,7 @@ export default function PortalMessagesPage() {
         >
           {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
         </button>
+      </div>
       </div>
     </section>
   );
