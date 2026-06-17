@@ -9,23 +9,23 @@ function esc(s: unknown): string {
   return String(s ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/* Shared row helper */
+/* Shared row helper — dark theme */
 function row(label: string, value: unknown) {
   return `
   <tr>
-    <td style="padding:10px 0;color:#999999;font-size:13px;width:130px;vertical-align:top;border-bottom:1px solid #f0f0f0;font-family:Arial,sans-serif;">${esc(label)}</td>
-    <td style="padding:10px 0;color:#111111;font-size:13px;font-weight:700;border-bottom:1px solid #f0f0f0;font-family:Arial,sans-serif;">${esc(value)}</td>
+    <td style="padding:10px 0;color:#666666;font-size:13px;width:140px;vertical-align:top;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${esc(label)}</td>
+    <td style="padding:10px 0;color:#ffffff;font-size:13px;font-weight:700;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${esc(value)}</td>
   </tr>`;
 }
 
-/* Quote block for message body */
+/* Quote block */
 function quote(text: string) {
   return `
   <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;">
     <tr>
       <td width="3" bgcolor="#007bff" style="background:#007bff;border-radius:3px;">&nbsp;</td>
       <td width="12">&nbsp;</td>
-      <td style="padding:12px 0;color:#444444;font-size:13px;line-height:1.7;font-family:Arial,sans-serif;white-space:pre-wrap;">${esc(text)}</td>
+      <td style="padding:12px 0;color:#aaaaaa;font-size:13px;line-height:1.7;font-family:Arial,sans-serif;white-space:pre-wrap;">${esc(text)}</td>
     </tr>
   </table>`;
 }
@@ -42,28 +42,31 @@ function btn(label: string, url: string, color = "#007bff") {
   </table>`;
 }
 
-/* Full email wrapper */
+/* Full email wrapper — fully dark, text logo fallback */
 function wrap(accentColor: string, badge: string, heading: string, subheading: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <meta name="color-scheme" content="light"/>
-  <meta name="supported-color-schemes" content="light"/>
+  <meta name="color-scheme" content="dark"/>
+  <meta name="supported-color-schemes" content="dark"/>
   <title>Orinlabí</title>
 </head>
-<body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
-  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0" style="background:#f0f0f0;">
+<body style="margin:0;padding:0;background:#0a0a0a;" bgcolor="#0a0a0a">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background:#0a0a0a;">
     <tr>
       <td align="center" style="padding:32px 16px;">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
           <!-- Logo header -->
           <tr>
-            <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:14px 14px 0 0;" align="left">
-              <img src="${LOGO}" alt="Orinlabí" width="120" height="33"
-                style="display:block;border:0;outline:none;text-decoration:none;" />
+            <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:14px 14px 0 0;border:1px solid #1a1a1a;border-bottom:none;" align="left">
+              <!-- Image logo — shows when external images are allowed -->
+              <img src="${LOGO}" alt="" width="120" height="33"
+                style="display:block;border:0;outline:none;text-decoration:none;max-width:120px;" />
+              <!-- Text fallback — always visible -->
+              <p style="margin:6px 0 0;color:#ffffff;font-size:17px;font-weight:800;letter-spacing:1px;font-family:Arial,sans-serif;line-height:1;">ORINLAB&Iacute;</p>
             </td>
           </tr>
 
@@ -72,22 +75,22 @@ function wrap(accentColor: string, badge: string, heading: string, subheading: s
             <td bgcolor="${accentColor}" style="background:${accentColor};height:3px;font-size:1px;line-height:1px;">&nbsp;</td>
           </tr>
 
-          <!-- White card -->
+          <!-- Dark card -->
           <tr>
-            <td bgcolor="#ffffff" style="background:#ffffff;padding:32px 32px 36px;border-radius:0 0 14px 14px;">
+            <td bgcolor="#111111" style="background:#111111;padding:32px 32px 36px;border-radius:0 0 14px 14px;border:1px solid #1a1a1a;border-top:none;">
 
               <!-- Badge -->
               <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
                 <tr>
-                  <td bgcolor="#f0f4ff" style="background:#f0f4ff;border-radius:100px;padding:5px 14px;">
+                  <td style="background:rgba(0,123,255,0.15);border-radius:100px;padding:5px 14px;border:1px solid rgba(0,123,255,0.25);">
                     <span style="color:${accentColor};font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:Arial,sans-serif;">${esc(badge)}</span>
                   </td>
                 </tr>
               </table>
 
               <!-- Heading -->
-              <h2 style="margin:0 0 6px;color:#0a0a0a;font-size:22px;font-weight:800;line-height:1.3;font-family:Arial,sans-serif;">${esc(heading)}</h2>
-              <p style="margin:0 0 24px;color:#888888;font-size:13px;line-height:1.6;font-family:Arial,sans-serif;">${esc(subheading)}</p>
+              <h2 style="margin:0 0 6px;color:#ffffff;font-size:22px;font-weight:800;line-height:1.3;font-family:Arial,sans-serif;">${esc(heading)}</h2>
+              <p style="margin:0 0 24px;color:#777777;font-size:13px;line-height:1.6;font-family:Arial,sans-serif;">${esc(subheading)}</p>
 
               <!-- Dynamic body -->
               ${body}
@@ -97,9 +100,9 @@ function wrap(accentColor: string, badge: string, heading: string, subheading: s
 
           <!-- Footer -->
           <tr>
-            <td bgcolor="#f0f0f0" style="background:#f0f0f0;padding:20px 32px;text-align:center;">
-              <p style="margin:0;color:#aaaaaa;font-size:12px;line-height:1.6;font-family:Arial,sans-serif;">
-                ℗ 2026 Orinlabí &nbsp;·&nbsp; A Ralph Lawal Group Company<br/>
+            <td style="padding:20px 32px;text-align:center;">
+              <p style="margin:0;color:#444444;font-size:12px;line-height:1.6;font-family:Arial,sans-serif;">
+                &copy; 2026 Orinlab&iacute; &nbsp;&middot;&nbsp; A Ralph Lawal Group Company<br/>
                 <a href="https://orinlabi.com" style="color:#007bff;text-decoration:none;">orinlabi.com</a>
               </p>
             </td>
