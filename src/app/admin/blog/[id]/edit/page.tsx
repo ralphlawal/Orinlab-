@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { slugify } from "@/lib/blogUtils";
 import PostEditor from "../../PostEditor";
 import { Loader2 } from "lucide-react";
+import { usePinGate } from "@/context/AdminPinContext";
 
 type Post = {
   id: string; title: string; slug: string; excerpt: string;
@@ -16,6 +17,7 @@ type Post = {
 export default function EditPostPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const { requestUnlock } = usePinGate();
   const [post, setPost] = useState<Post | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -54,7 +56,7 @@ export default function EditPostPage() {
       title="Edit Post"
       initial={post}
       saving={saving}
-      onSave={handleSave}
+      onSave={(data) => requestUnlock(() => handleSave(data))}
       onCancel={() => router.push("/admin/blog")}
     />
   );

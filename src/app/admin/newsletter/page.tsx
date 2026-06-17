@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { usePinGate } from "@/context/AdminPinContext";
 import { Loader2, Download, UserCheck, UserX, Send, CheckCircle2 } from "lucide-react";
 
 type Subscriber = {
@@ -12,6 +13,7 @@ type Subscriber = {
 };
 
 export default function NewsletterPage() {
+  const { requestUnlock } = usePinGate();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
@@ -165,7 +167,7 @@ export default function NewsletterPage() {
           />
           {sendError && <p className="text-red-400 text-xs">{sendError}</p>}
           <button
-            onClick={sendCampaign}
+            onClick={() => requestUnlock(sendCampaign)}
             disabled={sending || activeCount === 0}
             className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors"
           >
@@ -237,7 +239,7 @@ export default function NewsletterPage() {
                   </td>
                   <td className="px-5 py-4 text-right">
                     <button
-                      onClick={() => toggleActive(s.id, s.active)}
+                      onClick={() => requestUnlock(() => toggleActive(s.id, s.active))}
                       className="text-white/30 hover:text-white transition-colors"
                       title={s.active ? "Deactivate" : "Reactivate"}
                     >

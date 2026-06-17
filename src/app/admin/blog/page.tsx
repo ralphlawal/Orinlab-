@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { usePinGate } from "@/context/AdminPinContext";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2,
 } from "lucide-react";
@@ -18,6 +19,7 @@ type Post = {
 };
 
 export default function AdminBlogPage() {
+  const { requestUnlock } = usePinGate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -136,7 +138,7 @@ export default function AdminBlogPage() {
               {/* Actions */}
               <div className="flex items-center gap-1 flex-shrink-0">
                 <ActionBtn
-                  onClick={() => toggleFeatured(post)}
+                  onClick={() => requestUnlock(() => toggleFeatured(post))}
                   loading={toggling === post.id + "f"}
                   title={post.featured ? "Unfeature" : "Feature"}
                   active={post.featured}
@@ -144,7 +146,7 @@ export default function AdminBlogPage() {
                   <Star size={15} />
                 </ActionBtn>
                 <ActionBtn
-                  onClick={() => togglePublished(post)}
+                  onClick={() => requestUnlock(() => togglePublished(post))}
                   loading={toggling === post.id}
                   title={post.published ? "Unpublish" : "Publish"}
                   active={post.published}
@@ -159,7 +161,7 @@ export default function AdminBlogPage() {
                   <Pencil size={15} />
                 </Link>
                 <button
-                  onClick={() => deletePost(post.id)}
+                  onClick={() => requestUnlock(() => deletePost(post.id))}
                   className="w-8 h-8 flex items-center justify-center rounded-lg text-white/40 hover:text-red-400 hover:bg-red-400/10 transition-colors"
                   title="Delete"
                 >

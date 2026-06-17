@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { usePinGate } from "@/context/AdminPinContext";
 import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2 } from "lucide-react";
 
 const PLATFORMS = [
@@ -72,6 +73,7 @@ type ArtistProfile = {
 };
 
 export default function ReleasesPage() {
+  const { requestUnlock } = usePinGate();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("pending");
@@ -451,7 +453,7 @@ export default function ReleasesPage() {
                   ))}
                 </div>
                 <button
-                  onClick={saveMeta}
+                  onClick={() => requestUnlock(saveMeta)}
                   disabled={savingMeta}
                   className="mt-3 flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors"
                 >
@@ -582,7 +584,7 @@ export default function ReleasesPage() {
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
-                      onClick={saveStoreLinks}
+                      onClick={() => requestUnlock(saveStoreLinks)}
                       disabled={savingLinks}
                       className="flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors"
                     >
@@ -590,7 +592,7 @@ export default function ReleasesPage() {
                       {linksSaved ? "Links Saved ✓" : "Save Store Links"}
                     </button>
                     <button
-                      onClick={notifyLive}
+                      onClick={() => requestUnlock(notifyLive)}
                       disabled={notifyingLive || liveNotified || !Object.values(storeLinks).some((v) => v.trim())}
                       className="flex items-center gap-2 text-xs font-semibold bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 text-green-400 px-4 py-2 rounded-lg transition-colors"
                       title={!Object.values(storeLinks).some((v) => v.trim()) ? "Add at least one store link first" : ""}
@@ -645,7 +647,7 @@ export default function ReleasesPage() {
                     ))}
                   </div>
                   <button
-                    onClick={saveStreams}
+                    onClick={() => requestUnlock(saveStreams)}
                     disabled={savingStreams}
                     className="mt-3 flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors"
                   >
@@ -677,7 +679,7 @@ export default function ReleasesPage() {
                     </div>
                   </div>
                   <button
-                    onClick={saveRoyalties}
+                    onClick={() => requestUnlock(saveRoyalties)}
                     disabled={savingRoyalties}
                     className="mt-3 flex items-center gap-2 text-xs font-semibold bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 text-green-400 px-4 py-2 rounded-lg transition-colors"
                   >
@@ -706,7 +708,7 @@ export default function ReleasesPage() {
             <div className="p-6 border-t border-white/[0.06] space-y-3">
               {/* Save notes without changing status */}
               <button
-                onClick={saveNotes}
+                onClick={() => requestUnlock(saveNotes)}
                 disabled={updating}
                 className="w-full text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 py-2.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
@@ -722,7 +724,7 @@ export default function ReleasesPage() {
                 </button>
                 {selected.status !== "approved" && (
                   <button
-                    onClick={() => updateStatus(selected.id, "approved")}
+                    onClick={() => requestUnlock(() => updateStatus(selected.id, "approved"))}
                     disabled={updating}
                     className="flex-1 text-sm font-semibold bg-green-500 hover:bg-green-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >
@@ -732,7 +734,7 @@ export default function ReleasesPage() {
                 )}
                 {selected.status !== "rejected" && (
                   <button
-                    onClick={() => updateStatus(selected.id, "rejected")}
+                    onClick={() => requestUnlock(() => updateStatus(selected.id, "rejected"))}
                     disabled={updating}
                     className="flex-1 text-sm font-semibold bg-red-500 hover:bg-red-400 disabled:opacity-50 text-white py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                   >

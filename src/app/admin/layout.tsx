@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard,
   Music,
@@ -152,7 +153,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </h2>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">
+          <AdminPinProvider>{children}</AdminPinProvider>
+        </main>
       </div>
     </div>
   );

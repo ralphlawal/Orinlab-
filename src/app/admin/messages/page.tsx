@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, Send, MessageSquare, Mail, CheckCheck, ArrowLeft,
 } from "lucide-react";
@@ -72,6 +73,7 @@ export default function AdminMessagesPage() {
 // ── Artist Chats ──────────────────────────────────────────────────────────────
 
 function ArtistChats() {
+  const { requestUnlock } = usePinGate();
   const [threads, setThreads] = useState<ArtistThread[]>([]);
   const [selected, setSelected] = useState<ArtistThread | null>(null);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
@@ -362,7 +364,7 @@ function ArtistChats() {
                   className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
                 />
                 <button
-                  onClick={sendMsg}
+                  onClick={() => requestUnlock(sendMsg)}
                   disabled={!text.trim() || sending}
                   className="bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white p-3 rounded-xl transition-colors flex-shrink-0"
                 >

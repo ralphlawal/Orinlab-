@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { slugify } from "@/lib/blogUtils";
 import PostEditor from "../PostEditor";
+import { usePinGate } from "@/context/AdminPinContext";
 
 export default function NewPostPage() {
   const router = useRouter();
+  const { requestUnlock } = usePinGate();
   const [saving, setSaving] = useState(false);
 
   async function handleSave(data: {
@@ -29,7 +31,7 @@ export default function NewPostPage() {
     <PostEditor
       title="New Post"
       saving={saving}
-      onSave={handleSave}
+      onSave={(data) => requestUnlock(() => handleSave(data))}
       onCancel={() => router.push("/admin/blog")}
     />
   );

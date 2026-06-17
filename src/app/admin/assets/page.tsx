@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, CheckCircle2, Clock, X, ChevronDown,
   ExternalLink, Save,
@@ -55,6 +56,7 @@ function labelFor(id: string) {
 }
 
 export default function AdminAssetsPage() {
+  const { requestUnlock } = usePinGate();
   const [requests, setRequests] = useState<AssetRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
@@ -325,7 +327,7 @@ export default function AdminAssetsPage() {
                 </div>
               )}
               <button
-                onClick={save}
+                onClick={() => requestUnlock(save)}
                 disabled={saving}
                 className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-full transition-colors flex items-center justify-center gap-2 text-sm"
               >
