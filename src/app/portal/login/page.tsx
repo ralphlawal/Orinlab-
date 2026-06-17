@@ -90,7 +90,7 @@ export default function PortalLoginPage() {
             <div className="text-center mb-8">
               <h1 className="text-white font-bold text-2xl mb-2">Artist Portal</h1>
               <p className="text-white/50 text-sm">
-                Enter your email and we&apos;ll send you a 6-digit login code.
+                Enter your email and we&apos;ll send you a login code.
               </p>
             </div>
 
@@ -140,7 +140,7 @@ export default function PortalLoginPage() {
               </div>
               <h1 className="text-white font-bold text-2xl mb-2">Enter your code</h1>
               <p className="text-white/50 text-sm leading-relaxed">
-                We sent a 6-digit code to{" "}
+                We sent a login code to{" "}
                 <strong className="text-white">{email}</strong>.
                 <br />Check your inbox (and spam folder).
               </p>
@@ -149,19 +149,18 @@ export default function PortalLoginPage() {
             <form onSubmit={verifyCode} className="space-y-4">
               <div>
                 <label className="block text-white/60 text-xs font-medium mb-2">
-                  6-Digit Code
+                  Login Code
                 </label>
                 <input
                   type="text"
                   inputMode="numeric"
-                  pattern="\d{6}"
-                  maxLength={6}
+                  maxLength={12}
                   value={code}
                   onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(""); }}
-                  placeholder="000000"
+                  placeholder="········"
                   required
                   autoFocus
-                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-center text-2xl font-bold tracking-[0.5em] py-4 rounded-xl transition-colors"
+                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-center text-2xl font-bold tracking-[0.4em] py-4 rounded-xl transition-colors"
                 />
               </div>
 
@@ -169,7 +168,7 @@ export default function PortalLoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || code.length !== 6}
+                disabled={loading || code.length < 4}
                 className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
