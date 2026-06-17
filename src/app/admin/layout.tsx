@@ -21,15 +21,15 @@ import {
   Settings,
 } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
-  { label: "Releases", href: "/admin/releases", icon: <Music size={18} /> },
-  { label: "Assets", href: "/admin/assets", icon: <Palette size={18} /> },
-  { label: "Artists", href: "/admin/artists", icon: <Users size={18} /> },
-  { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} /> },
-  { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} /> },
-  { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} /> },
-  { label: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
+const BASE_NAV = [
+  { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} />, superOnly: false },
+  { label: "Releases", href: "/admin/releases", icon: <Music size={18} />, superOnly: false },
+  { label: "Assets", href: "/admin/assets", icon: <Palette size={18} />, superOnly: false },
+  { label: "Artists", href: "/admin/artists", icon: <Users size={18} />, superOnly: false },
+  { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} />, superOnly: false },
+  { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} />, superOnly: false },
+  { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} />, superOnly: false },
+  { label: "Settings", href: "/admin/settings", icon: <Settings size={18} />, superOnly: true },
 ];
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
@@ -37,10 +37,13 @@ const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
+const SUPER_ADMIN = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ?? "").trim().toLowerCase();
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
+  const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -54,10 +57,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!isAdmin) {
         router.replace("/admin/login");
       } else {
+        setAdminEmail(email);
         setChecking(false);
       }
     });
   }, [pathname, router]);
+
+  const navItems = BASE_NAV.filter((item) => !item.superOnly || adminEmail === SUPER_ADMIN);
 
   async function handleLogout() {
     await supabase.auth.signOut();

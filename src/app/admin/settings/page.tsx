@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Save, CheckCircle2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff } from "lucide-react";
+
+const SUPER_ADMIN = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ?? "").trim().toLowerCase();
 import {
   DEFAULT_HERO,
   DEFAULT_TESTIMONIALS,
@@ -369,7 +372,45 @@ function ContactTab() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("homepage");
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = (data.session?.user?.email ?? "").toLowerCase();
+      if (email === SUPER_ADMIN) {
+        setAllowed(true);
+      } else {
+        setAllowed(false);
+      }
+    });
+  }, []);
+
+  if (allowed === null) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 size={28} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  if (!allowed) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center gap-4">
+        <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center">
+          <ShieldOff size={24} className="text-red-400" />
+        </div>
+        <div>
+          <p className="text-white font-semibold">Access Restricted</p>
+          <p className="text-white/40 text-sm mt-1">Site settings can only be changed by the primary administrator.</p>
+        </div>
+        <button onClick={() => router.push("/admin")} className="text-[#007bff] text-sm hover:underline">
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl space-y-6">
