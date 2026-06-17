@@ -47,7 +47,7 @@ export default function PortalDashboard() {
           .from("artist_profiles")
           .select("spotify_artist_id,instagram_handle")
           .eq("email", session.user.email!)
-          .single(),
+          .maybeSingle(),
       ]);
 
       const data = releasesRes.data ?? [];

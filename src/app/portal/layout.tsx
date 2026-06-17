@@ -14,34 +14,30 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    // Handle session — covers both existing sessions and magic-link redirects
+    // Auth is handled by /auth/callback before the user reaches the portal.
+    // This layout only needs to: confirm a session exists, show the email,
+    // and redirect to login if the user is genuinely unauthenticated.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (event, session) => {
         if (session) {
           setEmail(session.user.email ?? null);
           setChecking(false);
-        } else if (!pathname.startsWith("/portal/login")) {
+        } else if (event === "SIGNED_OUT") {
           router.replace("/portal/login");
-        } else {
-          setChecking(false);
         }
       }
     );
 
-    // Also check immediately for existing session
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         setEmail(data.session.user.email ?? null);
         setChecking(false);
-      } else if (!pathname.startsWith("/portal/login")) {
-        // Don't redirect yet — wait for onAuthStateChange (magic link exchange)
-        setTimeout(() => {
-          supabase.auth.getSession().then(({ data: d2 }) => {
-            if (!d2.session) router.replace("/portal/login");
-            setChecking(false);
-          });
-        }, 1500);
+      } else if (pathname.startsWith("/portal/login")) {
+        setChecking(false);
       } else {
+        // No session and not on login — redirect immediately.
+        // Magic-link exchange now happens at /auth/callback, never here.
+        router.replace("/portal/login");
         setChecking(false);
       }
     });
