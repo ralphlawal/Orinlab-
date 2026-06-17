@@ -18,8 +18,16 @@ import {
   getSetting,
   DEFAULT_HERO,
   DEFAULT_TESTIMONIALS,
+  DEFAULT_SPOTLIGHT,
+  DEFAULT_FEATURES,
+  DEFAULT_WHY,
+  DEFAULT_FAQ,
   type HeroSettings,
   type Testimonial,
+  type SpotlightArtist,
+  type FeatureCard,
+  type WhyCard,
+  type FaqItem,
 } from "@/lib/siteSettings";
 
 /* ── Hero ───────────────────────────────────────────────── */
@@ -122,40 +130,16 @@ function Platforms() {
 }
 
 /* ── Features ───────────────────────────────────────────── */
-function Features() {
-  const features = [
-    {
-      icon: <Globe size={24} />,
-      title: "Global Distribution",
-      desc: "Get your music on 150+ streaming platforms across 50+ countries including Spotify, Apple Music, Boomplay, and more.",
-    },
-    {
-      icon: <ShieldCheck size={24} />,
-      title: "100% Ownership",
-      desc: "You own your masters. Always. We distribute your music without taking your rights or intellectual property.",
-    },
-    {
-      icon: <DollarSign size={24} />,
-      title: "Royalty Collection",
-      desc: "Collect every dollar you earn from streams, downloads, and sync placements across all platforms.",
-    },
-    {
-      icon: <TrendingUp size={24} />,
-      title: "Artist Marketing",
-      desc: "Dedicated marketing campaigns, playlist pitching, and press coverage to amplify your release.",
-    },
-    {
-      icon: <Headphones size={24} />,
-      title: "Playlist Promotion",
-      desc: "Get your music placed on curated playlists that reach thousands of targeted listeners.",
-    },
-    {
-      icon: <Mic2 size={24} />,
-      title: "Artist Development",
-      desc: "Expert guidance on release strategy, brand building, and growing a sustainable music career.",
-    },
-  ];
+const FEATURE_ICONS = [
+  <Globe size={24} key="globe" />,
+  <ShieldCheck size={24} key="shield" />,
+  <DollarSign size={24} key="dollar" />,
+  <TrendingUp size={24} key="trend" />,
+  <Headphones size={24} key="headphones" />,
+  <Mic2 size={24} key="mic" />,
+];
 
+function Features({ items }: { items: FeatureCard[] }) {
   return (
     <section className="py-24 px-4">
       <div className="max-w-7xl mx-auto">
@@ -174,13 +158,13 @@ function Features() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((f) => (
+          {items.map((f, i) => (
             <div
-              key={f.title}
+              key={i}
               className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl p-7 transition-all duration-300"
             >
               <div className="w-12 h-12 bg-[#007bff]/10 group-hover:bg-[#007bff]/20 rounded-xl flex items-center justify-center text-[#007bff] mb-5 transition-colors duration-300">
-                {f.icon}
+                {FEATURE_ICONS[i % FEATURE_ICONS.length]}
               </div>
               <h3 className="text-white font-semibold text-lg mb-2">
                 {f.title}
@@ -195,30 +179,14 @@ function Features() {
 }
 
 /* ── Why Orinlabí ───────────────────────────────────────── */
-function WhyOrinlabí() {
-  const reasons = [
-    {
-      icon: <Users size={20} />,
-      title: "African-Focused",
-      desc: "Built for the unique needs of African artists navigating the global music industry.",
-    },
-    {
-      icon: <Zap size={20} />,
-      title: "Fast Delivery",
-      desc: "Your music goes live on platforms within 24–48 hours after approval.",
-    },
-    {
-      icon: <BarChart3 size={20} />,
-      title: "Real-Time Analytics",
-      desc: "Track your streams, earnings, and audience growth across all platforms.",
-    },
-    {
-      icon: <ShieldCheck size={20} />,
-      title: "Always Free",
-      desc: "No subscription, no hidden fees. Selected artists distribute at zero cost — ever.",
-    },
-  ];
+const WHY_ICONS = [
+  <Users size={20} key="users" />,
+  <Zap size={20} key="zap" />,
+  <BarChart3 size={20} key="bar" />,
+  <ShieldCheck size={20} key="shield" />,
+];
 
+function WhyOrinlabí({ items }: { items: WhyCard[] }) {
   return (
     <section className="py-24 px-4 bg-white/[0.02]">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -243,13 +211,13 @@ function WhyOrinlabí() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {reasons.map((r) => (
+          {items.map((r, i) => (
             <div
-              key={r.title}
+              key={i}
               className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6"
             >
               <div className="w-10 h-10 bg-[#007bff]/10 rounded-lg flex items-center justify-center text-[#007bff] mb-4">
-                {r.icon}
+                {WHY_ICONS[i % WHY_ICONS.length]}
               </div>
               <h4 className="text-white font-semibold mb-2">{r.title}</h4>
               <p className="text-white/50 text-sm leading-relaxed">{r.desc}</p>
@@ -302,14 +270,7 @@ function Testimonials({ items }: { items: Testimonial[] }) {
 }
 
 /* ── Artist Spotlight ────────────────────────────────────── */
-function ArtistSpotlight() {
-  const artists = [
-    { name: "Temi Adeyemi", genre: "Afrobeats", country: "Nigeria", streams: "2.4M streams" },
-    { name: "Kwame Asante", genre: "Highlife", country: "Ghana", streams: "1.8M streams" },
-    { name: "Zara Musa", genre: "Afropop", country: "Nigeria", streams: "3.1M streams" },
-    { name: "Amara Diallo", genre: "Afro-soul", country: "Senegal", streams: "900K streams" },
-  ];
-
+function ArtistSpotlight({ items }: { items: SpotlightArtist[] }) {
   return (
     <section className="py-24 px-4 bg-white/[0.02]">
       <div className="max-w-7xl mx-auto">
@@ -326,13 +287,22 @@ function ArtistSpotlight() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {artists.map((a) => (
+          {items.map((a, i) => (
             <div
-              key={a.name}
+              key={i}
               className="group bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl overflow-hidden transition-all duration-300"
             >
-              <div className="aspect-square bg-gradient-to-br from-[#007bff]/20 to-black/80 flex items-center justify-center">
-                <Music size={40} className="text-[#007bff]/40" />
+              <div className="aspect-square bg-gradient-to-br from-[#007bff]/20 to-black/80 flex items-center justify-center overflow-hidden">
+                {a.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={a.image_url}
+                    alt={a.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <Music size={40} className="text-[#007bff]/40" />
+                )}
               </div>
               <div className="p-5">
                 <h3 className="text-white font-semibold">{a.name}</h3>
@@ -361,34 +331,7 @@ function ArtistSpotlight() {
 }
 
 /* ── FAQ ─────────────────────────────────────────────────── */
-function FAQ() {
-  const faqs = [
-    {
-      q: "How does Orinlabí distribute my music?",
-      a: "You submit an application with your release details. Our team reviews it and if selected, we deliver your music to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, Audiomack, and more — at no cost.",
-    },
-    {
-      q: "Do I keep ownership of my music?",
-      a: "Absolutely. You retain 100% ownership of your masters and copyright. Orinlabí only facilitates distribution and services — your music always belongs to you.",
-    },
-    {
-      q: "How long does it take for my music to go live?",
-      a: "Most releases go live within 24–48 hours after approval. We recommend submitting at least 2 weeks before your intended release date for best results.",
-    },
-    {
-      q: "How do I receive my royalties?",
-      a: "Royalties are tracked and paid out monthly. You can view your earnings in your artist dashboard and withdraw to your preferred payment method.",
-    },
-    {
-      q: "What genres do you support?",
-      a: "We support all genres with a focus on African music — Afrobeats, Highlife, Afropop, Amapiano, Afro-soul, Afro-fusion, and more.",
-    },
-    {
-      q: "Can I release an album or EP?",
-      a: "Yes. We support singles, EPs, and full albums. Once selected, you can submit releases to us and each one goes through our standard review and distribution process.",
-    },
-  ];
-
+function FAQ({ items }: { items: FaqItem[] }) {
   return (
     <section className="py-24 px-4">
       <div className="max-w-3xl mx-auto">
@@ -402,9 +345,9 @@ function FAQ() {
         </div>
 
         <div className="space-y-4">
-          {faqs.map((faq) => (
+          {items.map((faq, i) => (
             <details
-              key={faq.q}
+              key={i}
               className="group bg-white/[0.03] border border-white/[0.06] rounded-xl overflow-hidden"
             >
               <summary className="flex items-center justify-between p-5 cursor-pointer text-white font-medium text-sm list-none hover:text-[#007bff] transition-colors">
@@ -460,20 +403,24 @@ function CTA() {
 }
 
 export default async function HomePage() {
-  const [hero, testimonials] = await Promise.all([
+  const [hero, testimonials, spotlight, features, why, faq] = await Promise.all([
     getSetting("hero", DEFAULT_HERO),
     getSetting("testimonials", DEFAULT_TESTIMONIALS),
+    getSetting("spotlight", DEFAULT_SPOTLIGHT),
+    getSetting("features", DEFAULT_FEATURES),
+    getSetting("why", DEFAULT_WHY),
+    getSetting("faq", DEFAULT_FAQ),
   ]);
 
   return (
     <>
       <Hero s={hero} />
       <Platforms />
-      <Features />
-      <WhyOrinlabí />
+      <Features items={features} />
+      <WhyOrinlabí items={why} />
       <Testimonials items={testimonials} />
-      <ArtistSpotlight />
-      <FAQ />
+      <ArtistSpotlight items={spotlight} />
+      <FAQ items={faq} />
       <CTA />
     </>
   );

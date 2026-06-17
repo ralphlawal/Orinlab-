@@ -33,6 +33,29 @@ export type ContactInfo = {
   hours: string;
 };
 
+export type SpotlightArtist = {
+  name: string;
+  genre: string;
+  country: string;
+  streams: string;
+  image_url: string;
+};
+
+export type FeatureCard = {
+  title: string;
+  desc: string;
+};
+
+export type WhyCard = {
+  title: string;
+  desc: string;
+};
+
+export type FaqItem = {
+  q: string;
+  a: string;
+};
+
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 export const DEFAULT_HERO: HeroSettings = {
@@ -85,6 +108,86 @@ export const DEFAULT_CONTACT: ContactInfo = {
   address: "Lagos, Nigeria · Ralph Lawal Group",
   hours: "Monday – Friday, 9am – 6pm (WAT)",
 };
+
+export const DEFAULT_SPOTLIGHT: SpotlightArtist[] = [
+  { name: "Temi Adeyemi", genre: "Afrobeats", country: "Nigeria", streams: "2.4M streams", image_url: "" },
+  { name: "Kwame Asante", genre: "Highlife", country: "Ghana", streams: "1.8M streams", image_url: "" },
+  { name: "Zara Musa", genre: "Afropop", country: "Nigeria", streams: "3.1M streams", image_url: "" },
+  { name: "Amara Diallo", genre: "Afro-soul", country: "Senegal", streams: "900K streams", image_url: "" },
+];
+
+export const DEFAULT_FEATURES: FeatureCard[] = [
+  {
+    title: "Global Distribution",
+    desc: "Get your music on 150+ streaming platforms across 50+ countries including Spotify, Apple Music, Boomplay, and more.",
+  },
+  {
+    title: "100% Ownership",
+    desc: "You own your masters. Always. We distribute your music without taking your rights or intellectual property.",
+  },
+  {
+    title: "Royalty Collection",
+    desc: "Collect every dollar you earn from streams, downloads, and sync placements across all platforms.",
+  },
+  {
+    title: "Artist Marketing",
+    desc: "Dedicated marketing campaigns, playlist pitching, and press coverage to amplify your release.",
+  },
+  {
+    title: "Playlist Promotion",
+    desc: "Get your music placed on curated playlists that reach thousands of targeted listeners.",
+  },
+  {
+    title: "Artist Development",
+    desc: "Expert guidance on release strategy, brand building, and growing a sustainable music career.",
+  },
+];
+
+export const DEFAULT_WHY: WhyCard[] = [
+  {
+    title: "African-Focused",
+    desc: "Built for the unique needs of African artists navigating the global music industry.",
+  },
+  {
+    title: "Fast Delivery",
+    desc: "Your music goes live on platforms within 24–48 hours after approval.",
+  },
+  {
+    title: "Real-Time Analytics",
+    desc: "Track your streams, earnings, and audience growth across all platforms.",
+  },
+  {
+    title: "Always Free",
+    desc: "No subscription, no hidden fees. Selected artists distribute at zero cost — ever.",
+  },
+];
+
+export const DEFAULT_FAQ: FaqItem[] = [
+  {
+    q: "How does Orinlabí distribute my music?",
+    a: "You submit an application with your release details. Our team reviews it and if selected, we deliver your music to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, Audiomack, and more — at no cost.",
+  },
+  {
+    q: "Do I keep ownership of my music?",
+    a: "Absolutely. You retain 100% ownership of your masters and copyright. Orinlabí only facilitates distribution and services — your music always belongs to you.",
+  },
+  {
+    q: "How long does it take for my music to go live?",
+    a: "Most releases go live within 24–48 hours after approval. We recommend submitting at least 2 weeks before your intended release date for best results.",
+  },
+  {
+    q: "How do I receive my royalties?",
+    a: "Royalties are tracked and paid out monthly. You can view your earnings in your artist dashboard and withdraw to your preferred payment method.",
+  },
+  {
+    q: "What genres do you support?",
+    a: "We support all genres with a focus on African music — Afrobeats, Highlife, Afropop, Amapiano, Afro-soul, Afro-fusion, and more.",
+  },
+  {
+    q: "Can I release an album or EP?",
+    a: "Yes. We support singles, EPs, and full albums. Once selected, you can submit releases to us and each one goes through our standard review and distribution process.",
+  },
+];
 
 // ─── Fetch helper (works in both server and client components) ─────────────────
 

@@ -4,24 +4,33 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff } from "lucide-react";
+import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical } from "lucide-react";
 
 const SUPER_ADMIN = (
   process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
   (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
 ).trim().toLowerCase();
+
 import {
   DEFAULT_HERO,
   DEFAULT_TESTIMONIALS,
   DEFAULT_ARTISTS_PAGE,
   DEFAULT_CONTACT,
+  DEFAULT_SPOTLIGHT,
+  DEFAULT_FEATURES,
+  DEFAULT_WHY,
+  DEFAULT_FAQ,
   type HeroSettings,
   type Testimonial,
   type ArtistsPageSettings,
   type ContactInfo,
+  type SpotlightArtist,
+  type FeatureCard,
+  type WhyCard,
+  type FaqItem,
 } from "@/lib/siteSettings";
 
-type Tab = "homepage" | "artists" | "contact";
+type Tab = "homepage" | "spotlight" | "features" | "why" | "faq" | "artists" | "contact";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -233,6 +242,356 @@ function HomepageTab() {
   );
 }
 
+// ─── Spotlight Tab ────────────────────────────────────────────────────────────
+
+function SpotlightTab() {
+  const { requestUnlock } = usePinGate();
+  const [artists, setArtists] = useState<SpotlightArtist[]>(DEFAULT_SPOTLIGHT);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from("site_settings").select("value").eq("key", "spotlight").maybeSingle().then(({ data }) => {
+      if (data?.value) setArtists(data.value as SpotlightArtist[]);
+      setLoading(false);
+    });
+  }, []);
+
+  async function doSave() {
+    setSaving(true);
+    await supabase.from("site_settings").upsert({ key: "spotlight", value: artists, updated_at: new Date().toISOString() });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }
+
+  function update(i: number, field: keyof SpotlightArtist, val: string) {
+    setArtists((arr) => arr.map((a, idx) => (idx === i ? { ...a, [field]: val } : a)));
+  }
+
+  function add() {
+    setArtists((arr) => [...arr, { name: "", genre: "", country: "", streams: "", image_url: "" }]);
+  }
+
+  function remove(i: number) {
+    setArtists((arr) => arr.filter((_, idx) => idx !== i));
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 size={24} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Section title="Artist Spotlight Cards">
+        <p className="text-white/40 text-xs -mt-2">
+          These cards appear in the &quot;Artist Spotlight&quot; section on the homepage. Add a photo URL to show a real image.
+        </p>
+
+        {artists.map((a, i) => (
+          <div key={i} className="border border-white/[0.06] rounded-xl p-4 space-y-3 relative">
+            <div className="flex items-center gap-2">
+              <GripVertical size={14} className="text-white/20" />
+              <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Artist {i + 1}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Name">
+                <input className={input} value={a.name} placeholder="e.g. Temi Adeyemi" onChange={(e) => update(i, "name", e.target.value)} />
+              </Field>
+              <Field label="Genre">
+                <input className={input} value={a.genre} placeholder="e.g. Afrobeats" onChange={(e) => update(i, "genre", e.target.value)} />
+              </Field>
+              <Field label="Country">
+                <input className={input} value={a.country} placeholder="e.g. Nigeria" onChange={(e) => update(i, "country", e.target.value)} />
+              </Field>
+              <Field label="Streams / Stat">
+                <input className={input} value={a.streams} placeholder="e.g. 2.4M streams" onChange={(e) => update(i, "streams", e.target.value)} />
+              </Field>
+            </div>
+
+            <Field label="Photo URL" hint="Paste a Cloudinary or any direct image URL. Leave blank to show a placeholder.">
+              <input className={input} value={a.image_url} placeholder="https://res.cloudinary.com/..." onChange={(e) => update(i, "image_url", e.target.value)} />
+            </Field>
+
+            {a.image_url && (
+              <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={a.image_url} alt={a.name} className="w-full h-full object-cover" />
+              </div>
+            )}
+
+            {artists.length > 1 && (
+              <button
+                onClick={() => remove(i)}
+                className="absolute top-3 right-3 text-white/20 hover:text-red-400 transition-colors"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        <button
+          onClick={add}
+          className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors"
+        >
+          <Plus size={14} /> Add artist card
+        </button>
+
+        <div className="pt-2">
+          <SaveBtn loading={saving} saved={saved} onClick={() => requestUnlock(doSave)} />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+// ─── Features Tab ─────────────────────────────────────────────────────────────
+
+function FeaturesTab() {
+  const { requestUnlock } = usePinGate();
+  const [features, setFeatures] = useState<FeatureCard[]>(DEFAULT_FEATURES);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from("site_settings").select("value").eq("key", "features").maybeSingle().then(({ data }) => {
+      if (data?.value) setFeatures(data.value as FeatureCard[]);
+      setLoading(false);
+    });
+  }, []);
+
+  async function doSave() {
+    setSaving(true);
+    await supabase.from("site_settings").upsert({ key: "features", value: features, updated_at: new Date().toISOString() });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }
+
+  function update(i: number, field: keyof FeatureCard, val: string) {
+    setFeatures((arr) => arr.map((f, idx) => (idx === i ? { ...f, [field]: val } : f)));
+  }
+
+  function add() {
+    setFeatures((arr) => [...arr, { title: "", desc: "" }]);
+  }
+
+  function remove(i: number) {
+    setFeatures((arr) => arr.filter((_, idx) => idx !== i));
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 size={24} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Section title="Feature Cards">
+        <p className="text-white/40 text-xs -mt-2">
+          The 6 feature cards in the &quot;Built For Artists&quot; section. Icons are assigned automatically by position.
+        </p>
+
+        {features.map((f, i) => (
+          <div key={i} className="border border-white/[0.06] rounded-xl p-4 space-y-3 relative">
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Feature {i + 1}</p>
+            <Field label="Title">
+              <input className={input} value={f.title} placeholder="e.g. Global Distribution" onChange={(e) => update(i, "title", e.target.value)} />
+            </Field>
+            <Field label="Description">
+              <textarea className={textarea} rows={2} value={f.desc} placeholder="Short description of this feature…" onChange={(e) => update(i, "desc", e.target.value)} />
+            </Field>
+            {features.length > 1 && (
+              <button onClick={() => remove(i)} className="absolute top-3 right-3 text-white/20 hover:text-red-400 transition-colors">
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        <button onClick={add} className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors">
+          <Plus size={14} /> Add feature card
+        </button>
+
+        <div className="pt-2">
+          <SaveBtn loading={saving} saved={saved} onClick={() => requestUnlock(doSave)} />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+// ─── Why Tab ──────────────────────────────────────────────────────────────────
+
+function WhyTab() {
+  const { requestUnlock } = usePinGate();
+  const [cards, setCards] = useState<WhyCard[]>(DEFAULT_WHY);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from("site_settings").select("value").eq("key", "why").maybeSingle().then(({ data }) => {
+      if (data?.value) setCards(data.value as WhyCard[]);
+      setLoading(false);
+    });
+  }, []);
+
+  async function doSave() {
+    setSaving(true);
+    await supabase.from("site_settings").upsert({ key: "why", value: cards, updated_at: new Date().toISOString() });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }
+
+  function update(i: number, field: keyof WhyCard, val: string) {
+    setCards((arr) => arr.map((c, idx) => (idx === i ? { ...c, [field]: val } : c)));
+  }
+
+  function add() {
+    setCards((arr) => [...arr, { title: "", desc: "" }]);
+  }
+
+  function remove(i: number) {
+    setCards((arr) => arr.filter((_, idx) => idx !== i));
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 size={24} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Section title="Why Orinlabí Cards">
+        <p className="text-white/40 text-xs -mt-2">
+          The reason cards in the &quot;Why Choose Us&quot; section. Icons are assigned automatically by position.
+        </p>
+
+        {cards.map((c, i) => (
+          <div key={i} className="border border-white/[0.06] rounded-xl p-4 space-y-3 relative">
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Reason {i + 1}</p>
+            <Field label="Title">
+              <input className={input} value={c.title} placeholder="e.g. African-Focused" onChange={(e) => update(i, "title", e.target.value)} />
+            </Field>
+            <Field label="Description">
+              <textarea className={textarea} rows={2} value={c.desc} placeholder="Short description…" onChange={(e) => update(i, "desc", e.target.value)} />
+            </Field>
+            {cards.length > 1 && (
+              <button onClick={() => remove(i)} className="absolute top-3 right-3 text-white/20 hover:text-red-400 transition-colors">
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        <button onClick={add} className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors">
+          <Plus size={14} /> Add reason
+        </button>
+
+        <div className="pt-2">
+          <SaveBtn loading={saving} saved={saved} onClick={() => requestUnlock(doSave)} />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+// ─── FAQ Tab ──────────────────────────────────────────────────────────────────
+
+function FaqTab() {
+  const { requestUnlock } = usePinGate();
+  const [faqs, setFaqs] = useState<FaqItem[]>(DEFAULT_FAQ);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase.from("site_settings").select("value").eq("key", "faq").maybeSingle().then(({ data }) => {
+      if (data?.value) setFaqs(data.value as FaqItem[]);
+      setLoading(false);
+    });
+  }, []);
+
+  async function doSave() {
+    setSaving(true);
+    await supabase.from("site_settings").upsert({ key: "faq", value: faqs, updated_at: new Date().toISOString() });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }
+
+  function update(i: number, field: keyof FaqItem, val: string) {
+    setFaqs((arr) => arr.map((f, idx) => (idx === i ? { ...f, [field]: val } : f)));
+  }
+
+  function add() {
+    setFaqs((arr) => [...arr, { q: "", a: "" }]);
+  }
+
+  function remove(i: number) {
+    setFaqs((arr) => arr.filter((_, idx) => idx !== i));
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-40">
+        <Loader2 size={24} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Section title="FAQ Items">
+        <p className="text-white/40 text-xs -mt-2">
+          Questions and answers shown in the FAQ accordion on the homepage.
+        </p>
+
+        {faqs.map((f, i) => (
+          <div key={i} className="border border-white/[0.06] rounded-xl p-4 space-y-3 relative">
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Question {i + 1}</p>
+            <Field label="Question">
+              <input className={input} value={f.q} placeholder="e.g. How does Orinlabí distribute my music?" onChange={(e) => update(i, "q", e.target.value)} />
+            </Field>
+            <Field label="Answer">
+              <textarea className={textarea} rows={3} value={f.a} placeholder="The full answer to this question…" onChange={(e) => update(i, "a", e.target.value)} />
+            </Field>
+            {faqs.length > 1 && (
+              <button onClick={() => remove(i)} className="absolute top-3 right-3 text-white/20 hover:text-red-400 transition-colors">
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        ))}
+
+        <button onClick={add} className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors">
+          <Plus size={14} /> Add question
+        </button>
+
+        <div className="pt-2">
+          <SaveBtn loading={saving} saved={saved} onClick={() => requestUnlock(doSave)} />
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 // ─── Artists Tab ──────────────────────────────────────────────────────────────
 
 function ArtistsTab() {
@@ -374,6 +733,16 @@ function ContactTab() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const TABS: [Tab, string][] = [
+  ["homepage", "Homepage"],
+  ["spotlight", "Spotlight"],
+  ["features", "Features"],
+  ["why", "Why Us"],
+  ["faq", "FAQ"],
+  ["artists", "Artists Page"],
+  ["contact", "Contact Info"],
+];
+
 export default function SettingsPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("homepage");
@@ -382,11 +751,7 @@ export default function SettingsPage() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       const email = (data.session?.user?.email ?? "").toLowerCase();
-      if (email === SUPER_ADMIN) {
-        setAllowed(true);
-      } else {
-        setAllowed(false);
-      }
+      setAllowed(email === SUPER_ADMIN);
     });
   }, []);
 
@@ -424,14 +789,8 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="flex gap-1 border-b border-white/[0.06] pb-4">
-        {(
-          [
-            ["homepage", "Homepage"],
-            ["artists", "Artists Page"],
-            ["contact", "Contact Info"],
-          ] as [Tab, string][]
-        ).map(([t, label]) => (
+      <div className="flex flex-wrap gap-1 border-b border-white/[0.06] pb-4">
+        {TABS.map(([t, label]) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -447,6 +806,10 @@ export default function SettingsPage() {
       </div>
 
       {tab === "homepage" && <HomepageTab />}
+      {tab === "spotlight" && <SpotlightTab />}
+      {tab === "features" && <FeaturesTab />}
+      {tab === "why" && <WhyTab />}
+      {tab === "faq" && <FaqTab />}
       {tab === "artists" && <ArtistsTab />}
       {tab === "contact" && <ContactTab />}
     </div>
