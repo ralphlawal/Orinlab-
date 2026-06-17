@@ -39,12 +39,20 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [adminName, setAdminName] = useState("");
 
+  // Use auth state listener so name updates immediately on any session change
   useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const email = session?.user?.email ?? "";
+      const name = email.split("@")[0] ?? "";
+      setAdminName(name.charAt(0).toUpperCase() + name.slice(1));
+    });
+    // Also resolve the current session right now in case listener fires late
     supabase.auth.getSession().then(({ data }) => {
       const email = data.session?.user?.email ?? "";
       const name = email.split("@")[0] ?? "";
       setAdminName(name.charAt(0).toUpperCase() + name.slice(1));
     });
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -62,10 +70,10 @@ export default function AdminDashboard() {
         supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "approved"),
         supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "rejected"),
-        supabase.from("contact_messages").select("*", { count: "exact", head: true }),
+        supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist"),
         supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("active", true),
         supabase.from("releases").select("id,artist_name,song_title,genre,release_type,status,submitted_at").order("submitted_at", { ascending: false }).limit(5),
-        supabase.from("contact_messages").select("id,name,email,subject,created_at").order("created_at", { ascending: false }).limit(5),
+        supabase.from("messages").select("id,artist_name,artist_email,content,created_at").eq("sender", "artist").order("created_at", { ascending: false }).limit(5),
         supabase.from("asset_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
       ]);
 
@@ -78,7 +86,13 @@ export default function AdminDashboard() {
         pendingAssets: pendingAssets ?? 0,
       });
       setRecentReleases(releases ?? []);
-      setRecentMessages(msgs ?? []);
+      setRecentMessages((msgs ?? []).map((m) => ({
+        id: m.id,
+        name: m.artist_name || m.artist_email,
+        email: m.artist_email,
+        subject: m.content,
+        created_at: m.created_at,
+      })));
       setLoading(false);
     }
     load();
