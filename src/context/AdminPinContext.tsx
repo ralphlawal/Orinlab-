@@ -4,10 +4,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { supabase } from "@/lib/supabase";
 import { Loader2, Lock, X } from "lucide-react";
 
 interface PinContextValue {
@@ -27,6 +29,13 @@ export function AdminPinProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const pendingRef = useRef<(() => void) | null>(null);
+  const adminEmailRef = useRef<string>("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      adminEmailRef.current = data.session?.user?.email ?? "";
+    });
+  }, []);
 
   const requestUnlock = useCallback(
     (onSuccess: () => void) => {
@@ -52,7 +61,7 @@ export function AdminPinProvider({ children }: { children: ReactNode }) {
       const res = await fetch("/api/admin/verify-pin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: pin.trim() }),
+        body: JSON.stringify({ pin: pin.trim(), admin_email: adminEmailRef.current }),
       });
       const data = await res.json();
       if (data.ok) {

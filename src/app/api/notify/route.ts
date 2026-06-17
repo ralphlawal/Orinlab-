@@ -395,6 +395,40 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({ from: FROM, to: data.email, subject, html });
       return NextResponse.json({ success: true });
 
+    } else if (type === "admin-login") {
+      const loginTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+      subject = `Admin login — ${esc(data.email)}`;
+      html = wrap(
+        "#007bff",
+        "Security Alert",
+        "Admin Panel Login",
+        `Someone just signed in to the Orinlabí admin panel.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Admin",     data.email)}
+          ${row("Time",      loginTime + " UTC")}
+          ${data.ip ? row("IP Address", data.ip) : ""}
+        </table>
+        <p style="margin:20px 0 0;color:#888888;font-size:12px;font-family:Arial,sans-serif;line-height:1.6;">If this wasn't you, change the admin password in your Supabase dashboard immediately.</p>
+        ${btn("Open Admin Panel", "https://orinlabi.com/admin")}`
+      );
+
+    } else if (type === "admin-action") {
+      const actionTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+      subject = `Admin PIN verified — ${esc(data.email)}`;
+      html = wrap(
+        "#f59e0b",
+        "Security Alert",
+        "Admin PIN Verified",
+        `An admin just entered the PIN and is making changes to the platform.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Admin",  data.email)}
+          ${row("Time",   actionTime + " UTC")}
+          ${data.ip ? row("IP Address", data.ip) : ""}
+        </table>
+        <p style="margin:20px 0 0;color:#888888;font-size:12px;font-family:Arial,sans-serif;line-height:1.6;">If this wasn't authorised, revoke access immediately in your Supabase dashboard.</p>
+        ${btn("Open Admin Panel", "https://orinlabi.com/admin")}`
+      );
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }
