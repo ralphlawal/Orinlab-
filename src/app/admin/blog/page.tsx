@@ -5,8 +5,14 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import {
-  Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2,
+  Plus, Pencil, Trash2, Eye, EyeOff, Star, Loader2, ShieldOff,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+const SUPER_ADMIN = (
+  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
+).trim().toLowerCase();
 
 type Post = {
   id: string;
@@ -20,6 +26,8 @@ type Post = {
 
 export default function AdminBlogPage() {
   const { requestUnlock } = usePinGate();
+  const router = useRouter();
+  const [allowed, setAllowed] = useState<boolean | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -33,7 +41,13 @@ export default function AdminBlogPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = (data.session?.user?.email ?? "").toLowerCase();
+      setAllowed(email === SUPER_ADMIN);
+    });
+    load();
+  }, []);
 
   async function togglePublished(post: Post) {
     setToggling(post.id);
@@ -59,6 +73,23 @@ export default function AdminBlogPage() {
     if (!confirm("Delete this post? This cannot be undone.")) return;
     await supabase.from("blog_posts").delete().eq("id", id);
     await load();
+  }
+
+  if (allowed === false) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center gap-4">
+        <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center">
+          <ShieldOff size={24} className="text-red-400" />
+        </div>
+        <div>
+          <p className="text-white font-semibold">Access Restricted</p>
+          <p className="text-white/40 text-sm mt-1">Blog management is only available to the primary administrator.</p>
+        </div>
+        <button onClick={() => router.push("/admin")} className="text-[#007bff] text-sm hover:underline">
+          Back to Dashboard
+        </button>
+      </div>
+    );
   }
 
   return (

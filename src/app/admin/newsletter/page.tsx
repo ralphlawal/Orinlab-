@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Download, UserCheck, UserX, Send, CheckCircle2 } from "lucide-react";
+import { Loader2, Download, UserCheck, UserX, Send, CheckCircle2, ShieldOff } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+const SUPER_ADMIN = (
+  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
+).trim().toLowerCase();
 
 type Subscriber = {
   id: string;
@@ -14,6 +20,8 @@ type Subscriber = {
 
 export default function NewsletterPage() {
   const { requestUnlock } = usePinGate();
+  const router = useRouter();
+  const [allowed, setAllowed] = useState<boolean | null>(null);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("active");
@@ -41,6 +49,13 @@ export default function NewsletterPage() {
     setTotalActive(count ?? 0);
     setLoading(false);
   }
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = (data.session?.user?.email ?? "").toLowerCase();
+      setAllowed(email === SUPER_ADMIN);
+    });
+  }, []);
 
   useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -99,6 +114,23 @@ export default function NewsletterPage() {
   }
 
   const inp = "w-full bg-[#0e0e0e] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors";
+
+  if (allowed === false) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-center gap-4">
+        <div className="w-14 h-14 bg-red-500/10 rounded-2xl flex items-center justify-center">
+          <ShieldOff size={24} className="text-red-400" />
+        </div>
+        <div>
+          <p className="text-white font-semibold">Access Restricted</p>
+          <p className="text-white/40 text-sm mt-1">Newsletter management is only available to the primary administrator.</p>
+        </div>
+        <button onClick={() => router.push("/admin")} className="text-[#007bff] text-sm hover:underline">
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">

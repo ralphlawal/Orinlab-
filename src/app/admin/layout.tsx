@@ -27,8 +27,8 @@ const BASE_NAV = [
   { label: "Assets", href: "/admin/assets", icon: <Palette size={18} />, superOnly: false },
   { label: "Artists", href: "/admin/artists", icon: <Users size={18} />, superOnly: false },
   { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} />, superOnly: false },
-  { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} />, superOnly: false },
-  { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} />, superOnly: false },
+  { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} />, superOnly: true },
+  { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} />, superOnly: true },
   { label: "Settings", href: "/admin/settings", icon: <Settings size={18} />, superOnly: true },
 ];
 
