@@ -111,7 +111,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               { href: "/portal/assets", label: "Assets", exact: false },
               { href: "/portal/messages", label: "Messages", exact: false },
               { href: "/portal/profile", label: "Profile", exact: false },
-              { href: "/portal/releases/new", label: "+ Release", exact: false },
             ].map(({ href, label, exact }) => {
               const active = exact ? pathname === href : pathname.startsWith(href);
               const isMessages = href === "/portal/messages";

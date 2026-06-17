@@ -322,6 +322,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true });
 
     } else if (type === "payout-request") {
+      const methodLabel = data.payout_method === "bank_transfer" ? "Bank Transfer"
+        : data.payout_method === "paypal" ? "PayPal"
+        : data.payout_method === "mobile_money" ? "Mobile Money"
+        : "Not specified";
+
+      const payoutDetails = data.payout_method === "bank_transfer"
+        ? `${row("Bank Name",       data.bank_name || "—")}
+           ${row("Account Name",    data.bank_account_name || "—")}
+           ${row("Account Number",  data.bank_account_number || "—")}
+           ${row("Bank Country",    data.bank_country || "—")}`
+        : data.payout_method === "paypal"
+        ? `${row("PayPal Email", data.paypal_email || "—")}`
+        : data.payout_method === "mobile_money"
+        ? `${row("Provider",     data.mobile_money_provider || "—")}
+           ${row("Phone Number", data.mobile_money_number || "—")}`
+        : `<tr><td colspan="2" style="padding:10px 0;color:#ef4444;font-size:13px;font-family:Arial,sans-serif;">⚠ Artist has not filled in their payout details. Ask them to complete their profile.</td></tr>`;
+
       subject = `Payout request — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
       html = wrap(
         "#16a34a",
@@ -329,11 +346,15 @@ export async function POST(req: NextRequest) {
         `Payout Request: ${esc(data.song_title)}`,
         `${esc(data.artist_name)} has requested a payout for their royalties.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
-          ${row("Artist",       data.artist_name)}
-          ${row("Email",        data.email)}
-          ${row("Release",      data.song_title)}
-          ${row("Amount",       `$${Number(data.royalties_usd ?? 0).toFixed(2)} USD`)}
-          ${row("Release ID",   data.release_id)}
+          ${row("Artist",         data.artist_name)}
+          ${row("Email",          data.email)}
+          ${row("Release",        data.song_title)}
+          ${row("Amount",         `$${Number(data.royalties_usd ?? 0).toFixed(2)} USD`)}
+          ${row("Payout Method",  methodLabel)}
+        </table>
+        <p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Payout Details</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${payoutDetails}
         </table>
         ${btn("Review in Admin Panel", `https://orinlabi.com/admin/releases`, "#16a34a")}`
       );

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import {
   Music2, Clock, CheckCircle2, XCircle,
   ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
+  BarChart2, DollarSign, Radio,
 } from "lucide-react";
 
 type Release = {
@@ -18,6 +19,9 @@ type Release = {
   review_notes: string | null;
   cover_art_url: string | null;
   submitted_at: string;
+  streams: Record<string, number> | null;
+  royalties_usd: number | null;
+  store_links: Record<string, string> | null;
 };
 
 const statusConfig = {
@@ -40,7 +44,7 @@ export default function PortalDashboard() {
       const [releasesRes, profileRes] = await Promise.all([
         supabase
           .from("releases")
-          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name")
+          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links")
           .eq("email", session.user.email!)
           .order("submitted_at", { ascending: false }),
         supabase
@@ -50,16 +54,16 @@ export default function PortalDashboard() {
           .maybeSingle(),
       ]);
 
-      const data = releasesRes.data ?? [];
+      const data = (releasesRes.data ?? []) as Release[];
       if (data.length > 0) {
         setArtistName((data[0] as unknown as { artist_name?: string }).artist_name ?? "");
       }
 
-      const hasApproved = data.some((r: Release) => r.status === "approved");
+      const hasApproved = data.some((r) => r.status === "approved");
       const profileFilled = !!(profileRes.data?.spotify_artist_id || profileRes.data?.instagram_handle);
       setShowProfileBanner(hasApproved && !profileFilled);
 
-      setReleases((data as Release[]) ?? []);
+      setReleases(data);
       setLoading(false);
     }
     load();
@@ -94,6 +98,44 @@ export default function PortalDashboard() {
           </Link>
         )}
       </div>
+
+      {/* Analytics strip — only visible when there are approved releases */}
+      {releases.some((r) => r.status === "approved") && (() => {
+        const approved = releases.filter((r) => r.status === "approved");
+        const totalStreams = approved.reduce((sum, r) => {
+          if (!r.streams) return sum;
+          return sum + Object.values(r.streams).reduce((a, b) => a + b, 0);
+        }, 0);
+        const totalEarnings = releases.reduce((sum, r) => sum + (r.royalties_usd ?? 0), 0);
+        const liveCount = approved.filter((r) => r.store_links && Object.keys(r.store_links).length > 0).length;
+
+        const fmtStreams = (n: number) =>
+          n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
+          : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K`
+          : n.toString();
+
+        return (
+          <div className="mb-8 grid grid-cols-3 gap-3">
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
+              <BarChart2 size={16} className="text-[#007bff] mx-auto mb-2" />
+              <p className="text-white font-bold text-xl">{fmtStreams(totalStreams)}</p>
+              <p className="text-white/40 text-xs mt-0.5">Total Streams</p>
+            </div>
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
+              <DollarSign size={16} className="text-green-400 mx-auto mb-2" />
+              <p className="text-white font-bold text-xl">
+                {totalEarnings > 0 ? `$${totalEarnings.toFixed(2)}` : "—"}
+              </p>
+              <p className="text-white/40 text-xs mt-0.5">Total Earnings</p>
+            </div>
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
+              <Radio size={16} className="text-green-400 mx-auto mb-2" />
+              <p className="text-white font-bold text-xl">{liveCount}</p>
+              <p className="text-white/40 text-xs mt-0.5">Live Releases</p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Profile completion banner */}
       {showProfileBanner && (

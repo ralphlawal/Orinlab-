@@ -44,7 +44,7 @@ export default function ContractPage() {
         .select("id, artist_name, legal_name, email, song_title, release_type, genre, status, contract_signed_at, contract_signature")
         .eq("id", id)
         .eq("email", session.user.email!)
-        .single();
+        .maybeSingle();
 
       if (!data) { router.push("/portal"); return; }
       setRelease(data as Release);

@@ -75,21 +75,30 @@ export default function ReleaseDetailPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [payoutState, setPayoutState] = useState<"idle" | "confirm" | "sent">("idle");
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [hasPayoutDetails, setHasPayoutDetails] = useState(false);
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data } = await supabase
-        .from("releases")
-        .select("*")
-        .eq("id", id)
-        .eq("email", session.user.email!)
-        .maybeSingle();
+      const [{ data }, { data: profileData }] = await Promise.all([
+        supabase
+          .from("releases")
+          .select("*")
+          .eq("id", id)
+          .eq("email", session.user.email!)
+          .maybeSingle(),
+        supabase
+          .from("artist_profiles")
+          .select("payout_method")
+          .eq("email", session.user.email!)
+          .maybeSingle(),
+      ]);
 
       if (!data) setNotFound(true);
       else setRelease(data as Release);
+      setHasPayoutDetails(!!profileData?.payout_method);
       setLoading(false);
     }
     load();
@@ -118,6 +127,13 @@ export default function ReleaseDetailPage() {
     if (!release) return;
     setPayoutLoading(true);
     try {
+      // Fetch artist payout details to include in the request email
+      const { data: profileData } = await supabase
+        .from("artist_profiles")
+        .select("payout_method,bank_name,bank_account_name,bank_account_number,bank_country,paypal_email,mobile_money_provider,mobile_money_number")
+        .eq("email", release.email)
+        .maybeSingle();
+
       await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -129,6 +145,14 @@ export default function ReleaseDetailPage() {
             song_title: release.song_title,
             royalties_usd: release.royalties_usd,
             release_id: release.id,
+            payout_method: profileData?.payout_method ?? null,
+            bank_name: profileData?.bank_name ?? null,
+            bank_account_name: profileData?.bank_account_name ?? null,
+            bank_account_number: profileData?.bank_account_number ?? null,
+            bank_country: profileData?.bank_country ?? null,
+            paypal_email: profileData?.paypal_email ?? null,
+            mobile_money_provider: profileData?.mobile_money_provider ?? null,
+            mobile_money_number: profileData?.mobile_money_number ?? null,
           },
         }),
       });
@@ -476,6 +500,11 @@ export default function ReleaseDetailPage() {
             </div>
           ) : payoutState === "confirm" ? (
             <div className="bg-white/[0.04] border border-white/[0.1] rounded-xl p-4 space-y-3">
+              {!hasPayoutDetails && (
+                <div className="flex items-start gap-2 bg-yellow-400/10 border border-yellow-400/20 rounded-xl px-4 py-3 mb-1">
+                  <span className="text-yellow-400 text-xs flex-1">You haven&apos;t added your payout details yet. <Link href="/portal/profile" className="underline font-semibold">Add them in your profile</Link> so we know where to send your money.</span>
+                </div>
+              )}
               <p className="text-white/70 text-sm">Submit a payout request for <span className="text-white font-semibold">${release.royalties_usd.toFixed(2)} USD</span> to the Orinlabí team?</p>
               <div className="flex gap-3">
                 <button

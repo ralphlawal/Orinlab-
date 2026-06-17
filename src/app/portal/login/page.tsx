@@ -1,14 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
 
 export default function PortalLoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [error, setError] = useState("");
+
+  // Redirect already-authenticated users straight to the portal
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) router.replace("/portal");
+    });
+  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,8 +32,6 @@ export default function PortalLoginPage() {
     });
 
     if (authError) {
-      // "Email link is invalid or has expired" → Supabase redirect URL not in allowlist
-      // "Signups not allowed" → Supabase auth settings blocking new users
       const msg = authError.message.toLowerCase();
       if (msg.includes("not allowed") || msg.includes("disabled")) {
         setError("Sign-ins are currently restricted. Please contact info@orinlabi.com for access.");

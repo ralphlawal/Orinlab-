@@ -30,6 +30,15 @@ type Profile = {
   youtube_channel: string;
   facebook_url: string;
   website_url: string;
+  // Payout details
+  payout_method: string;
+  bank_name: string;
+  bank_account_name: string;
+  bank_account_number: string;
+  bank_country: string;
+  paypal_email: string;
+  mobile_money_provider: string;
+  mobile_money_number: string;
 };
 
 const EMPTY: Profile = {
@@ -54,6 +63,14 @@ const EMPTY: Profile = {
   youtube_channel: "",
   facebook_url: "",
   website_url: "",
+  payout_method: "",
+  bank_name: "",
+  bank_account_name: "",
+  bank_account_number: "",
+  bank_country: "",
+  paypal_email: "",
+  mobile_money_provider: "",
+  mobile_money_number: "",
 };
 
 const inp =
@@ -383,6 +400,74 @@ export default function ProfilePage() {
             <input value={profile.website_url} onChange={set("website_url")} placeholder="https://yourwebsite.com" className={inp} />
           </Field>
         </div>
+      </Card>
+
+      {/* ── Payout Details ── */}
+      <Card
+        title="Payout Details"
+        hint="This information is private and used only to process your royalty payouts. Fill it in so we know where to send your earnings when you request a payout."
+      >
+        <Field label="Payout Method">
+          <select value={profile.payout_method} onChange={set("payout_method")} className={inp + " bg-[#0a0a0a] appearance-none"}>
+            <option value="">Select method…</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="paypal">PayPal</option>
+            <option value="mobile_money">Mobile Money</option>
+          </select>
+        </Field>
+
+        {profile.payout_method === "bank_transfer" && (
+          <div className="space-y-5">
+            <div className="grid sm:grid-cols-2 gap-5">
+              <Field label="Bank Name">
+                <input value={profile.bank_name} onChange={set("bank_name")} placeholder="e.g. Access Bank, GTBank" className={inp} />
+              </Field>
+              <Field label="Bank Country">
+                <select value={profile.bank_country} onChange={set("bank_country")} className={inp + " bg-[#0a0a0a] appearance-none"}>
+                  <option value="">Select country…</option>
+                  {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </Field>
+            </div>
+            <Field label="Account Name" hint="Full name on the bank account — must match your bank records exactly.">
+              <input value={profile.bank_account_name} onChange={set("bank_account_name")} placeholder="e.g. John Adewale Doe" className={inp} />
+            </Field>
+            <Field label="Account Number">
+              <input value={profile.bank_account_number} onChange={set("bank_account_number")} placeholder="10-digit account number" className={inp} />
+            </Field>
+          </div>
+        )}
+
+        {profile.payout_method === "paypal" && (
+          <Field label="PayPal Email">
+            <input value={profile.paypal_email} onChange={set("paypal_email")} type="email" placeholder="your@paypal.com" className={inp} />
+          </Field>
+        )}
+
+        {profile.payout_method === "mobile_money" && (
+          <div className="grid sm:grid-cols-2 gap-5">
+            <Field label="Provider">
+              <select value={profile.mobile_money_provider} onChange={set("mobile_money_provider")} className={inp + " bg-[#0a0a0a] appearance-none"}>
+                <option value="">Select provider…</option>
+                <option value="M-Pesa">M-Pesa</option>
+                <option value="MTN Mobile Money">MTN Mobile Money</option>
+                <option value="Airtel Money">Airtel Money</option>
+                <option value="Orange Money">Orange Money</option>
+                <option value="Wave">Wave</option>
+                <option value="Opay">Opay</option>
+                <option value="Palmpay">Palmpay</option>
+                <option value="Other">Other</option>
+              </select>
+            </Field>
+            <Field label="Phone Number">
+              <input value={profile.mobile_money_number} onChange={set("mobile_money_number")} type="tel" placeholder="+234 800 000 0000" className={inp} />
+            </Field>
+          </div>
+        )}
+
+        {!profile.payout_method && (
+          <p className="text-white/25 text-xs">Select a payout method above to enter your details.</p>
+        )}
       </Card>
 
       <button
