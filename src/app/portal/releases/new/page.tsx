@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft, Music2,
+  Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
+  Music2, Plus, Trash2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -24,6 +25,8 @@ type ArtistProfile = {
   social_links: string;
 };
 
+type Track = { title: string; file: File | null };
+
 type FormState = "idle" | "uploading" | "saving" | "success" | "error";
 
 export default function NewReleasePage() {
@@ -32,16 +35,21 @@ export default function NewReleasePage() {
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [releaseType, setReleaseType] = useState("Single");
+  // Single mode: one file
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  // Album/EP mode: multiple tracks
+  const [tracks, setTracks] = useState<Track[]>([{ title: "", file: null }]);
+  const [uploadProgress, setUploadProgress] = useState("");
+
+  const isMultiTrack = releaseType === "Album" || releaseType === "EP";
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/portal/login"); return; }
 
-      // Fetch most recent approved release for artist info
       const { data } = await supabase
         .from("releases")
         .select("artist_name, legal_name, email, phone, country, artist_bio, social_links")
@@ -52,7 +60,6 @@ export default function NewReleasePage() {
         .single();
 
       if (!data) {
-        // No approved release — redirect to portal
         router.push("/portal");
         return;
       }
@@ -63,19 +70,51 @@ export default function NewReleasePage() {
     load();
   }, [router]);
 
+  function addTrack() {
+    setTracks(t => [...t, { title: "", file: null }]);
+  }
+
+  function removeTrack(i: number) {
+    setTracks(t => t.filter((_, idx) => idx !== i));
+  }
+
+  function updateTrackTitle(i: number, title: string) {
+    setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, title } : tr));
+  }
+
+  function updateTrackFile(i: number, file: File | null) {
+    setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, file } : tr));
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!profile) return;
 
-    if (!audioFile) {
-      setErrorMsg("Please upload your audio file before submitting.");
-      setState("error");
-      return;
-    }
+    // Validate
     if (!coverFile) {
       setErrorMsg("Please upload your cover artwork before submitting.");
       setState("error");
       return;
+    }
+    if (isMultiTrack) {
+      const missing = tracks.findIndex(tr => !tr.file);
+      if (missing !== -1) {
+        setErrorMsg(`Track ${missing + 1} is missing an audio file.`);
+        setState("error");
+        return;
+      }
+      const untitled = tracks.findIndex(tr => !tr.title.trim());
+      if (untitled !== -1) {
+        setErrorMsg(`Track ${untitled + 1} needs a title.`);
+        setState("error");
+        return;
+      }
+    } else {
+      if (!audioFile) {
+        setErrorMsg("Please upload your audio file before submitting.");
+        setState("error");
+        return;
+      }
     }
 
     const form = e.currentTarget;
@@ -84,52 +123,82 @@ export default function NewReleasePage() {
     try {
       setState("uploading");
 
-      const audioExt = audioFile.name.split(".").pop();
-      const audioPath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${audioExt}`;
-      const { error: audioErr } = await supabase.storage.from("releases").upload(audioPath, audioFile);
-      if (audioErr) throw audioErr;
-      const { data: audioData } = supabase.storage.from("releases").getPublicUrl(audioPath);
-
+      // Upload cover art
+      setUploadProgress("Uploading cover artwork…");
       const coverExt = coverFile.name.split(".").pop();
       const coverPath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${coverExt}`;
       const { error: coverErr } = await supabase.storage.from("cover-art").upload(coverPath, coverFile);
       if (coverErr) throw coverErr;
       const { data: coverData } = supabase.storage.from("cover-art").getPublicUrl(coverPath);
 
-      setState("saving");
+      let audioFileUrl = "";
+      let leadTitle = data.get("songTitle") as string;
+      let uploadedTracks: { track_number: number; title: string; audio_file_url: string }[] = [];
 
-      const releasePayload = {
-        // Pre-filled artist info (locked from their approved release)
-        artist_name:    profile.artist_name,
-        legal_name:     profile.legal_name,
-        email:          profile.email,
-        phone:          profile.phone,
-        country:        profile.country,
-        artist_bio:     profile.artist_bio,
-        social_links:   profile.social_links,
-        // New release details
-        release_type:   data.get("releaseType"),
-        song_title:     data.get("songTitle"),
-        album_title:    data.get("albumTitle") || null,
-        genre:          data.get("genre"),
-        release_date:   data.get("releaseDate"),
-        explicit:       data.get("explicit") === "Yes",
-        audio_file_url: audioData.publicUrl,
-        cover_art_url:  coverData.publicUrl,
-        songwriters:    data.get("songwriters"),
-        producers:      data.get("producers"),
+      if (isMultiTrack) {
+        // Upload all tracks sequentially so progress is visible
+        for (let i = 0; i < tracks.length; i++) {
+          const track = tracks[i];
+          setUploadProgress(`Uploading track ${i + 1} of ${tracks.length}…`);
+          const ext = track.file!.name.split(".").pop();
+          const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: trackErr } = await supabase.storage.from("releases").upload(path, track.file!);
+          if (trackErr) throw trackErr;
+          const { data: urlData } = supabase.storage.from("releases").getPublicUrl(path);
+          uploadedTracks.push({
+            track_number: i + 1,
+            title: track.title.trim(),
+            audio_file_url: urlData.publicUrl,
+          });
+        }
+        audioFileUrl = uploadedTracks[0].audio_file_url;
+        leadTitle = uploadedTracks[0].title;
+      } else {
+        setUploadProgress("Uploading audio file…");
+        const audioExt = audioFile!.name.split(".").pop();
+        const audioPath = `${Date.now()}-${Math.random().toString(36).slice(2)}.${audioExt}`;
+        const { error: audioErr } = await supabase.storage.from("releases").upload(audioPath, audioFile!);
+        if (audioErr) throw audioErr;
+        const { data: audioData } = supabase.storage.from("releases").getPublicUrl(audioPath);
+        audioFileUrl = audioData.publicUrl;
+      }
+
+      setState("saving");
+      setUploadProgress("");
+
+      const releasePayload: Record<string, unknown> = {
+        artist_name:      profile.artist_name,
+        legal_name:       profile.legal_name,
+        email:            profile.email,
+        phone:            profile.phone,
+        country:          profile.country,
+        artist_bio:       profile.artist_bio,
+        social_links:     profile.social_links,
+        release_type:     data.get("releaseType"),
+        song_title:       leadTitle,
+        album_title:      data.get("albumTitle") || null,
+        genre:            data.get("genre"),
+        release_date:     data.get("releaseDate"),
+        explicit:         data.get("explicit") === "Yes",
+        audio_file_url:   audioFileUrl,
+        cover_art_url:    coverData.publicUrl,
+        songwriters:      data.get("songwriters"),
+        producers:        data.get("producers"),
         featured_artists: data.get("featuredArtists") || null,
-        isrc:           data.get("isrc") || null,
-        copyright_owner: data.get("copyrightOwner"),
-        copyright_year:  data.get("copyrightYear"),
-        publishing_info: data.get("publishing") || null,
-        status: "pending",
+        isrc:             data.get("isrc") || null,
+        copyright_owner:  data.get("copyrightOwner"),
+        copyright_year:   data.get("copyrightYear"),
+        publishing_info:  data.get("publishing") || null,
+        status:           "pending",
       };
+
+      if (isMultiTrack && uploadedTracks.length > 0) {
+        releasePayload.tracks = uploadedTracks;
+      }
 
       const { error: dbErr } = await supabase.from("releases").insert(releasePayload);
       if (dbErr) throw dbErr;
 
-      // Notify admin
       fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,7 +206,7 @@ export default function NewReleasePage() {
           type: "new-submission",
           data: {
             artist_name:  profile.artist_name,
-            song_title:   data.get("songTitle"),
+            song_title:   leadTitle,
             release_type: data.get("releaseType"),
             genre:        data.get("genre"),
             email:        profile.email,
@@ -147,7 +216,6 @@ export default function NewReleasePage() {
         }),
       }).catch(() => {});
 
-      // Confirmation email to artist
       fetch("/api/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -155,7 +223,7 @@ export default function NewReleasePage() {
           type: "submission",
           release: {
             artist_name:  profile.artist_name,
-            song_title:   data.get("songTitle"),
+            song_title:   leadTitle,
             release_type: data.get("releaseType"),
             genre:        data.get("genre"),
             release_date: data.get("releaseDate"),
@@ -175,6 +243,7 @@ export default function NewReleasePage() {
         setErrorMsg(msg || "Something went wrong. Please try again or contact info@orinlabi.com.");
       }
       setState("error");
+      setUploadProgress("");
     }
   }
 
@@ -192,9 +261,12 @@ export default function NewReleasePage() {
         <div className="w-20 h-20 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 size={40} className="text-[#007bff]" />
         </div>
-        <h2 className="text-white font-bold text-2xl mb-3">Release Submitted!</h2>
+        <h2 className="text-white font-bold text-2xl mb-3">
+          {isMultiTrack ? "Album Submitted!" : "Release Submitted!"}
+        </h2>
         <p className="text-white/50 text-sm leading-relaxed max-w-sm mx-auto">
-          Your submission is now under review. Our team will get back to you within 3–5 business days.
+          Your {isMultiTrack ? `${releaseType.toLowerCase()} with ${tracks.length} track${tracks.length !== 1 ? "s" : ""}` : "release"} has been received.
+          Our team will prepare it for distribution within 3–5 business days.
         </p>
         <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
           <Link
@@ -204,7 +276,13 @@ export default function NewReleasePage() {
             Back to My Releases
           </Link>
           <button
-            onClick={() => { setState("idle"); setAudioFile(null); setCoverFile(null); setReleaseType("Single"); }}
+            onClick={() => {
+              setState("idle");
+              setAudioFile(null);
+              setCoverFile(null);
+              setReleaseType("Single");
+              setTracks([{ title: "", file: null }]);
+            }}
             className="border border-white/10 hover:border-white/30 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all"
           >
             Submit Another Release
@@ -225,15 +303,13 @@ export default function NewReleasePage() {
         <ArrowLeft size={15} /> My Releases
       </Link>
 
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-white font-bold text-2xl">Submit a New Release</h1>
         <p className="text-white/40 text-sm mt-2">
-          Upload your next single, EP, or album. Our team will review and distribute it.
+          Upload your music and we will distribute it to all major platforms.
         </p>
       </div>
 
-      {/* Artist identity (pre-filled, read-only) */}
       {profile && (
         <div className="mb-8 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
           <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Submitting As</p>
@@ -256,6 +332,13 @@ export default function NewReleasePage() {
         </div>
       )}
 
+      {(state === "uploading" || state === "saving") && uploadProgress && (
+        <div className="mb-6 flex items-center gap-3 bg-[#007bff]/10 border border-[#007bff]/30 text-[#007bff] text-sm px-5 py-4 rounded-xl">
+          <Loader2 size={16} className="flex-shrink-0 animate-spin" />
+          {uploadProgress}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-10">
 
         {/* Release Info */}
@@ -270,19 +353,18 @@ export default function NewReleasePage() {
               options={["Single", "EP", "Album"]}
               required
               value={releaseType}
-              onChange={setReleaseType}
+              onChange={(v) => {
+                setReleaseType(v);
+                // Reset tracks when switching type
+                setTracks([{ title: "", file: null }]);
+                setAudioFile(null);
+              }}
             />
-            <Field
-              label={releaseType === "Single" ? "Song Title" : "Release Title"}
-              name="songTitle"
-              required
-            />
-            {(releaseType === "EP" || releaseType === "Album") && (
-              <Field
-                label="Album / EP Title"
-                name="albumTitle"
-                placeholder="Full project title"
-              />
+            {!isMultiTrack && (
+              <Field label="Song Title" name="songTitle" required />
+            )}
+            {isMultiTrack && (
+              <Field label={`${releaseType} Title`} name="albumTitle" placeholder="Full project title" required />
             )}
             <Select label="Genre" name="genre" options={genres} required />
             <Field label="Desired Release Date" name="releaseDate" type="date" required />
@@ -290,19 +372,94 @@ export default function NewReleasePage() {
           </div>
         </div>
 
-        {/* Files */}
+        {/* Cover Art — always shown */}
         <div>
           <h2 className="text-white font-bold text-lg mb-2 pb-3 border-b border-white/10">
-            Files & Uploads
+            Cover Artwork
           </h2>
-          <p className="text-white/30 text-xs mb-5">
-            {releaseType === "Album" || releaseType === "EP"
-              ? "Upload the primary/lead track audio and your cover artwork."
-              : "Upload your audio file and cover artwork."}
-          </p>
-          <div className="grid sm:grid-cols-2 gap-5">
+          <p className="text-white/30 text-xs mb-5">JPG or PNG · Min. 3000×3000px</p>
+          <FileUpload
+            label="Cover Artwork"
+            name="coverFile"
+            accept=".jpg,.jpeg,.png"
+            hint="JPG or PNG · Min. 3000×3000px"
+            file={coverFile}
+            onChange={setCoverFile}
+            required
+          />
+        </div>
+
+        {/* Audio Files */}
+        <div>
+          <h2 className="text-white font-bold text-lg mb-2 pb-3 border-b border-white/10">
+            {isMultiTrack ? `${releaseType} Tracks` : "Audio File"}
+          </h2>
+
+          {isMultiTrack ? (
+            <div className="space-y-4">
+              <p className="text-white/30 text-xs mb-2">
+                Add all tracks in order. WAV, MP3, or FLAC · Min. 16-bit / 44.1kHz
+              </p>
+              {tracks.map((track, i) => (
+                <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[#007bff] text-xs font-bold uppercase tracking-widest">
+                      Track {i + 1}
+                    </span>
+                    {tracks.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeTrack(i)}
+                        className="text-white/30 hover:text-red-400 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder={`Track ${i + 1} title`}
+                      value={track.title}
+                      onChange={(e) => updateTrackTitle(i, e.target.value)}
+                      required
+                      className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
+                    />
+                    <label className="flex items-center gap-3 bg-white/[0.03] border border-dashed border-white/[0.12] hover:border-[#007bff]/50 rounded-xl px-4 py-3 cursor-pointer transition-colors group">
+                      {track.file ? (
+                        <>
+                          <CheckCircle2 size={16} className="text-[#007bff] flex-shrink-0" />
+                          <span className="text-white/70 text-sm truncate">{track.file.name}</span>
+                          <span className="text-white/30 text-xs ml-auto flex-shrink-0">Change</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={16} className="text-white/30 group-hover:text-[#007bff] flex-shrink-0 transition-colors" />
+                          <span className="text-white/40 text-sm">Upload audio file</span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept=".wav,.mp3,.flac"
+                        className="sr-only"
+                        onChange={(e) => updateTrackFile(i, e.target.files?.[0] ?? null)}
+                      />
+                    </label>
+                  </div>
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addTrack}
+                className="w-full flex items-center justify-center gap-2 border border-dashed border-white/[0.15] hover:border-[#007bff]/40 text-white/40 hover:text-[#007bff] py-3 rounded-2xl text-sm transition-all"
+              >
+                <Plus size={15} /> Add Track
+              </button>
+            </div>
+          ) : (
             <FileUpload
-              label={releaseType === "Album" || releaseType === "EP" ? "Lead Track Audio" : "Audio File"}
+              label="Audio File"
               name="audioFile"
               accept=".wav,.mp3,.flac"
               hint="WAV, MP3, or FLAC · Min. 16-bit / 44.1kHz"
@@ -310,16 +467,7 @@ export default function NewReleasePage() {
               onChange={setAudioFile}
               required
             />
-            <FileUpload
-              label="Cover Artwork"
-              name="coverFile"
-              accept=".jpg,.jpeg,.png"
-              hint="JPG or PNG · Min. 3000×3000px"
-              file={coverFile}
-              onChange={setCoverFile}
-              required
-            />
-          </div>
+          )}
         </div>
 
         {/* Metadata */}
@@ -357,10 +505,12 @@ export default function NewReleasePage() {
           {isLoading ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              {state === "uploading" ? "Uploading files…" : "Submitting release…"}
+              {state === "uploading" ? (uploadProgress || "Uploading files…") : "Saving release…"}
             </>
           ) : (
-            `Submit ${releaseType} for Review`
+            isMultiTrack
+              ? `Submit ${releaseType} for Distribution (${tracks.length} track${tracks.length !== 1 ? "s" : ""})`
+              : "Submit Release for Distribution"
           )}
         </button>
       </form>
