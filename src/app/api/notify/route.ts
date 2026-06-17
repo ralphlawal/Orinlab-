@@ -321,6 +321,28 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({ from: FROM, to: data.email, subject, html });
       return NextResponse.json({ success: true });
 
+    } else if (type === "service-request") {
+      subject = `Service request — ${esc(data.service_title)} · ${esc(data.artist_name)}`;
+      html = wrap(
+        "#7c3aed",
+        data.team,
+        `${esc(data.service_title)} Request`,
+        `${esc(data.artist_name)} has requested the ${esc(data.service_title)} service.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Service",     data.service_title)}
+          ${row("Assign To",   data.team_role)}
+          ${row("Artist",      data.artist_name)}
+          ${row("Email",       data.email)}
+          ${data.genre   ? row("Genre",   data.genre)   : ""}
+          ${data.country ? row("Country", data.country) : ""}
+          ${data.release_title ? row("Release", `${esc(data.release_title)} (${esc(data.release_type)})`) : ""}
+        </table>
+        ${data.goal     ? `<p style="margin:20px 0 4px;color:#999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Goal</p>${quote(data.goal)}`         : ""}
+        ${data.audience ? `<p style="margin:20px 0 4px;color:#999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Target Audience</p>${quote(data.audience)}` : ""}
+        ${data.message  ? `<p style="margin:20px 0 4px;color:#999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Additional Notes</p>${quote(data.message)}`  : ""}
+        ${btn("Reply via Admin Messages", "https://orinlabi.com/admin/messages", "#7c3aed")}`
+      );
+
     } else if (type === "payout-request") {
       const methodLabel = data.payout_method === "bank_transfer" ? "Bank Transfer"
         : data.payout_method === "paypal" ? "PayPal"
