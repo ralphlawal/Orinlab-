@@ -37,6 +37,15 @@ export default function AdminDashboard() {
   const [recentReleases, setRecentReleases] = useState<Release[]>([]);
   const [recentMessages, setRecentMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adminName, setAdminName] = useState("");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = data.session?.user?.email ?? "";
+      const name = email.split("@")[0] ?? "";
+      setAdminName(name.charAt(0).toUpperCase() + name.slice(1));
+    });
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -87,7 +96,7 @@ export default function AdminDashboard() {
     <div className="space-y-8 max-w-6xl">
       <div>
         <h1 className="text-white font-bold text-2xl">Dashboard</h1>
-        <p className="text-white/40 text-sm mt-1">Welcome back, Ralph.</p>
+        <p className="text-white/40 text-sm mt-1">Welcome back{adminName ? `, ${adminName}` : ""}.</p>
       </div>
 
       {/* Stat cards */}
