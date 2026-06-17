@@ -18,6 +18,7 @@ import {
   X,
   Palette,
   Users,
+  Settings,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} /> },
   { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} /> },
   { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} /> },
+  { label: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
 ];
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")

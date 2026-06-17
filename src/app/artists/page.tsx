@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Music, Globe, ArrowRight, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getSetting, DEFAULT_ARTISTS_PAGE, type ArtistsPageSettings } from "@/lib/siteSettings";
 
 export const revalidate = 60;
 
@@ -64,7 +65,10 @@ async function getApprovedArtists() {
 }
 
 export default async function ArtistsPage() {
-  const artists = await getApprovedArtists();
+  const [artists, artistsPage] = await Promise.all([
+    getApprovedArtists(),
+    getSetting<ArtistsPageSettings>("artists_page", DEFAULT_ARTISTS_PAGE),
+  ]);
   const countries = new Set(artists.map((a) => a.country).filter(Boolean)).size;
 
   return (
@@ -77,11 +81,10 @@ export default async function ArtistsPage() {
             Our Artists
           </p>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6">
-            Voices of Africa.
+            {artistsPage.heading}
           </h1>
           <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-            Independent African artists who are reaching the world through
-            Orinlabí. Selected. Supported. Global.
+            {artistsPage.body}
           </p>
         </div>
       </section>

@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Mail, MessageCircle, AtSign, MapPin, CheckCircle2, Loader2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { getSetting, DEFAULT_CONTACT, type ContactInfo } from "@/lib/siteSettings";
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ci, setCi] = useState<ContactInfo>(DEFAULT_CONTACT);
+
+  useEffect(() => {
+    getSetting<ContactInfo>("contact_info", DEFAULT_CONTACT).then(setCi);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -73,8 +79,7 @@ export default function ContactPage() {
                 Get In Touch
               </h2>
               <p className="text-white/50 leading-relaxed">
-                Our team is available Monday – Friday, 9am – 6pm (WAT). We
-                typically respond within 24 hours.
+                Our team is available {ci.hours}. We typically respond within 24 hours.
               </p>
             </div>
 
@@ -82,31 +87,31 @@ export default function ContactPage() {
               <ContactDetail
                 icon={<Mail size={20} />}
                 label="Email"
-                value="info@orinlabi.com"
-                href="mailto:info@orinlabi.com"
+                value={ci.email}
+                href={`mailto:${ci.email}`}
               />
               <ContactDetail
                 icon={<MessageCircle size={20} />}
                 label="WhatsApp / Phone"
-                value="+234 811 469 1172"
-                href="https://wa.me/2348114691172"
+                value={ci.phone}
+                href={ci.whatsapp_url}
               />
               <ContactDetail
                 icon={<AtSign size={20} />}
                 label="Instagram"
-                value="@orinlabimusic"
-                href="https://instagram.com/orinlabimusic"
+                value={ci.instagram}
+                href={ci.instagram_url}
               />
               <ContactDetail
                 icon={<X size={20} />}
                 label="X (Twitter)"
-                value="@orinlabimusic"
-                href="https://x.com/orinlabimusic"
+                value={ci.twitter}
+                href={ci.twitter_url}
               />
               <ContactDetail
                 icon={<MapPin size={20} />}
                 label="Address"
-                value="Lagos, Nigeria · Ralph Lawal Group"
+                value={ci.address}
                 href={undefined}
               />
             </div>
@@ -118,7 +123,7 @@ export default function ContactPage() {
               </p>
               <div className="flex gap-3 flex-wrap">
                 <a
-                  href="https://instagram.com/orinlabimusic"
+                  href={ci.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2.5 rounded-full transition-all duration-200"
@@ -126,7 +131,7 @@ export default function ContactPage() {
                   <AtSign size={16} /> Instagram
                 </a>
                 <a
-                  href="https://x.com/orinlabimusic"
+                  href={ci.twitter_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2.5 rounded-full transition-all duration-200"
@@ -134,7 +139,7 @@ export default function ContactPage() {
                   <X size={16} /> X
                 </a>
                 <a
-                  href="https://wa.me/2348114691172"
+                  href={ci.whatsapp_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white border border-white/10 hover:border-white/30 px-4 py-2.5 rounded-full transition-all duration-200"

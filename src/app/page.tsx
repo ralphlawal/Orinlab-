@@ -14,9 +14,16 @@ import {
   Users,
   DollarSign,
 } from "lucide-react";
+import {
+  getSetting,
+  DEFAULT_HERO,
+  DEFAULT_TESTIMONIALS,
+  type HeroSettings,
+  type Testimonial,
+} from "@/lib/siteSettings";
 
 /* ── Hero ───────────────────────────────────────────────── */
-function Hero() {
+function Hero({ s }: { s: HeroSettings }) {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(600px,100vw)] h-[min(600px,100vw)] bg-[#007bff]/10 rounded-full blur-[120px] pointer-events-none" />
@@ -24,17 +31,16 @@ function Hero() {
       <div className="relative z-10 max-w-4xl mx-auto">
         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white/70 text-xs font-medium px-4 py-2 rounded-full mb-8">
           <span className="w-2 h-2 bg-[#007bff] rounded-full animate-pulse" />
-          Now accepting artist applications
+          {s.badge}
         </div>
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight mb-6">
-          Release Your Music{" "}
-          <span className="text-[#007bff]">Worldwide.</span>
+          {s.headline}{" "}
+          <span className="text-[#007bff]">{s.highlight}</span>
         </h1>
 
         <p className="text-white/60 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Invitation-based global distribution for independent African artists.
-          Apply, get selected, and release to 150+ platforms — completely free.
+          {s.subheadline}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -53,15 +59,11 @@ function Hero() {
         </div>
 
         <div className="mt-16 grid grid-cols-3 gap-4 max-w-xs sm:max-w-lg mx-auto">
-          {[
-            { value: "150+", label: "Platforms" },
-            { value: "50+", label: "Countries" },
-            { value: "100%", label: "Ownership" },
-          ].map((s) => (
-            <div key={s.label} className="text-center">
-              <div className="text-2xl sm:text-3xl font-bold text-white">{s.value}</div>
+          {s.stats.map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
               <div className="text-white/40 text-xs mt-1 uppercase tracking-wider">
-                {s.label}
+                {stat.label}
               </div>
             </div>
           ))}
@@ -260,31 +262,7 @@ function WhyOrinlabí() {
 }
 
 /* ── Testimonials ───────────────────────────────────────── */
-function Testimonials() {
-  const testimonials = [
-    {
-      name: "Temi Adeyemi",
-      role: "Afrobeats Artist, Lagos",
-      quote:
-        "Orinlabí made my global debut possible. My single was live on Spotify, Apple Music, and Boomplay within 48 hours. The support team actually cares.",
-      rating: 5,
-    },
-    {
-      name: "Kwame Asante",
-      role: "Highlife Producer, Accra",
-      quote:
-        "Finally a distributor that understands the African market. The royalty transparency and playlist promotion are top-tier. I am not going anywhere else.",
-      rating: 5,
-    },
-    {
-      name: "Zara Musa",
-      role: "Afropop Vocalist, Abuja",
-      quote:
-        "The release strategy team helped me plan my EP rollout from start to finish. Streams went up 400% compared to my previous release. Incredible.",
-      rating: 5,
-    },
-  ];
-
+function Testimonials({ items }: { items: Testimonial[] }) {
   return (
     <section className="py-24 px-4">
       <div className="max-w-7xl mx-auto">
@@ -298,18 +276,14 @@ function Testimonials() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map((t) => (
+          {items.map((t, i) => (
             <div
-              key={t.name}
+              key={i}
               className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 flex flex-col"
             >
               <div className="flex gap-1 mb-5">
-                {Array.from({ length: t.rating }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={16}
-                    className="fill-[#007bff] text-[#007bff]"
-                  />
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <Star key={j} size={16} className="fill-[#007bff] text-[#007bff]" />
                 ))}
               </div>
               <p className="text-white/70 text-sm leading-relaxed flex-1 mb-6">
@@ -485,14 +459,19 @@ function CTA() {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [hero, testimonials] = await Promise.all([
+    getSetting("hero", DEFAULT_HERO),
+    getSetting("testimonials", DEFAULT_TESTIMONIALS),
+  ]);
+
   return (
     <>
-      <Hero />
+      <Hero s={hero} />
       <Platforms />
       <Features />
       <WhyOrinlabí />
-      <Testimonials />
+      <Testimonials items={testimonials} />
       <ArtistSpotlight />
       <FAQ />
       <CTA />
