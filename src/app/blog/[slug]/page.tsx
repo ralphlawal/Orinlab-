@@ -97,9 +97,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       </section>
 
-      {/* Divider image area */}
+      {/* Cover image */}
       <div className="max-w-3xl mx-auto px-4 mb-12">
-        <div className="aspect-[2/1] bg-gradient-to-br from-[#007bff]/15 via-[#007bff]/5 to-black rounded-2xl border border-white/[0.06]" />
+        <div className="aspect-[2/1] rounded-2xl border border-white/[0.06] overflow-hidden bg-gradient-to-br from-[#007bff]/15 via-[#007bff]/5 to-black">
+          {post.cover_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={post.cover_image_url} alt={post.title} className="w-full h-full object-cover" />
+          )}
+        </div>
       </div>
 
       {/* Content */}

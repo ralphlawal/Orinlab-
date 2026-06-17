@@ -12,7 +12,7 @@ export default function NewPostPage() {
 
   async function handleSave(data: {
     title: string; slug: string; excerpt: string; content: string;
-    category: string; featured: boolean; published: boolean;
+    category: string; featured: boolean; published: boolean; cover_image_url: string;
   }) {
     setSaving(true);
     const finalSlug = data.slug || slugify(data.title);

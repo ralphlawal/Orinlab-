@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { AtSign, Mail, MessageCircle, X } from "lucide-react";
+import NewsletterForm from "@/components/NewsletterForm";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -134,6 +135,10 @@ export default function Footer() {
             >
               Apply Now
             </Link>
+            <div className="mt-8 pt-6 border-t border-white/[0.06]">
+              <p className="text-white/50 text-xs mb-3">Get weekly music industry insights:</p>
+              <NewsletterForm compact />
+            </div>
           </div>
         </div>
 

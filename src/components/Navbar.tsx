@@ -62,6 +62,12 @@ export default function Navbar() {
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           <Link
+            href="/portal"
+            className="text-sm text-white/70 hover:text-white font-medium px-5 py-2.5 rounded-full border border-white/15 hover:border-white/40 transition-colors duration-200"
+          >
+            Artist Login
+          </Link>
+          <Link
             href="/submit"
             className="bg-[#007bff] hover:bg-[#0069d9] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors duration-200"
           >
@@ -95,13 +101,22 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
-          <Link
-            href="/submit"
-            className="mt-6 block text-center bg-[#007bff] hover:bg-[#0069d9] text-white text-sm font-semibold px-5 py-3 rounded-full transition-colors duration-200"
-            onClick={() => setOpen(false)}
-          >
-            Apply Now
-          </Link>
+          <div className="mt-6 flex flex-col gap-3">
+            <Link
+              href="/portal"
+              className="block text-center text-white/80 hover:text-white text-sm font-semibold px-5 py-3 rounded-full border border-white/15 hover:border-white/40 transition-colors duration-200"
+              onClick={() => setOpen(false)}
+            >
+              Artist Login
+            </Link>
+            <Link
+              href="/submit"
+              className="block text-center bg-[#007bff] hover:bg-[#0069d9] text-white text-sm font-semibold px-5 py-3 rounded-full transition-colors duration-200"
+              onClick={() => setOpen(false)}
+            >
+              Apply Now
+            </Link>
+          </div>
         </div>
       )}
     </header>

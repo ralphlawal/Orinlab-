@@ -13,7 +13,7 @@ export const metadata = {
 async function getPosts() {
   const { data } = await supabase
     .from("blog_posts")
-    .select("id,title,slug,excerpt,content,category,featured,created_at")
+    .select("id,title,slug,excerpt,content,category,featured,created_at,cover_image_url")
     .eq("published", true)
     .order("created_at", { ascending: false });
   return data ?? [];

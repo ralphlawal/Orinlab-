@@ -7,11 +7,12 @@ import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
   Globe, Calendar, Mic2, FileText, Loader2, ExternalLink, Trash2,
-  BarChart2, DollarSign, PenLine, Share2, Copy, Star,
+  BarChart2, DollarSign, PenLine, Share2, Copy, Star, Send,
 } from "lucide-react";
 
 type Release = {
   id: string;
+  email: string;
   artist_name: string;
   song_title: string;
   album_title: string | null;
@@ -72,6 +73,8 @@ export default function ReleaseDetailPage() {
   const [takedownState, setTakedownState] = useState<"idle" | "confirm" | "sent">("idle");
   const [sendingTakedown, setSendingTakedown] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [payoutState, setPayoutState] = useState<"idle" | "confirm" | "sent">("idle");
+  const [payoutLoading, setPayoutLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -109,6 +112,32 @@ export default function ReleaseDetailPage() {
         </Link>
       </div>
     );
+  }
+
+  async function handlePayoutRequest() {
+    if (!release) return;
+    setPayoutLoading(true);
+    try {
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "payout-request",
+          data: {
+            email: release.email,
+            artist_name: release.artist_name,
+            song_title: release.song_title,
+            royalties_usd: release.royalties_usd,
+            release_id: release.id,
+          },
+        }),
+      });
+      setPayoutState("sent");
+    } catch {
+      setPayoutState("idle");
+    } finally {
+      setPayoutLoading(false);
+    }
   }
 
   const cfg = statusConfig[release.status] ?? statusConfig.pending;
@@ -433,16 +462,52 @@ export default function ReleaseDetailPage() {
             <DollarSign size={18} className="text-green-400" />
             <p className="text-white font-semibold">Earnings</p>
           </div>
-          <div className="flex items-end gap-2 mb-2">
+          <div className="flex items-end gap-2 mb-4">
             <span className="text-green-400 text-3xl font-bold">
               ${release.royalties_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <span className="text-white/30 text-sm mb-1">USD</span>
           </div>
-          <p className="text-white/30 text-xs">
-            Total royalties earned as reported by streaming platforms. Payouts are processed on a monthly basis — contact us at{" "}
-            <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">info@orinlabi.com</a> to arrange your payout.
-          </p>
+
+          {payoutState === "sent" ? (
+            <div className="flex items-center gap-2 bg-green-400/10 border border-green-400/20 rounded-xl px-4 py-3">
+              <CheckCircle2 size={16} className="text-green-400 flex-shrink-0" />
+              <p className="text-green-400 text-sm">Payout request sent! Our team will reach out within 3–5 business days.</p>
+            </div>
+          ) : payoutState === "confirm" ? (
+            <div className="bg-white/[0.04] border border-white/[0.1] rounded-xl p-4 space-y-3">
+              <p className="text-white/70 text-sm">Submit a payout request for <span className="text-white font-semibold">${release.royalties_usd.toFixed(2)} USD</span> to the Orinlabí team?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handlePayoutRequest}
+                  disabled={payoutLoading}
+                  className="flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+                >
+                  {payoutLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                  Confirm Request
+                </button>
+                <button
+                  onClick={() => setPayoutState("idle")}
+                  className="text-white/40 hover:text-white text-sm px-5 py-2.5 rounded-full border border-white/[0.1] hover:border-white/30 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <p className="text-white/30 text-xs">
+                Payouts are processed monthly. Click to request your earnings.
+              </p>
+              <button
+                onClick={() => setPayoutState("confirm")}
+                className="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+              >
+                <DollarSign size={15} />
+                Request Payout
+              </button>
+            </div>
+          )}
         </div>
       )}
 

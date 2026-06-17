@@ -11,7 +11,7 @@ const categories = [
 
 type PostData = {
   title: string; slug: string; excerpt: string; content: string;
-  category: string; featured: boolean; published: boolean;
+  category: string; featured: boolean; published: boolean; cover_image_url: string;
 };
 
 type Props = {
@@ -31,6 +31,7 @@ export default function PostEditor({ title, initial, saving, onSave, onCancel }:
     category: initial?.category ?? "",
     featured: initial?.featured ?? false,
     published: initial?.published ?? false,
+    cover_image_url: initial?.cover_image_url ?? "",
   });
   const [preview, setPreview] = useState(false);
   const [slugEdited, setSlugEdited] = useState(!!initial?.slug);
@@ -105,6 +106,21 @@ export default function PostEditor({ title, initial, saving, onSave, onCancel }:
                 {categories.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+          </div>
+
+          {/* Cover image */}
+          <div>
+            <label className="label">Cover Image URL</label>
+            <input
+              value={form.cover_image_url}
+              onChange={(e) => set("cover_image_url", e.target.value)}
+              placeholder="https://… (paste a direct image link)"
+              className="input text-sm"
+            />
+            {form.cover_image_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={form.cover_image_url} alt="preview" className="mt-2 h-32 rounded-xl object-cover border border-white/[0.06]" />
+            )}
           </div>
 
           {/* Excerpt */}

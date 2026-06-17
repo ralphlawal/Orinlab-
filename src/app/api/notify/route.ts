@@ -321,6 +321,23 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({ from: FROM, to: data.email, subject, html });
       return NextResponse.json({ success: true });
 
+    } else if (type === "payout-request") {
+      subject = `Payout request — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = wrap(
+        "#16a34a",
+        "Payout Request",
+        `Payout Request: ${esc(data.song_title)}`,
+        `${esc(data.artist_name)} has requested a payout for their royalties.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Artist",       data.artist_name)}
+          ${row("Email",        data.email)}
+          ${row("Release",      data.song_title)}
+          ${row("Amount",       `$${Number(data.royalties_usd ?? 0).toFixed(2)} USD`)}
+          ${row("Release ID",   data.release_id)}
+        </table>
+        ${btn("Review in Admin Panel", `https://orinlabi.com/admin/releases`, "#16a34a")}`
+      );
+
     } else if (type === "admin-message") {
       subject = `New message from Orinlabí`;
       html = wrap(

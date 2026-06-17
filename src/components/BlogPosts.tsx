@@ -14,6 +14,7 @@ type Post = {
   category: string | null;
   featured: boolean;
   created_at: string;
+  cover_image_url?: string | null;
 };
 
 const categories = [
@@ -71,10 +72,15 @@ export default function BlogPosts({ posts }: { posts: Post[] }) {
                   href={`/blog/${featured.slug}`}
                   className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-3xl overflow-hidden transition-all duration-300 grid md:grid-cols-5 block"
                 >
-                  <div className="md:col-span-2 aspect-video md:aspect-auto bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center">
-                    <div className="w-16 h-16 bg-[#007bff]/20 rounded-2xl flex items-center justify-center">
-                      <Tag size={28} className="text-[#007bff]" />
-                    </div>
+                  <div className="md:col-span-2 aspect-video md:aspect-auto bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center overflow-hidden">
+                    {featured.cover_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={featured.cover_image_url} alt={featured.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-16 h-16 bg-[#007bff]/20 rounded-2xl flex items-center justify-center">
+                        <Tag size={28} className="text-[#007bff]" />
+                      </div>
+                    )}
                   </div>
                   <div className="md:col-span-3 p-8 flex flex-col">
                     <div className="flex items-center gap-3 mb-4">
@@ -117,10 +123,15 @@ export default function BlogPosts({ posts }: { posts: Post[] }) {
                       href={`/blog/${post.slug}`}
                       className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl overflow-hidden transition-all duration-300 flex flex-col"
                     >
-                      <div className="aspect-video bg-gradient-to-br from-[#007bff]/10 to-black flex items-center justify-center">
-                        <div className="w-12 h-12 bg-[#007bff]/10 rounded-xl flex items-center justify-center">
-                          <Tag size={20} className="text-[#007bff]/50" />
-                        </div>
+                      <div className="aspect-video bg-gradient-to-br from-[#007bff]/10 to-black flex items-center justify-center overflow-hidden">
+                        {post.cover_image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={post.cover_image_url} alt={post.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 bg-[#007bff]/10 rounded-xl flex items-center justify-center">
+                            <Tag size={20} className="text-[#007bff]/50" />
+                          </div>
+                        )}
                       </div>
                       <div className="p-6 flex flex-col flex-1">
                         {post.category && (
