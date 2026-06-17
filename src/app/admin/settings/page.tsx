@@ -6,7 +6,10 @@ import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff } from "lucide-react";
 
-const SUPER_ADMIN = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ?? "").trim().toLowerCase();
+const SUPER_ADMIN = (
+  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
+).trim().toLowerCase();
 import {
   DEFAULT_HERO,
   DEFAULT_TESTIMONIALS,

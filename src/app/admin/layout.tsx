@@ -37,7 +37,11 @@ const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
-const SUPER_ADMIN = (process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ?? "").trim().toLowerCase();
+// Falls back to the first email in NEXT_PUBLIC_ADMIN_EMAILS if the dedicated env var isn't set
+const SUPER_ADMIN = (
+  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
+).trim().toLowerCase();
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
