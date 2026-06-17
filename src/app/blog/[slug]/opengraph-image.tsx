@@ -12,7 +12,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
     .from("blog_posts")
     .select("title,excerpt,category")
     .eq("slug", slug)
-    .single();
+    .maybeSingle();
 
   const title = post?.title ?? "Orinlabí Blog";
   const excerpt = post?.excerpt ?? "Music industry insights for African artists.";

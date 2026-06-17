@@ -33,7 +33,7 @@ async function getArtist(slug: string) {
       .from("artist_profiles")
       .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id")
       .eq("email", email)
-      .single();
+      .maybeSingle();
     profile = data;
   }
 

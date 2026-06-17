@@ -30,7 +30,7 @@ export default function PortalMessagesPage() {
 
       const [{ data: rel }, { data: thread }] = await Promise.all([
         supabase.from("releases").select("artist_name").eq("email", e)
-          .order("submitted_at", { ascending: false }).limit(1).single(),
+          .order("submitted_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("messages").select("*").eq("artist_email", e)
           .order("created_at", { ascending: true }),
       ]);

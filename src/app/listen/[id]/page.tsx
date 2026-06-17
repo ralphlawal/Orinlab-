@@ -32,7 +32,7 @@ async function getRelease(id: string): Promise<Release | null> {
     .select("id, artist_name, song_title, release_type, genre, cover_art_url, store_links, status")
     .eq("id", id)
     .eq("status", "approved")
-    .single();
+    .maybeSingle();
   return (data as Release) ?? null;
 }
 

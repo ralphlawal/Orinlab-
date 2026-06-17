@@ -17,12 +17,7 @@ const genres = [
 
 type ArtistProfile = {
   artist_name: string;
-  legal_name: string;
   email: string;
-  phone: string;
-  country: string;
-  artist_bio: string;
-  social_links: string;
 };
 
 type Track = { title: string; file: File | null };
@@ -52,12 +47,12 @@ export default function NewReleasePage() {
 
       const { data } = await supabase
         .from("releases")
-        .select("artist_name, legal_name, email, phone, country, artist_bio, social_links")
+        .select("artist_name, email")
         .eq("email", session.user.email!)
         .eq("status", "approved")
         .order("submitted_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (!data) {
         router.push("/portal");
@@ -168,12 +163,7 @@ export default function NewReleasePage() {
 
       const releasePayload: Record<string, unknown> = {
         artist_name:      profile.artist_name,
-        legal_name:       profile.legal_name,
         email:            profile.email,
-        phone:            profile.phone,
-        country:          profile.country,
-        artist_bio:       profile.artist_bio,
-        social_links:     profile.social_links,
         release_type:     data.get("releaseType"),
         song_title:       leadTitle,
         album_title:      data.get("albumTitle") || null,
@@ -212,8 +202,6 @@ export default function NewReleasePage() {
             genre:         data.get("genre"),
             release_date:  data.get("releaseDate"),
             email:         profile.email,
-            phone:         profile.phone,
-            country:       profile.country,
             cover_art_url: coverData.publicUrl,
             audio_file_url: isMultiTrack ? null : audioFileUrl,
             tracks:        isMultiTrack ? uploadedTracks : null,

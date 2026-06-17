@@ -137,7 +137,7 @@ export default function ReleasesPage() {
       .from("artist_profiles")
       .select("*")
       .eq("email", r.email)
-      .single()
+      .maybeSingle()
       .then(({ data }) => setArtistProfile((data as ArtistProfile) ?? null));
   }
 

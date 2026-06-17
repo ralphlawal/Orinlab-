@@ -83,7 +83,7 @@ export default function ReleaseDetailPage() {
         .select("*")
         .eq("id", id)
         .eq("email", session.user.email!)
-        .single();
+        .maybeSingle();
 
       if (!data) setNotFound(true);
       else setRelease(data as Release);
