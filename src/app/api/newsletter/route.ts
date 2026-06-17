@@ -20,6 +20,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to subscribe. Please try again." }, { status: 500 });
   }
 
+  // Notify Ralph — fire and forget
+  fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://orinlabi.com"}/api/notify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type: "newsletter-signup", data: { email } }),
+  }).catch(() => {});
+
   // Welcome email — fire and forget
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);

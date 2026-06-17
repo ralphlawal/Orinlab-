@@ -42,6 +42,22 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         if (session) {
           setEmail(session.user.email ?? null);
           setChecking(false);
+
+          // Notify Ralph when an artist logs in — fire once per session
+          if (event === "SIGNED_IN") {
+            const key = `login_notified_${session.user.email}`;
+            if (!sessionStorage.getItem(key)) {
+              sessionStorage.setItem(key, "1");
+              fetch("/api/notify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  type: "artist-login",
+                  data: { email: session.user.email, artist_name: session.user.user_metadata?.artist_name ?? "" },
+                }),
+              }).catch(() => {});
+            }
+          }
         } else if (event === "SIGNED_OUT") {
           router.replace("/portal/login");
         }

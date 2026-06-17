@@ -395,6 +395,55 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({ from: FROM, to: data.email, subject, html });
       return NextResponse.json({ success: true });
 
+    } else if (type === "artist-login") {
+      const loginTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+      subject = `Artist login — ${esc(data.email)}`;
+      html = wrap(
+        "#007bff",
+        "Portal Activity",
+        "Artist Logged In",
+        `An artist just signed in to their Orinlabí portal.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Email",        data.email)}
+          ${data.artist_name ? row("Artist Name", data.artist_name) : ""}
+          ${row("Time",         loginTime + " UTC")}
+        </table>
+        ${btn("View Artist in Admin", "https://orinlabi.com/admin/artists")}`
+      );
+
+    } else if (type === "newsletter-signup") {
+      const signupTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+      subject = `New newsletter subscriber — ${esc(data.email)}`;
+      html = wrap(
+        "#007bff",
+        "Newsletter",
+        "New Subscriber",
+        `Someone just subscribed to the Orinlabí newsletter.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Email", data.email)}
+          ${row("Time",  signupTime + " UTC")}
+        </table>
+        ${btn("View Subscribers", "https://orinlabi.com/admin/newsletter")}`
+      );
+
+    } else if (type === "profile-updated") {
+      const updatedTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+      subject = `Profile updated — ${esc(data.artist_name || data.email)}`;
+      html = wrap(
+        "#007bff",
+        "Portal Activity",
+        "Artist Profile Updated",
+        `An artist just updated their profile.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+          ${row("Artist",  data.artist_name || "—")}
+          ${row("Email",   data.email)}
+          ${data.country ? row("Country", data.country) : ""}
+          ${data.genre   ? row("Genre",   data.genre)   : ""}
+          ${row("Time",    updatedTime + " UTC")}
+        </table>
+        ${btn("View in Admin", "https://orinlabi.com/admin/artists")}`
+      );
+
     } else if (type === "admin-login") {
       const loginTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
       subject = `Admin login — ${esc(data.email)}`;

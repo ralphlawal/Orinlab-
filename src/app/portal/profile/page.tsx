@@ -217,6 +217,16 @@ export default function ProfilePage() {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+
+    // Notify Ralph — fire and forget
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "profile-updated",
+        data: { email, artist_name: profile.artist_name, country: profile.country, genre: profile.genre },
+      }),
+    }).catch(() => {});
   }
 
   if (loading) {

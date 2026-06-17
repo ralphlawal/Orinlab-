@@ -8,6 +8,11 @@ import {
   ChevronDown, ChevronUp, Save, User, BarChart3,
 } from "lucide-react";
 
+const SUPER_ADMIN = (
+  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
+  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
+).trim().toLowerCase();
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ReleaseRow = {
@@ -311,6 +316,14 @@ export default function AdminArtistsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const email = (data.session?.user?.email ?? "").toLowerCase();
+      setIsSuperAdmin(email === SUPER_ADMIN);
+    });
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -445,12 +458,14 @@ export default function AdminArtistsPage() {
                           <StatusIcon size={12} />
                           {cfg.label}
                         </div>
-                        <button
-                          onClick={() => setExpanded(isOpen ? null : artist.email)}
-                          className="flex items-center gap-1 text-white/40 hover:text-[#007bff] text-xs font-medium transition-colors px-2 py-1 rounded-lg hover:bg-[#007bff]/10"
-                        >
-                          {isOpen ? <><ChevronUp size={14} /> Close</> : <><ChevronDown size={14} /> Edit</>}
-                        </button>
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => setExpanded(isOpen ? null : artist.email)}
+                            className="flex items-center gap-1 text-white/40 hover:text-[#007bff] text-xs font-medium transition-colors px-2 py-1 rounded-lg hover:bg-[#007bff]/10"
+                          >
+                            {isOpen ? <><ChevronUp size={14} /> Close</> : <><ChevronDown size={14} /> Edit</>}
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -478,8 +493,8 @@ export default function AdminArtistsPage() {
                   </div>
                 </div>
 
-                {/* Edit panel */}
-                {isOpen && (
+                {/* Edit panel — Ralph only */}
+                {isOpen && isSuperAdmin && (
                   <EditPanel
                     artist={artist}
                     onSaved={(updated) => handleSaved(artist.email, updated)}
