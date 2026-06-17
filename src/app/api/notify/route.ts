@@ -3,11 +3,6 @@ import { Resend } from "resend";
 
 const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
 const ADMIN  = process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com";
-// Second inbox: the super admin login email (ralph@orinlabi.com)
-const ADMIN2 = (
-  process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
-  (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
-).trim().toLowerCase();
 const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
 
 function esc(s: unknown): string {
@@ -199,10 +194,6 @@ export async function POST(req: NextRequest) {
         ${tracksBlock}
         ${btn("Review in Admin Panel", "https://orinlabi.com/admin/releases")}`
       );
-      // Send to both admin inboxes
-      if (ADMIN2 && ADMIN2 !== ADMIN) {
-        await resend.emails.send({ from: FROM, to: ADMIN2, subject, html });
-      }
 
     } else if (type === "new-contact") {
       subject = `New message — ${esc(data.name)} · ${esc(data.subject)}`;
