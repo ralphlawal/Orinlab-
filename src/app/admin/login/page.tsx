@@ -6,6 +6,11 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { Loader2, LogIn } from "lucide-react";
 
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -18,13 +23,21 @@ export default function AdminLoginPage() {
     setLoading(true);
     setError("");
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (authError) {
       setError("Invalid email or password.");
+      setLoading(false);
+      return;
+    }
+
+    const loggedInEmail = (data.session?.user?.email ?? "").toLowerCase();
+    if (!ADMIN_EMAILS.includes(loggedInEmail)) {
+      await supabase.auth.signOut();
+      setError("Access denied. This panel is restricted to authorised administrators.");
       setLoading(false);
       return;
     }

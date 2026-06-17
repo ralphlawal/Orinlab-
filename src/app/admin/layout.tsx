@@ -29,6 +29,11 @@ const navItems = [
   { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} /> },
 ];
 
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -37,7 +42,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session && pathname !== "/admin/login") {
+      if (pathname === "/admin/login") {
+        setChecking(false);
+        return;
+      }
+      const email = (data.session?.user?.email ?? "").toLowerCase();
+      const isAdmin = Boolean(email) && ADMIN_EMAILS.includes(email);
+      if (!isAdmin) {
         router.replace("/admin/login");
       } else {
         setChecking(false);
