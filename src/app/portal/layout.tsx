@@ -35,10 +35,28 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       } else if (pathname.startsWith("/portal/login")) {
         setChecking(false);
       } else {
-        // No session and not on login — redirect immediately.
-        // Magic-link exchange now happens at /auth/callback, never here.
-        router.replace("/portal/login");
-        setChecking(false);
+        // If there's an access_token in the hash, a magic link landed here directly.
+        // Give Supabase 3 s to finish the token exchange before redirecting.
+        const hasToken = typeof window !== "undefined" &&
+          (window.location.hash.includes("access_token") ||
+           new URLSearchParams(window.location.search).has("code") ||
+           new URLSearchParams(window.location.search).has("token_hash"));
+
+        if (hasToken) {
+          setTimeout(() => {
+            supabase.auth.getSession().then(({ data: d2 }) => {
+              if (d2.session) {
+                setEmail(d2.session.user.email ?? null);
+              } else {
+                router.replace("/portal/login");
+              }
+              setChecking(false);
+            });
+          }, 3000);
+        } else {
+          router.replace("/portal/login");
+          setChecking(false);
+        }
       }
     });
 
