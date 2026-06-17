@@ -288,6 +288,31 @@ export async function POST(req: NextRequest) {
         ${btn("Open in Admin Panel", `https://orinlabi.com/admin/releases`, "#f59e0b")}`
       );
 
+    } else if (type === "artist-message") {
+      subject = `Message from ${esc(data.artist_name || data.email)}`;
+      html = wrap(
+        "#007bff",
+        "New Message",
+        `${esc(data.artist_name || data.email)} sent a message`,
+        "Reply in the admin panel or directly via this email.",
+        `${quote(data.content)}
+        ${btn("Open Chat in Admin Panel", "https://orinlabi.com/admin/messages")}`
+      );
+
+    } else if (type === "admin-message") {
+      subject = `New message from Orinlabí`;
+      html = wrap(
+        "#007bff",
+        "New Message",
+        "You have a new message from Orinlabí",
+        "Log in to your artist portal to reply.",
+        `${quote(data.content)}
+        ${btn("View & Reply in Portal", "https://orinlabi.com/portal/messages")}`
+      );
+      // Send to artist, not admin
+      await resend.emails.send({ from: FROM, to: data.email, subject, html });
+      return NextResponse.json({ success: true });
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }

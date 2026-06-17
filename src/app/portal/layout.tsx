@@ -6,11 +6,39 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { LogOut, Loader2 } from "lucide-react";
 
+function useUnreadCount(email: string | null) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!email) return;
+
+    supabase.from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("artist_email", email).eq("sender", "admin").is("read_at", null)
+      .then(({ count: c }) => setCount(c ?? 0));
+
+    const ch = supabase.channel(`unread-${email}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "messages",
+        filter: `artist_email=eq.${email}`,
+      }, (payload) => {
+        const m = payload.new as { sender: string };
+        if (m.sender === "admin") setCount(n => n + 1);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(ch); };
+  }, [email]);
+
+  return count;
+}
+
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
+  const unread = useUnreadCount(email);
 
   useEffect(() => {
     // Auth is handled by /auth/callback before the user reaches the portal.
@@ -88,21 +116,28 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {[
               { href: "/portal", label: "Releases", exact: true },
               { href: "/portal/assets", label: "Assets", exact: false },
+              { href: "/portal/messages", label: "Messages", exact: false },
               { href: "/portal/profile", label: "Profile", exact: false },
               { href: "/portal/releases/new", label: "+ Release", exact: false },
             ].map(({ href, label, exact }) => {
               const active = exact ? pathname === href : pathname.startsWith(href);
+              const isMessages = href === "/portal/messages";
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                  className={`flex-shrink-0 relative px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
                     active
                       ? "bg-[#007bff]/15 text-[#007bff]"
                       : "text-white/40 hover:text-white"
                   }`}
                 >
                   {label}
+                  {isMessages && unread > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-[#007bff] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      {unread > 9 ? "9+" : unread}
+                    </span>
+                  )}
                 </Link>
               );
             })}
