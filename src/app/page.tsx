@@ -19,7 +19,7 @@ import {
 function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#007bff]/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(600px,100vw)] h-[min(600px,100vw)] bg-[#007bff]/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 max-w-4xl mx-auto">
         <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 text-white/70 text-xs font-medium px-4 py-2 rounded-full mb-8">
@@ -27,7 +27,7 @@ function Hero() {
           Now accepting artist applications
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight mb-6">
+        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight mb-6">
           Release Your Music{" "}
           <span className="text-[#007bff]">Worldwide.</span>
         </h1>
@@ -52,14 +52,14 @@ function Hero() {
           </Link>
         </div>
 
-        <div className="mt-20 grid grid-cols-3 gap-6 max-w-lg mx-auto">
+        <div className="mt-16 grid grid-cols-3 gap-4 max-w-xs sm:max-w-lg mx-auto">
           {[
             { value: "150+", label: "Platforms" },
             { value: "50+", label: "Countries" },
             { value: "100%", label: "Ownership" },
           ].map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-3xl font-bold text-white">{s.value}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white">{s.value}</div>
               <div className="text-white/40 text-xs mt-1 uppercase tracking-wider">
                 {s.label}
               </div>
@@ -457,8 +457,8 @@ function CTA() {
     <section className="py-24 px-4">
       <div className="max-w-4xl mx-auto text-center relative">
         <div className="absolute inset-0 bg-[#007bff]/5 rounded-3xl blur-3xl" />
-        <div className="relative bg-white/[0.03] border border-white/[0.06] rounded-3xl p-12 sm:p-16">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
+        <div className="relative bg-white/[0.03] border border-white/[0.06] rounded-3xl p-8 sm:p-12 lg:p-16">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
             Ready to Release?
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-10">
