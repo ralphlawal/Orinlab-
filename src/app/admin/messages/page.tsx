@@ -83,67 +83,56 @@ function ArtistChats() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
 
-  // Load all artists from releases (unique emails) + their unread counts
   useEffect(() => {
-    async function load() {
-      const [{ data: releases }, { data: allMsgs }] = await Promise.all([
-        supabase.from("releases")
-          .select("email, artist_name")
-          .order("submitted_at", { ascending: false }),
-        supabase.from("messages").select("*").order("created_at", { ascending: true }),
-      ]);
-
-      // Unique artists
-      const seen = new Map<string, string>();
-      for (const r of releases ?? []) {
-        if (!seen.has(r.email)) seen.set(r.email, r.artist_name ?? r.email);
-      }
-
-      const chatMsgs = (allMsgs ?? []) as ChatMsg[];
-
-      const artistList: ArtistThread[] = Array.from(seen.entries()).map(([email, name]) => {
-        const mine = chatMsgs.filter(m => m.artist_email === email);
-        const unread = mine.filter(m => m.sender === "artist" && !m.read_at).length;
-        const last = mine[mine.length - 1];
-        return {
-          email,
-          name,
-          unread,
-          lastContent: last?.content ?? "",
-          lastAt: last?.created_at ?? "",
-        };
-      });
-
-      // Sort: threads with messages first, then by last message time
-      artistList.sort((a, b) => {
-        if (!a.lastAt && !b.lastAt) return a.name.localeCompare(b.name);
-        if (!a.lastAt) return 1;
-        if (!b.lastAt) return -1;
-        return new Date(b.lastAt).getTime() - new Date(a.lastAt).getTime();
-      });
-
-      setThreads(artistList);
-      setLoadingThreads(false);
-    }
-    load();
+    loadThreads();
   }, []);
 
-  // Poll every 4 s — refresh open thread + thread list unread counts
+  async function loadThreads() {
+    const [{ data: releases }, { data: allMsgs }] = await Promise.all([
+      supabase.from("releases").select("email, artist_name").order("submitted_at", { ascending: false }),
+      supabase.from("messages").select("*").order("created_at", { ascending: true }),
+    ]);
+
+    const chatMsgs = (allMsgs ?? []) as ChatMsg[];
+
+    // Build map from releases
+    const seen = new Map<string, string>();
+    for (const r of releases ?? []) {
+      if (!seen.has(r.email)) seen.set(r.email, r.artist_name ?? r.email);
+    }
+
+    // Also add any emails from messages not already in releases
+    for (const m of chatMsgs) {
+      if (!seen.has(m.artist_email)) {
+        seen.set(m.artist_email, m.artist_name || m.artist_email);
+      }
+    }
+
+    const artistList: ArtistThread[] = Array.from(seen.entries()).map(([email, name]) => {
+      const mine = chatMsgs.filter(m => m.artist_email === email);
+      const unread = mine.filter(m => m.sender === "artist" && !m.read_at).length;
+      const last = mine[mine.length - 1];
+      return { email, name, unread, lastContent: last?.content ?? "", lastAt: last?.created_at ?? "" };
+    });
+
+    artistList.sort((a, b) => {
+      if (!a.lastAt && !b.lastAt) return a.name.localeCompare(b.name);
+      if (!a.lastAt) return 1;
+      if (!b.lastAt) return -1;
+      return new Date(b.lastAt).getTime() - new Date(a.lastAt).getTime();
+    });
+
+    setThreads(artistList);
+    setLoadingThreads(false);
+  }
+
+  // Poll every 3 s — full refresh of threads + open thread
   useEffect(() => {
     const poll = async () => {
-      // Refresh unread counts on all threads
-      const { data: allMsgs } = await supabase
-        .from("messages").select("artist_email,sender,read_at,content,created_at");
-      if (allMsgs) {
-        setThreads(prev => prev.map(t => {
-          const mine = (allMsgs as ChatMsg[]).filter(m => m.artist_email === t.email);
-          const unread = mine.filter(m => m.sender === "artist" && !m.read_at).length;
-          const last = mine[mine.length - 1];
-          return { ...t, unread, lastContent: last?.content ?? t.lastContent, lastAt: last?.created_at ?? t.lastAt };
-        }));
-      }
+      // Reload thread list
+      loadThreads();
 
-      // Refresh open thread
+      // Reload open thread messages (full replace)
       setSelected(sel => {
         if (!sel) return sel;
         supabase.from("messages").select("*")
@@ -151,24 +140,26 @@ function ArtistChats() {
           .order("created_at", { ascending: true })
           .then(({ data }) => {
             if (!data) return;
+            const dbMsgs = data as ChatMsg[];
             setMsgs(prev => {
-              const ids = new Set(prev.map(m => m.id));
-              const fresh = (data as ChatMsg[]).filter(m => !ids.has(m.id));
-              if (fresh.length === 0) return prev;
-              // Auto-mark new artist messages as read
-              fresh.filter(m => m.sender === "artist").forEach(m => {
+              const dbIds = new Set(dbMsgs.map(m => m.id));
+              const pending = prev.filter(m => m.id.startsWith("temp-") && !dbIds.has(m.id));
+              // Mark new artist messages as read
+              const prevIds = new Set(prev.map(m => m.id));
+              dbMsgs.filter(m => m.sender === "artist" && !m.read_at && !prevIds.has(m.id)).forEach(m => {
                 supabase.from("messages").update({ read_at: new Date().toISOString() })
                   .eq("id", m.id).then(() => {});
               });
-              return [...prev, ...fresh];
+              return [...dbMsgs, ...pending];
             });
           });
         return sel;
       });
     };
 
-    const id = setInterval(poll, 4000);
+    const id = setInterval(poll, 3000);
     return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

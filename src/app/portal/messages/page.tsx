@@ -48,7 +48,7 @@ export default function PortalMessagesPage() {
     load();
   }, []);
 
-  // Poll every 4 s for new messages (reliable fallback for realtime)
+  // Poll every 3 s — full replace so new admin messages always appear
   useEffect(() => {
     if (!email) return;
     const poll = async () => {
@@ -57,19 +57,21 @@ export default function PortalMessagesPage() {
         .eq("artist_email", email)
         .order("created_at", { ascending: true });
       if (!data) return;
-      setMsgs((prev) => {
-        const ids = new Set(prev.map(m => m.id));
-        const fresh = (data as Msg[]).filter(m => !ids.has(m.id));
-        if (fresh.length === 0) return prev;
+      const dbMsgs = data as Msg[];
+      setMsgs(prev => {
+        // Keep any pending optimistic messages not yet in DB
+        const dbIds = new Set(dbMsgs.map(m => m.id));
+        const pending = prev.filter(m => m.id.startsWith("temp-") && !dbIds.has(m.id));
         // Mark newly arrived admin messages as read
-        fresh.filter(m => m.sender === "admin").forEach(m => {
+        const prevIds = new Set(prev.map(m => m.id));
+        dbMsgs.filter(m => m.sender === "admin" && !prevIds.has(m.id)).forEach(m => {
           supabase.from("messages").update({ read_at: new Date().toISOString() })
             .eq("id", m.id).then(() => {});
         });
-        return [...prev, ...fresh];
+        return [...dbMsgs, ...pending];
       });
     };
-    const id = setInterval(poll, 4000);
+    const id = setInterval(poll, 3000);
     return () => clearInterval(id);
   }, [email]);
 
@@ -132,7 +134,10 @@ export default function PortalMessagesPage() {
     <section className="max-w-2xl mx-auto px-4 py-8 flex flex-col" style={{ height: "calc(100svh - 7rem)" }}>
       <div className="mb-5 flex-shrink-0">
         <h1 className="text-white font-bold text-2xl">Messages</h1>
-        <p className="text-white/40 text-sm mt-1">Chat directly with the Orinlabí team.</p>
+        <p className="text-white/40 text-sm mt-1">
+          Chat directly with the Orinlabí team.
+          {email && <span className="ml-2 text-white/20 text-xs">({email})</span>}
+        </p>
       </div>
 
       {/* Chat thread */}
