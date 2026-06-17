@@ -6,13 +6,22 @@
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const SUPABASE_URL      = "https://zfhtnqhnqqstxyyonjul.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpmaHRucWhucXFzdHh5eW9uanVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjI1MzksImV4cCI6MjA5NzA5ODUzOX0.6Zfw9mEFyPUEHsreh6j0lwV19oQF7f3uAZWhWrl7YoY";
-const RESEND_API_KEY    = "re_63SRXbEp_KPZosaxxMEvTLkJXiEd8euUd";
-const FROM              = "Orinlabí <info@orinlabi.com>";
-const LOGO              = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
+const SUPABASE_URL          = "https://zfhtnqhnqqstxyyonjul.supabase.co";
+const SUPABASE_SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+const RESEND_API_KEY        = "re_63SRXbEp_KPZosaxxMEvTLkJXiEd8euUd";
+const FROM                  = "Orinlabí <info@orinlabi.com>";
+const LOGO                  = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (!SUPABASE_SERVICE_KEY) {
+  console.error("ERROR: Set SUPABASE_SERVICE_ROLE_KEY in your environment.");
+  console.error("Get it from: Supabase → Settings → API → Service role secret");
+  process.exit(1);
+}
+
+// Service role key bypasses RLS so we can read all releases
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
 const resend   = new Resend(RESEND_API_KEY);
 
 function buildEmail(artistName: string): string {
