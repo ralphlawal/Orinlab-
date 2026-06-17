@@ -148,14 +148,14 @@ export async function POST(req: NextRequest) {
       const tracksBlock = isAlbum && tracks.length > 0
         ? `<div style="margin:24px 0 0;">
             <p style="margin:0 0 10px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Tracks (${tracks.length})</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eeeeee;border-radius:10px;overflow:hidden;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #1e1e1e;border-radius:10px;overflow:hidden;">
               ${tracks.map(t => `
               <tr>
-                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;font-family:Arial,sans-serif;">
+                <td style="padding:10px 14px;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">
                   <span style="color:#007bff;font-size:11px;font-weight:700;margin-right:10px;">${t.track_number}</span>
-                  <span style="color:#111111;font-size:13px;">${esc(t.title)}</span>
+                  <span style="color:#ffffff;font-size:13px;">${esc(t.title)}</span>
                 </td>
-                <td style="padding:10px 14px;border-bottom:1px solid #f5f5f5;text-align:right;">
+                <td style="padding:10px 14px;border-bottom:1px solid #1e1e1e;text-align:right;">
                   <a href="${esc(t.audio_file_url)}" style="color:#007bff;font-size:12px;font-family:Arial,sans-serif;text-decoration:none;font-weight:600;">Download ↗</a>
                 </td>
               </tr>`).join("")}
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
         : data.audio_file_url
           ? `<div style="margin:20px 0 0;">
               <p style="margin:0 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Audio File</p>
-              <a href="${esc(data.audio_file_url)}" style="display:inline-block;background:#f0f7ff;border:1px solid #cce0ff;border-radius:8px;padding:10px 18px;color:#007bff;font-size:13px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif;">
+              <a href="${esc(data.audio_file_url)}" style="display:inline-block;background:rgba(0,123,255,0.12);border:1px solid rgba(0,123,255,0.25);border-radius:8px;padding:10px 18px;color:#007bff;font-size:13px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif;">
                 ▶ Download audio file ↗
               </a>
             </div>`
@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
         "New Submission",
         isAlbum ? `New ${data.release_type}: ${esc(data.album_title || data.song_title)}` : `New Release: ${esc(data.song_title)}`,
         `${esc(data.artist_name)} just submitted ${isAlbum ? `a${data.release_type === "EP" ? "n" : ""} ${data.release_type}` : "a single"} for distribution.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist",          data.artist_name)}
           ${row("Email",           data.email)}
           ${isAlbum ? row(`${data.release_type} Title`, data.album_title || data.song_title) : row("Song Title", data.song_title)}
@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
         "Admin Alert",
         "New Contact Message",
         "Someone sent a message via the contact form.",
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("From",         data.name)}
           ${row("Email",        data.email)}
           ${row("Subject",      data.subject)}
@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
         "Asset Request",
         "New Creative Asset Request",
         "An artist is requesting design work.",
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist",  data.email)}
           ${row("Assets",  types.join(", ") || "—")}
           ${data.release_title ? row("Release", data.release_title) : ""}
@@ -239,7 +239,7 @@ export async function POST(req: NextRequest) {
         "Action Required",
         "Takedown Request",
         "An artist has requested their release be removed from all streaming platforms.",
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist",     data.artist_name)}
           ${row("Release",    data.song_title)}
           ${row("Type",       data.release_type)}
@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
         "Decision Logged",
         `Release Approved: ${esc(data.song_title)}`,
         "You approved this release. This email is your admin record.",
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist",       data.artist_name)}
           ${row("Legal Name",   data.legal_name)}
           ${row("Email",        data.email)}
@@ -283,7 +283,7 @@ export async function POST(req: NextRequest) {
         "Decision Logged",
         `Release Not Selected: ${esc(data.song_title)}`,
         "You rejected this release. This email is your admin record.",
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist",       data.artist_name)}
           ${row("Legal Name",   data.legal_name)}
           ${row("Email",        data.email)}
@@ -338,7 +338,7 @@ export async function POST(req: NextRequest) {
         data.team,
         `${esc(data.service_title)} Request`,
         `${esc(data.artist_name)} has requested the ${esc(data.service_title)} service.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Service",     data.service_title)}
           ${row("Assign To",   data.team_role)}
           ${row("Artist",      data.artist_name)}
@@ -377,7 +377,7 @@ export async function POST(req: NextRequest) {
         "Payout Request",
         `Payout Request: ${esc(data.song_title)}`,
         `${esc(data.artist_name)} has requested a payout for their royalties.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist",         data.artist_name)}
           ${row("Email",          data.email)}
           ${row("Release",        data.song_title)}
@@ -385,7 +385,7 @@ export async function POST(req: NextRequest) {
           ${row("Payout Method",  methodLabel)}
         </table>
         <p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Payout Details</p>
-        <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${payoutDetails}
         </table>
         ${btn("Review in Admin Panel", `https://orinlabi.com/admin/releases`, "#16a34a")}`
@@ -413,7 +413,7 @@ export async function POST(req: NextRequest) {
         "Portal Activity",
         "Artist Logged In",
         `An artist just signed in to their Orinlabí portal.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Email",        data.email)}
           ${data.artist_name ? row("Artist Name", data.artist_name) : ""}
           ${row("Time",         loginTime + " UTC")}
@@ -429,7 +429,7 @@ export async function POST(req: NextRequest) {
         "Newsletter",
         "New Subscriber",
         `Someone just subscribed to the Orinlabí newsletter.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Email", data.email)}
           ${row("Time",  signupTime + " UTC")}
         </table>
@@ -441,17 +441,17 @@ export async function POST(req: NextRequest) {
       const changes: { field: string; from: string; to: string }[] = Array.isArray(data.changes) ? data.changes : [];
       const changesBlock = changes.length > 0
         ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">What Changed</p>
-           <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #eeeeee;border-radius:10px;overflow:hidden;">
-             <tr style="background:#f7f7f7;">
-               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;width:130px;">Field</td>
-               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Before</td>
-               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#999;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">After</td>
+           <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #1e1e1e;border-radius:10px;overflow:hidden;">
+             <tr style="background:#1a1a1a;">
+               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#666;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;width:130px;">Field</td>
+               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#666;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Before</td>
+               <td style="padding:8px 12px;font-size:11px;font-weight:700;color:#666;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">After</td>
              </tr>
              ${changes.map(c => `
              <tr>
-               <td style="padding:10px 12px;border-top:1px solid #f0f0f0;font-size:12px;color:#666;font-family:Arial,sans-serif;font-weight:600;">${esc(c.field)}</td>
-               <td style="padding:10px 12px;border-top:1px solid #f0f0f0;font-size:12px;color:#999;font-family:Arial,sans-serif;text-decoration:line-through;">${esc(c.from) || "<em>empty</em>"}</td>
-               <td style="padding:10px 12px;border-top:1px solid #f0f0f0;font-size:13px;color:#111;font-family:Arial,sans-serif;font-weight:700;">${esc(c.to) || "<em>cleared</em>"}</td>
+               <td style="padding:10px 12px;border-top:1px solid #1e1e1e;font-size:12px;color:#888888;font-family:Arial,sans-serif;font-weight:600;">${esc(c.field)}</td>
+               <td style="padding:10px 12px;border-top:1px solid #1e1e1e;font-size:12px;color:#555555;font-family:Arial,sans-serif;text-decoration:line-through;">${esc(c.from) || "<em style='color:#444'>empty</em>"}</td>
+               <td style="padding:10px 12px;border-top:1px solid #1e1e1e;font-size:13px;color:#ffffff;font-family:Arial,sans-serif;font-weight:700;">${esc(c.to) || "<em style='color:#555'>cleared</em>"}</td>
              </tr>`).join("")}
            </table>`
         : "";
@@ -461,7 +461,7 @@ export async function POST(req: NextRequest) {
         "Portal Activity",
         "Artist Profile Updated",
         `${esc(data.artist_name || data.email)} just updated their profile — ${changes.length} field${changes.length !== 1 ? "s" : ""} changed.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Artist", data.artist_name || "—")}
           ${row("Email",  data.email)}
           ${row("Time",   updatedTime + " UTC")}
@@ -478,7 +478,7 @@ export async function POST(req: NextRequest) {
         "Security Alert",
         "Admin Panel Login",
         `Someone just signed in to the Orinlabí admin panel.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Admin",     data.email)}
           ${row("Time",      loginTime + " UTC")}
           ${data.ip ? row("IP Address", data.ip) : ""}
@@ -495,7 +495,7 @@ export async function POST(req: NextRequest) {
         "Security Alert",
         "Admin PIN Verified",
         `An admin just entered the PIN and is making changes to the platform.`,
-        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #eeeeee;">
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Admin",  data.email)}
           ${row("Time",   actionTime + " UTC")}
           ${data.ip ? row("IP Address", data.ip) : ""}

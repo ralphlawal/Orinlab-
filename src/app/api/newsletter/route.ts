@@ -20,12 +20,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to subscribe. Please try again." }, { status: 500 });
   }
 
-  // Notify Ralph — fire and forget
-  fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://orinlabi.com"}/api/notify`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "newsletter-signup", data: { email } }),
-  }).catch(() => {});
+  // Notify Ralph directly (no inter-function fetch)
+  try {
+    const resendNotify = new Resend(process.env.RESEND_API_KEY);
+    const signupTime = new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" });
+    await resendNotify.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com",
+      subject: `New newsletter subscriber — ${email}`,
+      html: `<p style="font-family:Arial,sans-serif;color:#333;">New subscriber: <strong>${email}</strong><br/>Time: ${signupTime} UTC</p>`,
+    });
+  } catch { /* non-critical */ }
 
   // Welcome email — fire and forget
   try {

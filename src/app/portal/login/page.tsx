@@ -13,12 +13,20 @@ export default function PortalLoginPage() {
   const [step, setStep] = useState<"email" | "code">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace("/portal");
     });
   }, [router]);
+
+  useEffect(() => {
+    if (step !== "code" || timeLeft === null) return;
+    if (timeLeft <= 0) return;
+    const id = setInterval(() => setTimeLeft((t) => (t !== null ? t - 1 : null)), 1000);
+    return () => clearInterval(id);
+  }, [step, timeLeft]);
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +41,7 @@ export default function PortalLoginPage() {
     setLoading(false);
 
     if (authError) {
+      setTimeLeft(null);
       const msg = authError.message.toLowerCase();
       if (msg.includes("rate limit") || msg.includes("too many")) {
         setError("Too many attempts. Please wait a few minutes and try again.");
@@ -42,6 +51,7 @@ export default function PortalLoginPage() {
         setError(authError.message || "Something went wrong. Please try again.");
       }
     } else {
+      setTimeLeft(300);
       setStep("code");
     }
   }
@@ -164,11 +174,23 @@ export default function PortalLoginPage() {
                 />
               </div>
 
+              {/* Countdown */}
+              {timeLeft !== null && timeLeft > 0 && (
+                <p className={`text-xs text-center ${timeLeft <= 60 ? "text-amber-400" : "text-white/30"}`}>
+                  Code expires in {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
+                </p>
+              )}
+              {timeLeft === 0 && (
+                <p className="text-red-400 text-xs text-center">
+                  Code expired — request a new one below.
+                </p>
+              )}
+
               {error && <p className="text-red-400 text-xs text-center">{error}</p>}
 
               <button
                 type="submit"
-                disabled={loading || code.length < 4}
+                disabled={loading || code.length < 4 || timeLeft === 0}
                 className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
@@ -177,7 +199,7 @@ export default function PortalLoginPage() {
             </form>
 
             <button
-              onClick={() => { setStep("email"); setCode(""); setError(""); }}
+              onClick={() => { setStep("email"); setCode(""); setError(""); setTimeLeft(null); }}
               className="w-full text-center text-white/30 hover:text-white/60 text-xs mt-5 transition-colors"
             >
               Use a different email or resend code
