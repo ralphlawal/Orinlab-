@@ -504,6 +504,24 @@ export async function POST(req: NextRequest) {
         ${btn("Open Admin Panel", "https://orinlabi.com/admin")}`
       );
 
+    } else if (type === "support-ticket") {
+      subject = `Support ticket — ${esc(data.category)} · ${esc(data.artist_name)}`;
+      html = wrap(
+        "#007bff",
+        "Support Ticket",
+        `New Support Request: ${esc(data.subject)}`,
+        `${esc(data.artist_name)} (${esc(data.email)}) has submitted a support ticket.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+          ${row("Artist",   data.artist_name)}
+          ${row("Email",    data.email)}
+          ${row("Category", data.category)}
+          ${row("Subject",  data.subject)}
+        </table>
+        <p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Message</p>
+        ${quote(data.description)}
+        ${btn("Respond in Admin Panel", "https://orinlabi.com/admin/support")}`
+      );
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }

@@ -132,6 +132,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               { href: "/portal/pitch",          label: "Pitch",     exact: false },
               { href: "/portal/assets",         label: "Assets",    exact: false },
               { href: "/portal/messages",       label: "Messages",  exact: false },
+              { href: "/portal/support",        label: "Support",   exact: false },
               { href: "/portal/profile",        label: "Profile",   exact: false },
             ].map(({ href, label, exact }) => {
               const active     = exact ? pathname === href : pathname.startsWith(href);

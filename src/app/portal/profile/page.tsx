@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
   AlertCircle, ArrowLeft, Camera, CheckCircle2,
-  Loader2, Save, User,
+  Loader2, Save, User, Plus, Trash2,
 } from "lucide-react";
 
 type Profile = {
@@ -146,6 +146,10 @@ export default function ProfilePage() {
   const [photoPreview, setPhotoPreview] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const photoRef = useRef<HTMLInputElement>(null);
+  const [roster, setRoster] = useState<string[]>([]);
+  const [newArtist, setNewArtist] = useState("");
+  const [savingRoster, setSavingRoster] = useState(false);
+  const [rosterSaved, setRosterSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -154,12 +158,14 @@ export default function ProfilePage() {
       const e = session.user.email!;
       setEmail(e);
 
-      const [profileRes, releasesRes, approvedRes] = await Promise.all([
+      const [profileRes, releasesRes, approvedRes, rosterRes] = await Promise.all([
         supabase.from("artist_profiles").select("*").eq("email", e).maybeSingle(),
         supabase.from("releases").select("artist_name").eq("email", e)
           .order("submitted_at", { ascending: false }).limit(1),
         supabase.from("releases").select("id").eq("email", e).eq("status", "approved").limit(1),
+        supabase.from("label_roster").select("artist_name").eq("label_email", e).order("created_at", { ascending: true }),
       ]);
+      setRoster((rosterRes.data ?? []).map((r: { artist_name: string }) => r.artist_name));
 
       const merged: Profile = { ...EMPTY, ...(profileRes.data ?? {}) };
       // Pre-fill artist_name from releases if profile doesn't have one yet
@@ -185,6 +191,17 @@ export default function ProfilePage() {
     if (!file) return;
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  async function saveRoster() {
+    if (!email) return;
+    setSavingRoster(true);
+    await supabase.from("label_roster").delete().eq("label_email", email);
+    if (roster.length > 0) {
+      await supabase.from("label_roster").insert(roster.map((name) => ({ label_email: email, artist_name: name })));
+    }
+    setSavingRoster(false);
+    setRosterSaved(true);
   }
 
   async function save() {
@@ -520,6 +537,41 @@ export default function ProfilePage() {
           <p className="text-white/25 text-xs">Select a payout method above to enter your details.</p>
         )}
       </Card>
+
+      {/* ── Label / Management Roster ── */}
+      {(profile.artist_type === "Band / Group" || roster.length > 0 || profile.record_label) && (
+        <Card title="Label & Roster" hint="If you manage multiple artists or are a label, add your roster here. Their names will appear in the artist name field when submitting releases.">
+          <div className="space-y-2 mb-3">
+            {roster.map((name, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="flex-1 bg-white/[0.04] border border-white/[0.08] text-white/70 text-sm px-4 py-2.5 rounded-xl">{name}</span>
+                <button onClick={() => { setRoster(roster.filter((_, j) => j !== i)); setRosterSaved(false); }}
+                  className="text-white/30 hover:text-red-400 transition-colors p-1">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={newArtist}
+              onChange={(e) => setNewArtist(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && newArtist.trim()) { setRoster([...roster, newArtist.trim()]); setNewArtist(""); setRosterSaved(false); } }}
+              placeholder="Artist or act name…"
+              className={inp}
+            />
+            <button
+              onClick={() => { if (newArtist.trim()) { setRoster([...roster, newArtist.trim()]); setNewArtist(""); setRosterSaved(false); } }}
+              className="flex-shrink-0 bg-white/[0.06] hover:bg-white/[0.12] text-white/60 hover:text-white px-3 py-2.5 rounded-xl border border-white/[0.08] transition-colors"
+            ><Plus size={16} /></button>
+          </div>
+          <button onClick={saveRoster} disabled={savingRoster}
+            className="mt-3 flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors">
+            {savingRoster ? <Loader2 size={12} className="animate-spin" /> : null}
+            {rosterSaved ? "Roster Saved ✓" : "Save Roster"}
+          </button>
+        </Card>
+      )}
 
       <button
         onClick={save}

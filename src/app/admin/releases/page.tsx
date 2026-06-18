@@ -105,6 +105,11 @@ export default function ReleasesPage() {
   const [notifyingLive, setNotifyingLive] = useState(false);
   const [liveNotified, setLiveNotified] = useState(false);
 
+  // Distribution stage
+  const [distStage, setDistStage] = useState<"submitted" | "in_distribution" | "live">("submitted");
+  const [savingStage, setSavingStage] = useState(false);
+  const [stageSaved, setStageSaved]   = useState(false);
+
   // Pre-save state
   const [presaveEnabled, setPresaveEnabled] = useState(false);
   const [presaveUrl, setPresaveUrl] = useState("");
@@ -162,6 +167,8 @@ export default function ReleasesPage() {
         if (data?.length) setSplits(data.map((s: { name: string; role: string | null; percentage: number }) =>
           ({ name: s.name, role: s.role ?? "", percentage: String(s.percentage) })));
       });
+    setDistStage((r as Release & { distribution_stage?: string }).distribution_stage as "submitted" | "in_distribution" | "live" ?? "submitted");
+    setStageSaved(false);
     setPresaveEnabled(r.presave_enabled ?? false);
     setPresaveUrl(r.presave_url ?? "");
     setPresaveSaved(false);
@@ -237,6 +244,14 @@ export default function ReleasesPage() {
     }
     setSavingSplits(false);
     setSplitsSaved(true);
+  }
+
+  async function saveStage() {
+    if (!selected) return;
+    setSavingStage(true);
+    await supabase.from("releases").update({ distribution_stage: distStage }).eq("id", selected.id);
+    setSavingStage(false);
+    setStageSaved(true);
   }
 
   async function savePresaveSettings() {
@@ -641,6 +656,26 @@ export default function ReleasesPage() {
               {/* Store links — only for approved releases */}
               {selected.status === "approved" && (
                 <Section title="Store Links">
+                  {/* Distribution stage */}
+                  <div className="mb-4 pb-4 border-b border-white/[0.06]">
+                    <p className="text-white/30 text-xs mb-2">Distribution Stage</p>
+                    <div className="flex gap-2 flex-wrap mb-2">
+                      {([
+                        { val: "submitted",      label: "Submitted",       color: "border-yellow-400/30 text-yellow-400 bg-yellow-400/8" },
+                        { val: "in_distribution", label: "In Distribution", color: "border-blue-400/30 text-blue-400 bg-blue-400/8" },
+                        { val: "live",           label: "Live",            color: "border-green-400/30 text-green-400 bg-green-400/8" },
+                      ] as const).map(({ val, label, color }) => (
+                        <button key={val} onClick={() => { setDistStage(val); setStageSaved(false); }}
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${distStage === val ? color : "border-white/[0.08] text-white/30 hover:text-white"}`}
+                        >{label}</button>
+                      ))}
+                    </div>
+                    <button onClick={() => requestUnlock(saveStage)} disabled={savingStage}
+                      className="flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors">
+                      {savingStage ? <Loader2 size={11} className="animate-spin" /> : null}
+                      {stageSaved ? "Stage Saved ✓" : "Save Stage"}
+                    </button>
+                  </div>
                   <p className="text-white/30 text-xs mb-3">
                     Paste the streaming URLs once the release is live. Artists will see these in their portal.
                   </p>
@@ -925,7 +960,7 @@ export default function ReleasesPage() {
               </button>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setArtistProfile(undefined); }}
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setArtistProfile(undefined); }}
                   className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
                   Cancel

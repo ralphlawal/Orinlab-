@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
-  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy,
 } from "lucide-react";
 
 const BASE_NAV = [
@@ -19,6 +19,7 @@ const BASE_NAV = [
   { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={18} />,   superOnly: false },
   { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={18} />,           superOnly: false },
   { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={18} />,      superOnly: false },
+  { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={18} />,        superOnly: false },
   { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={18} />,       superOnly: true  },
   { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={18} />,       superOnly: true  },
   { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={18} />,        superOnly: true  },

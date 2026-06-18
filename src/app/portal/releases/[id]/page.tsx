@@ -36,6 +36,7 @@ type Release = {
   copyright_owner: string;
   copyright_year: string;
   submitted_at: string;
+  distribution_stage: "submitted" | "in_distribution" | "live" | null;
 };
 
 const statusConfig = {
@@ -226,6 +227,45 @@ export default function ReleaseDetailPage() {
         )}
       </div>
 
+      {/* Distribution stage progress — approved only */}
+      {release.status === "approved" && (
+        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">Distribution Progress</p>
+          <div className="flex items-center gap-0">
+            {([
+              { key: "submitted",       label: "Submitted"       },
+              { key: "in_distribution", label: "In Distribution" },
+              { key: "live",            label: "Live"            },
+            ] as const).map(({ key, label }, i, arr) => {
+              const stageOrder = { submitted: 0, in_distribution: 1, live: 2 };
+              const current = stageOrder[release.distribution_stage ?? "submitted"] ?? 0;
+              const mine    = stageOrder[key];
+              const done    = mine <= current;
+              const active  = mine === current;
+              return (
+                <div key={key} className="flex items-center flex-1">
+                  <div className="flex flex-col items-center flex-1">
+                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                      done ? "border-[#007bff] bg-[#007bff]/20" : "border-white/10 bg-white/[0.03]"
+                    }`}>
+                      {done
+                        ? <CheckCircle2 size={14} className={active ? "text-[#007bff]" : "text-[#007bff]/60"} />
+                        : <span className="w-2 h-2 rounded-full bg-white/10" />}
+                    </div>
+                    <p className={`text-xs mt-2 font-medium text-center leading-tight ${active ? "text-white" : done ? "text-white/40" : "text-white/20"}`}>
+                      {label}
+                    </p>
+                  </div>
+                  {i < arr.length - 1 && (
+                    <div className={`h-0.5 flex-1 -mt-5 transition-all ${done && stageOrder[arr[i + 1].key] <= current ? "bg-[#007bff]/30" : "bg-white/[0.06]"}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Contract signing — approved releases only */}
       {release.status === "approved" && (
         <div className={`border rounded-2xl p-5 ${release.contract_signed_at ? "bg-green-500/5 border-green-500/15" : "bg-[#007bff]/5 border-[#007bff]/20"}`}>
@@ -322,6 +362,27 @@ export default function ReleaseDetailPage() {
                   <Trash2 size={13} /> Request Takedown
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Content protection */}
+      {release.status === "approved" && (
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <FileText size={16} className="text-white/30 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-white/50 text-sm font-medium mb-1">Content Protection</p>
+              <p className="text-white/30 text-xs leading-relaxed mb-4">
+                Found someone using your music without permission? Report it and our team will file a takedown on your behalf.
+              </p>
+              <a
+                href="/portal/support"
+                className="flex items-center gap-2 border border-white/[0.1] hover:border-[#007bff]/40 text-white/40 hover:text-[#007bff] text-xs font-medium px-4 py-2 rounded-xl transition-all"
+              >
+                Report Unauthorized Use →
+              </a>
             </div>
           </div>
         </div>
