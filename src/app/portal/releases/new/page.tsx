@@ -15,12 +15,23 @@ const genres = [
   "Hip-Hop", "Gospel", "Reggae", "Electronic", "Jazz", "Classical", "Other",
 ];
 
+const languages = [
+  "English", "Yoruba", "Igbo", "Hausa", "Nigerian Pidgin", "French",
+  "Portuguese", "Swahili", "Amharic", "Zulu", "Twi / Akan", "Afrikaans",
+  "Arabic", "Wolof", "Somali", "Other",
+];
+
+const trackVersions = [
+  "Original", "Radio Edit", "Remix", "Acoustic", "Instrumental",
+  "Extended Mix", "Live", "Alternate Version", "Cover", "Other",
+];
+
 type ArtistProfile = {
   artist_name: string;
   email: string;
 };
 
-type Track = { title: string; file: File | null };
+type Track = { title: string; file: File | null; version: string; explicit: boolean; instrumental: boolean };
 
 type FormState = "idle" | "uploading" | "saving" | "success" | "error";
 
@@ -35,8 +46,10 @@ export default function NewReleasePage() {
   // Single mode: one file
   const [audioFile, setAudioFile] = useState<File | null>(null);
   // Album/EP mode: multiple tracks
-  const [tracks, setTracks] = useState<Track[]>([{ title: "", file: null }]);
+  const [tracks, setTracks] = useState<Track[]>([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
   const [uploadProgress, setUploadProgress] = useState("");
+  const [samplesUsed, setSamplesUsed] = useState(false);
+  const [coverSong, setCoverSong] = useState(false);
 
   const isMultiTrack = releaseType === "Album" || releaseType === "EP";
 
@@ -66,7 +79,7 @@ export default function NewReleasePage() {
   }, [router]);
 
   function addTrack() {
-    setTracks(t => [...t, { title: "", file: null }]);
+    setTracks(t => [...t, { title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
   }
 
   function removeTrack(i: number) {
@@ -128,7 +141,7 @@ export default function NewReleasePage() {
 
       let audioFileUrl = "";
       let leadTitle = data.get("songTitle") as string;
-      let uploadedTracks: { track_number: number; title: string; audio_file_url: string }[] = [];
+      let uploadedTracks: { track_number: number; title: string; audio_file_url: string; version: string; explicit: boolean; instrumental: boolean }[] = [];
 
       if (isMultiTrack) {
         // Upload all tracks sequentially so progress is visible
@@ -144,6 +157,9 @@ export default function NewReleasePage() {
             track_number: i + 1,
             title: track.title.trim(),
             audio_file_url: urlData.publicUrl,
+            version: track.version,
+            explicit: track.explicit,
+            instrumental: track.instrumental,
           });
         }
         audioFileUrl = uploadedTracks[0].audio_file_url;
@@ -179,6 +195,14 @@ export default function NewReleasePage() {
         copyright_owner:  data.get("copyrightOwner"),
         copyright_year:   data.get("copyrightYear"),
         publishing_info:  data.get("publishing") || null,
+        language:         data.get("language") || null,
+        upc:              data.get("upc") || null,
+        track_version:    data.get("trackVersion") || "Original",
+        instrumental:     data.get("instrumental") === "Yes",
+        samples_used:     samplesUsed,
+        sample_details:   samplesUsed ? (data.get("sampleDetails") as string | null) : null,
+        cover_song:       coverSong,
+        cover_song_details: coverSong ? (data.get("coverSongDetails") as string | null) : null,
         status:           "pending",
       };
 
@@ -283,7 +307,9 @@ export default function NewReleasePage() {
               setAudioFile(null);
               setCoverFile(null);
               setReleaseType("Single");
-              setTracks([{ title: "", file: null }]);
+              setTracks([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
+              setSamplesUsed(false);
+              setCoverSong(false);
             }}
             className="border border-white/10 hover:border-white/30 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all"
           >
@@ -358,7 +384,7 @@ export default function NewReleasePage() {
               onChange={(v) => {
                 setReleaseType(v);
                 // Reset tracks when switching type
-                setTracks([{ title: "", file: null }]);
+                setTracks([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
                 setAudioFile(null);
               }}
             />
@@ -369,8 +395,12 @@ export default function NewReleasePage() {
               <Field label={`${releaseType} Title`} name="albumTitle" placeholder="Full project title" required />
             )}
             <Select label="Genre" name="genre" options={genres} required />
+            <Select label="Language" name="language" options={languages} required />
             <Field label="Desired Release Date" name="releaseDate" type="date" required />
-            <Select label="Explicit Content" name="explicit" options={["No", "Yes"]} required />
+            <Select label="Explicit Content" name="explicit" options={["Clean", "Explicit"]} required />
+            {!isMultiTrack && (
+              <Select label="Track Version" name="trackVersion" options={trackVersions} required />
+            )}
           </div>
         </div>
 
@@ -427,6 +457,40 @@ export default function NewReleasePage() {
                       required
                       className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
                     />
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <p className="text-white/30 text-xs mb-1">Version</p>
+                        <select
+                          value={track.version}
+                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, version: e.target.value } : tr))}
+                          className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-xs px-3 py-2 rounded-xl appearance-none"
+                        >
+                          {trackVersions.map((v) => <option key={v} value={v}>{v}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <p className="text-white/30 text-xs mb-1">Explicit</p>
+                        <select
+                          value={track.explicit ? "Yes" : "No"}
+                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, explicit: e.target.value === "Yes" } : tr))}
+                          className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-xs px-3 py-2 rounded-xl appearance-none"
+                        >
+                          <option value="No">Clean</option>
+                          <option value="Yes">Explicit</option>
+                        </select>
+                      </div>
+                      <div>
+                        <p className="text-white/30 text-xs mb-1">Instrumental</p>
+                        <select
+                          value={track.instrumental ? "Yes" : "No"}
+                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, instrumental: e.target.value === "Yes" } : tr))}
+                          className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-xs px-3 py-2 rounded-xl appearance-none"
+                        >
+                          <option value="No">No</option>
+                          <option value="Yes">Yes</option>
+                        </select>
+                      </div>
+                    </div>
                     <label className="flex items-center gap-3 bg-white/[0.03] border border-dashed border-white/[0.12] hover:border-[#007bff]/50 rounded-xl px-4 py-3 cursor-pointer transition-colors group">
                       {track.file ? (
                         <>
@@ -481,7 +545,11 @@ export default function NewReleasePage() {
             <Field label="Songwriters" name="songwriters" placeholder="Separate with commas" required />
             <Field label="Producers" name="producers" placeholder="Separate with commas" required />
             <Field label="Featured Artists" name="featuredArtists" placeholder="If any" />
+            {!isMultiTrack && (
+              <Select label="Instrumental?" name="instrumental" options={["No", "Yes"]} required />
+            )}
             <Field label="ISRC Code" name="isrc" placeholder="Leave blank to auto-generate" />
+            <Field label="UPC / EAN Code" name="upc" placeholder="Optional — leave blank if unknown" />
           </div>
         </div>
 
@@ -495,6 +563,72 @@ export default function NewReleasePage() {
             <Field label="Copyright Year" name="copyrightYear" placeholder="e.g. 2026" required />
             <div className="sm:col-span-2">
               <Field label="Publishing Information" name="publishing" placeholder="Publisher name, PRO affiliation, etc." />
+            </div>
+          </div>
+        </div>
+
+        {/* Rights & Ownership */}
+        <div>
+          <h2 className="text-white font-bold text-lg mb-6 pb-3 border-b border-white/10">
+            Rights & Ownership
+          </h2>
+          <div className="space-y-6">
+            {/* Samples */}
+            <div>
+              <label className="block text-white/70 text-sm font-medium mb-3">
+                Does this release contain any samples? <span className="text-[#007bff]">*</span>
+              </label>
+              <div className="flex gap-3">
+                {["No", "Yes"].map((v) => (
+                  <button key={v} type="button"
+                    onClick={() => setSamplesUsed(v === "Yes")}
+                    className={`px-5 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                      samplesUsed === (v === "Yes")
+                        ? "bg-[#007bff]/15 border-[#007bff]/50 text-[#007bff]"
+                        : "border-white/[0.1] text-white/40 hover:text-white"
+                    }`}
+                  >{v}</button>
+                ))}
+              </div>
+              {samplesUsed && (
+                <div className="mt-3 space-y-3">
+                  <div className="bg-yellow-400/8 border border-yellow-400/20 rounded-xl px-4 py-3">
+                    <p className="text-yellow-400 text-xs font-semibold mb-1">Sample clearance required</p>
+                    <p className="text-white/50 text-xs">You must have written clearance before distribution. Uncleared samples will be taken down.</p>
+                  </div>
+                  <textarea name="sampleDetails" rows={3} placeholder="Describe the sample(s): original song, artist, and confirm you have clearance"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors" />
+                </div>
+              )}
+            </div>
+
+            {/* Cover song */}
+            <div>
+              <label className="block text-white/70 text-sm font-medium mb-3">
+                Is this a cover of someone else&apos;s song? <span className="text-[#007bff]">*</span>
+              </label>
+              <div className="flex gap-3">
+                {["No", "Yes"].map((v) => (
+                  <button key={v} type="button"
+                    onClick={() => setCoverSong(v === "Yes")}
+                    className={`px-5 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                      coverSong === (v === "Yes")
+                        ? "bg-[#007bff]/15 border-[#007bff]/50 text-[#007bff]"
+                        : "border-white/[0.1] text-white/40 hover:text-white"
+                    }`}
+                  >{v}</button>
+                ))}
+              </div>
+              {coverSong && (
+                <div className="mt-3 space-y-3">
+                  <div className="bg-blue-400/8 border border-blue-400/20 rounded-xl px-4 py-3">
+                    <p className="text-blue-400 text-xs font-semibold mb-1">Cover song licensing</p>
+                    <p className="text-white/50 text-xs">Orinlabí will obtain a mechanical licence on your behalf through Ditto.</p>
+                  </div>
+                  <textarea name="coverSongDetails" rows={2} placeholder="Original song title and original artist/writer name"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors" />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -10,6 +10,17 @@ const genres = [
   "Hip-Hop", "Gospel", "Reggae", "Electronic", "Jazz", "Classical", "Other",
 ];
 
+const languages = [
+  "English", "Yoruba", "Igbo", "Hausa", "Nigerian Pidgin", "French",
+  "Portuguese", "Swahili", "Amharic", "Zulu", "Twi / Akan", "Afrikaans",
+  "Arabic", "Wolof", "Somali", "Other",
+];
+
+const trackVersions = [
+  "Original", "Radio Edit", "Remix", "Acoustic", "Instrumental",
+  "Extended Mix", "Live", "Alternate Version", "Cover", "Other",
+];
+
 const countries = [
   "Nigeria", "Ghana", "South Africa", "Kenya", "Tanzania", "Uganda",
   "Ethiopia", "Senegal", "Ivory Coast", "Cameroon", "Angola", "Zambia",
@@ -24,6 +35,8 @@ export default function SubmitPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [samplesUsed, setSamplesUsed] = useState(false);
+  const [coverSong, setCoverSong] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -95,7 +108,15 @@ export default function SubmitPage() {
         isrc: data.get("isrc") || null,
         copyright_owner: data.get("copyrightOwner"),
         copyright_year: data.get("copyrightYear"),
-        publishing_info: data.get("publishing") || null,
+        publishing_info:  data.get("publishing") || null,
+        language:         data.get("language") || null,
+        upc:              data.get("upc") || null,
+        track_version:    data.get("trackVersion") || "Original",
+        instrumental:     data.get("instrumental") === "Yes",
+        samples_used:     samplesUsed,
+        sample_details:   samplesUsed ? (data.get("sampleDetails") as string | null) : null,
+        cover_song:       coverSong,
+        cover_song_details: coverSong ? (data.get("coverSongDetails") as string | null) : null,
         status: "pending",
       });
 
@@ -178,7 +199,7 @@ export default function SubmitPage() {
             Track your application status →
           </a>
           <button
-            onClick={() => { setState("idle"); setAgreed(false); setAudioFile(null); setCoverFile(null); }}
+            onClick={() => { setState("idle"); setAgreed(false); setAudioFile(null); setCoverFile(null); setSamplesUsed(false); setCoverSong(false); }}
             className="mt-8 block w-full bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3 rounded-full transition-colors"
           >
             Submit Another Application
@@ -281,8 +302,10 @@ export default function SubmitPage() {
                 <Field label="Song / Release Title" name="songTitle" required />
                 <Field label="Album Title (if applicable)" name="albumTitle" />
                 <Select label="Genre" name="genre" options={genres} required />
+                <Select label="Language" name="language" options={languages} required />
                 <Field label="Desired Release Date" name="releaseDate" type="date" required />
-                <Select label="Explicit Content" name="explicit" options={["No", "Yes"]} required />
+                <Select label="Explicit Content" name="explicit" options={["Clean", "Explicit"]} required />
+                <Select label="Track Version" name="trackVersion" options={trackVersions} required />
               </div>
             </div>
 
@@ -313,7 +336,9 @@ export default function SubmitPage() {
                 <Field label="Songwriters" name="songwriters" placeholder="Separate with commas" required />
                 <Field label="Producers" name="producers" placeholder="Separate with commas" required />
                 <Field label="Featured Artists" name="featuredArtists" placeholder="If any" />
+                <Select label="Instrumental?" name="instrumental" options={["No", "Yes"]} required />
                 <Field label="ISRC Code" name="isrc" placeholder="Optional — leave blank to auto-generate" />
+                <Field label="UPC / EAN Code" name="upc" placeholder="Optional — leave blank if you don't have one" />
               </div>
             </div>
 
@@ -328,6 +353,62 @@ export default function SubmitPage() {
                 <div className="sm:col-span-2">
                   <Field label="Publishing Information" name="publishing"
                     placeholder="Publisher name, PRO affiliation, etc." />
+                </div>
+
+                {/* Samples */}
+                <div className="sm:col-span-2">
+                  <label className="block text-white/70 text-sm font-medium mb-2">
+                    Does this release contain any samples? <span className="text-[#007bff]">*</span>
+                  </label>
+                  <div className="flex gap-3">
+                    {["No", "Yes"].map((v) => (
+                      <button key={v} type="button"
+                        onClick={() => setSamplesUsed(v === "Yes")}
+                        className={`px-5 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                          samplesUsed === (v === "Yes")
+                            ? "bg-[#007bff]/15 border-[#007bff]/50 text-[#007bff]"
+                            : "border-white/[0.1] text-white/40 hover:text-white"
+                        }`}
+                      >{v}</button>
+                    ))}
+                  </div>
+                  {samplesUsed && (
+                    <div className="mt-3 space-y-3">
+                      <div className="bg-yellow-400/8 border border-yellow-400/20 rounded-xl px-4 py-3">
+                        <p className="text-yellow-400 text-xs font-semibold mb-1">Sample clearance required</p>
+                        <p className="text-white/50 text-xs">You must have written clearance from the original rights holders before distribution. Uncleared samples will result in takedowns.</p>
+                      </div>
+                      <TextArea label="" name="sampleDetails" placeholder="Describe the sample(s): original song title, artist, and confirm you have clearance" rows={3} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Cover song */}
+                <div className="sm:col-span-2">
+                  <label className="block text-white/70 text-sm font-medium mb-2">
+                    Is this a cover of someone else&apos;s song? <span className="text-[#007bff]">*</span>
+                  </label>
+                  <div className="flex gap-3">
+                    {["No", "Yes"].map((v) => (
+                      <button key={v} type="button"
+                        onClick={() => setCoverSong(v === "Yes")}
+                        className={`px-5 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                          coverSong === (v === "Yes")
+                            ? "bg-[#007bff]/15 border-[#007bff]/50 text-[#007bff]"
+                            : "border-white/[0.1] text-white/40 hover:text-white"
+                        }`}
+                      >{v}</button>
+                    ))}
+                  </div>
+                  {coverSong && (
+                    <div className="mt-3 space-y-3">
+                      <div className="bg-blue-400/8 border border-blue-400/20 rounded-xl px-4 py-3">
+                        <p className="text-blue-400 text-xs font-semibold mb-1">Cover song licensing</p>
+                        <p className="text-white/50 text-xs">Orinlabí will obtain a mechanical licence on your behalf through Ditto. Provide the original song details below.</p>
+                      </div>
+                      <TextArea label="" name="coverSongDetails" placeholder="Original song title, original artist/writer name" rows={2} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
