@@ -50,6 +50,8 @@ type Release = {
   royalties_usd: number | null;
   contract_signed_at: string | null;
   contract_signature: string | null;
+  presave_enabled: boolean | null;
+  spotify_album_id: string | null;
 };
 
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -98,6 +100,15 @@ export default function ReleasesPage() {
   const [notifyingLive, setNotifyingLive] = useState(false);
   const [liveNotified, setLiveNotified] = useState(false);
 
+  // Pre-save state
+  const [presaveEnabled, setPresaveEnabled] = useState(false);
+  const [spotifyAlbumId, setSpotifyAlbumId] = useState("");
+  const [presaveCount, setPresaveCount] = useState<number | null>(null);
+  const [savingPresave, setSavingPresave] = useState(false);
+  const [presaveSaved, setPresaveSaved] = useState(false);
+  const [triggeringPresave, setTriggeringPresave] = useState(false);
+  const [presaveTriggerResult, setPresaveTriggerResult] = useState<string | null>(null);
+
   async function load() {
     setLoading(true);
     let query = supabase.from("releases").select("*").order("submitted_at", { ascending: false });
@@ -134,6 +145,16 @@ export default function ReleasesPage() {
     setRoyaltiesSaved(false);
     setMetaSaved(false);
     setLiveNotified(false);
+    setPresaveEnabled(r.presave_enabled ?? false);
+    setSpotifyAlbumId(r.spotify_album_id ?? "");
+    setPresaveCount(null);
+    setPresaveSaved(false);
+    setPresaveTriggerResult(null);
+    supabase
+      .from("presaves")
+      .select("id", { count: "exact", head: true })
+      .eq("release_id", r.id)
+      .then(({ count }) => setPresaveCount(count ?? 0));
     setArtistProfile(undefined);
     supabase
       .from("artist_profiles")
@@ -186,6 +207,40 @@ export default function ReleasesPage() {
     setSelected((s) => s ? { ...s, isrc: editIsrc, upc: editUpc || null } : s);
     setSavingMeta(false);
     setMetaSaved(true);
+  }
+
+  async function savePresaveSettings() {
+    if (!selected) return;
+    setSavingPresave(true);
+    await supabase.from("releases").update({
+      presave_enabled:  presaveEnabled,
+      spotify_album_id: spotifyAlbumId.trim() || null,
+    }).eq("id", selected.id);
+    setSavingPresave(false);
+    setPresaveSaved(true);
+  }
+
+  async function triggerPresaves() {
+    if (!selected) return;
+    setTriggeringPresave(true);
+    setPresaveTriggerResult(null);
+    try {
+      const res = await fetch("/api/presave/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ release_id: selected.id }),
+      });
+      const json = await res.json() as { triggered?: number; total?: number; error?: string };
+      if (json.error) {
+        setPresaveTriggerResult(`Error: ${json.error}`);
+      } else {
+        setPresaveTriggerResult(`Sent to ${json.triggered} of ${json.total} fans.`);
+        setPresaveCount((c) => Math.max(0, (c ?? 0) - (json.triggered ?? 0)));
+      }
+    } catch {
+      setPresaveTriggerResult("Network error. Try again.");
+    }
+    setTriggeringPresave(false);
   }
 
   async function saveNotes() {
@@ -618,6 +673,107 @@ export default function ReleasesPage() {
                     </div>
                   )}
 
+                </Section>
+              )}
+
+              {/* Pre-save — approved releases only */}
+              {selected.status === "approved" && (
+                <Section title="Pre-save Campaign">
+                  <p className="text-white/30 text-xs mb-4">
+                    Enable a pre-save link for this release. Fans authorize Spotify and the album is saved to their library on release day.
+                  </p>
+
+                  {/* Enable toggle */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <button
+                      onClick={() => { setPresaveEnabled((v) => !v); setPresaveSaved(false); }}
+                      className={`relative w-10 h-6 rounded-full transition-colors ${presaveEnabled ? "bg-[#1db954]" : "bg-white/10"}`}
+                    >
+                      <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${presaveEnabled ? "translate-x-4" : ""}`} />
+                    </button>
+                    <span className="text-white/60 text-xs">
+                      {presaveEnabled ? "Pre-save enabled — link is live" : "Pre-save disabled"}
+                    </span>
+                  </div>
+
+                  {/* Spotify Album ID */}
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-white/40 text-xs w-28 flex-shrink-0">Spotify Album ID</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. 4aawyAB9vmqN3uQ7FjRGTy"
+                      value={spotifyAlbumId}
+                      onChange={(e) => { setSpotifyAlbumId(e.target.value); setPresaveSaved(false); }}
+                      className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#1db954] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors font-mono"
+                    />
+                  </div>
+                  <p className="text-white/20 text-xs mb-4 pl-[calc(112px+12px)]">
+                    From the Spotify URL: open.spotify.com/album/<strong>ID</strong>
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <button
+                      onClick={() => requestUnlock(savePresaveSettings)}
+                      disabled={savingPresave}
+                      className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                      style={{ background: "rgba(29,185,84,0.12)", color: "#1db954" }}
+                    >
+                      {savingPresave ? <Loader2 size={12} className="animate-spin" /> : null}
+                      {presaveSaved ? "Saved ✓" : "Save Settings"}
+                    </button>
+                    {presaveEnabled && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(`https://orinlabi.com/presave/${selected.id}`);
+                        }}
+                        className="flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] text-white/50 hover:text-white px-4 py-2 rounded-lg transition-colors"
+                      >
+                        <Link2 size={12} /> Copy Pre-save Link
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Stats + trigger */}
+                  {presaveEnabled && (
+                    <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-white/40 text-xs">Total pre-saves</span>
+                        <span className="text-white font-bold text-lg">
+                          {presaveCount === null ? "…" : presaveCount.toLocaleString()}
+                        </span>
+                      </div>
+                      {spotifyAlbumId && (
+                        <>
+                          <button
+                            onClick={() => requestUnlock(triggerPresaves)}
+                            disabled={triggeringPresave || presaveCount === 0}
+                            className="w-full flex items-center justify-center gap-2 text-xs font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-40"
+                            style={{ background: "rgba(29,185,84,0.12)", color: "#1db954" }}
+                          >
+                            {triggeringPresave ? <Loader2 size={12} className="animate-spin" /> : null}
+                            {triggeringPresave ? "Sending saves…" : "Send Pre-saves to All Fans Now"}
+                          </button>
+                          {presaveTriggerResult && (
+                            <p className="text-white/50 text-xs text-center">{presaveTriggerResult}</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {presaveEnabled && (
+                    <div className="mt-3">
+                      <p className="text-white/25 text-xs mb-1">Fan link:</p>
+                      <a
+                        href={`https://orinlabi.com/presave/${selected.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#1db954] text-xs hover:underline font-mono break-all"
+                      >
+                        orinlabi.com/presave/{selected.id}
+                      </a>
+                    </div>
+                  )}
                 </Section>
               )}
 
