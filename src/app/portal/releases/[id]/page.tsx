@@ -134,6 +134,22 @@ export default function ReleaseDetailPage() {
         .eq("email", release.email)
         .maybeSingle();
 
+      await supabase.from("payout_requests").insert({
+        email:                   release.email,
+        artist_name:             release.artist_name,
+        song_title:              release.song_title,
+        release_id:              release.id,
+        amount_usd:              release.royalties_usd ?? 0,
+        payout_method:           profileData?.payout_method ?? null,
+        bank_name:               profileData?.bank_name ?? null,
+        bank_account_name:       profileData?.bank_account_name ?? null,
+        bank_account_number:     profileData?.bank_account_number ?? null,
+        bank_country:            profileData?.bank_country ?? null,
+        paypal_email:            profileData?.paypal_email ?? null,
+        mobile_money_provider:   profileData?.mobile_money_provider ?? null,
+        mobile_money_number:     profileData?.mobile_money_number ?? null,
+        status:                  "pending",
+      });
       await fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -130,6 +130,14 @@ export default function ReleasesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "live", release: { ...selected, store_links: storeLinks } }),
     }).catch(() => {});
+    // In-app notification
+    supabase.from("notifications").insert({
+      email: selected.email,
+      type:  "live",
+      title: `"${selected.song_title}" is now live!`,
+      body:  "Your music is live on streaming platforms. Head to your portal to get your smart link and share it with the world.",
+      link:  `/portal/releases/${selected.id}`,
+    }).then(() => {}).then(undefined, () => {});
     setNotifyingLive(false);
     setLiveNotified(true);
   }
