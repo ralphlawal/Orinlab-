@@ -7,29 +7,22 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
-  LayoutDashboard,
-  Music,
-  MessageSquare,
-  BookOpen,
-  Mail,
-  LogOut,
-  Loader2,
-  Menu,
-  X,
-  Palette,
-  Users,
-  Settings,
+  LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio,
 } from "lucide-react";
 
 const BASE_NAV = [
-  { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} />, superOnly: false },
-  { label: "Releases", href: "/admin/releases", icon: <Music size={18} />, superOnly: false },
-  { label: "Assets", href: "/admin/assets", icon: <Palette size={18} />, superOnly: false },
-  { label: "Artists", href: "/admin/artists", icon: <Users size={18} />, superOnly: false },
-  { label: "Messages", href: "/admin/messages", icon: <MessageSquare size={18} />, superOnly: false },
-  { label: "Blog", href: "/admin/blog", icon: <BookOpen size={18} />, superOnly: true },
-  { label: "Newsletter", href: "/admin/newsletter", icon: <Mail size={18} />, superOnly: true },
-  { label: "Settings", href: "/admin/settings", icon: <Settings size={18} />, superOnly: true },
+  { label: "Dashboard",     href: "/admin",               icon: <LayoutDashboard size={18} />, superOnly: false },
+  { label: "Releases",      href: "/admin/releases",      icon: <Music size={18} />,           superOnly: false },
+  { label: "Assets",        href: "/admin/assets",        icon: <Palette size={18} />,         superOnly: false },
+  { label: "Artists",       href: "/admin/artists",       icon: <Users size={18} />,           superOnly: false },
+  { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={18} />,   superOnly: false },
+  { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={18} />,           superOnly: false },
+  { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={18} />,       superOnly: true  },
+  { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={18} />,       superOnly: true  },
+  { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={18} />,        superOnly: true  },
+  { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={18} />,            superOnly: true  },
+  { label: "Settings",      href: "/admin/settings",      icon: <Settings size={18} />,        superOnly: true  },
 ];
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")

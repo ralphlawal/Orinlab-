@@ -4,26 +4,30 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { LogOut, Loader2 } from "lucide-react";
+import { LogOut, Loader2, Bell } from "lucide-react";
 
 function useUnreadCount(email: string | null) {
-  const [count, setCount] = useState(0);
+  const [msgCount, setMsgCount]           = useState(0);
+  const [notifCount, setNotifCount]       = useState(0);
 
   useEffect(() => {
     if (!email) return;
-
-    const fetchCount = () =>
+    const fetchMsg = () =>
       supabase.from("messages")
         .select("id", { count: "exact", head: true })
         .eq("artist_email", email).eq("sender", "admin").is("read_at", null)
-        .then(({ count: c }) => setCount(c ?? 0));
-
-    fetchCount();
-    const id = setInterval(fetchCount, 5000);
+        .then(({ count: c }) => setMsgCount(c ?? 0));
+    const fetchNotif = () =>
+      supabase.from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("email", email).eq("read", false)
+        .then(({ count: c }) => setNotifCount(c ?? 0));
+    fetchMsg(); fetchNotif();
+    const id = setInterval(() => { fetchMsg(); fetchNotif(); }, 10000);
     return () => clearInterval(id);
   }, [email]);
 
-  return count;
+  return { msgCount, notifCount };
 }
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +35,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState<string | null>(null);
-  const unread = useUnreadCount(email);
+  const { msgCount, notifCount } = useUnreadCount(email);
 
   useEffect(() => {
     // Auth is handled by /auth/callback before the user reaches the portal.
@@ -123,27 +127,25 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           {/* Nav links — horizontally scrollable on mobile */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none flex-1 min-w-0 pr-3">
             {[
-              { href: "/portal", label: "Releases", exact: true },
-              { href: "/portal/assets", label: "Assets", exact: false },
-              { href: "/portal/messages", label: "Messages", exact: false },
-              { href: "/portal/profile", label: "Profile", exact: false },
+              { href: "/portal",               label: "Releases",  exact: true  },
+              { href: "/portal/earnings",       label: "Earnings",  exact: false },
+              { href: "/portal/pitch",          label: "Pitch",     exact: false },
+              { href: "/portal/assets",         label: "Assets",    exact: false },
+              { href: "/portal/messages",       label: "Messages",  exact: false },
+              { href: "/portal/profile",        label: "Profile",   exact: false },
             ].map(({ href, label, exact }) => {
-              const active = exact ? pathname === href : pathname.startsWith(href);
+              const active     = exact ? pathname === href : pathname.startsWith(href);
               const isMessages = href === "/portal/messages";
               return (
-                <Link
-                  key={href}
-                  href={href}
+                <Link key={href} href={href}
                   className={`flex-shrink-0 relative px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    active
-                      ? "bg-[#007bff]/15 text-[#007bff]"
-                      : "text-white/40 hover:text-white"
+                    active ? "bg-[#007bff]/15 text-[#007bff]" : "text-white/40 hover:text-white"
                   }`}
                 >
                   {label}
-                  {isMessages && unread > 0 && (
+                  {isMessages && msgCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 bg-[#007bff] text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                      {unread > 9 ? "9+" : unread}
+                      {msgCount > 9 ? "9+" : msgCount}
                     </span>
                   )}
                 </Link>
@@ -151,13 +153,22 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             })}
           </div>
 
-          <button
-            onClick={signOut}
-            className="flex-shrink-0 flex items-center gap-1.5 text-white/40 hover:text-white text-xs transition-colors"
-          >
-            <LogOut size={13} />
-            <span className="hidden sm:block">Sign out</span>
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Notification bell */}
+            <Link href="/portal/notifications" className="relative text-white/40 hover:text-white transition-colors p-1">
+              <Bell size={16} />
+              {notifCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">
+                  {notifCount > 9 ? "9+" : notifCount}
+                </span>
+              )}
+            </Link>
+            <button onClick={signOut}
+              className="flex items-center gap-1.5 text-white/40 hover:text-white text-xs transition-colors">
+              <LogOut size={13} />
+              <span className="hidden sm:block">Sign out</span>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -96,6 +96,11 @@ export default function ReleasesPage() {
   const [editUpc, setEditUpc] = useState("");
   const [savingMeta, setSavingMeta] = useState(false);
   const [metaSaved, setMetaSaved] = useState(false);
+
+  // Royalty splits
+  const [splits, setSplits]       = useState<{ name: string; role: string; percentage: string }[]>([]);
+  const [savingSplits, setSavingSplits] = useState(false);
+  const [splitsSaved, setSplitsSaved]   = useState(false);
   const [search, setSearch] = useState("");
   const [notifyingLive, setNotifyingLive] = useState(false);
   const [liveNotified, setLiveNotified] = useState(false);
@@ -142,6 +147,13 @@ export default function ReleasesPage() {
     setRoyaltiesSaved(false);
     setMetaSaved(false);
     setLiveNotified(false);
+    setSplits([]);
+    setSplitsSaved(false);
+    supabase.from("royalty_splits").select("name,role,percentage").eq("release_id", r.id)
+      .then(({ data }) => {
+        if (data?.length) setSplits(data.map((s: { name: string; role: string | null; percentage: number }) =>
+          ({ name: s.name, role: s.role ?? "", percentage: String(s.percentage) })));
+      });
     setPresaveEnabled(r.presave_enabled ?? false);
     setPresaveUrl(r.presave_url ?? "");
     setPresaveSaved(false);
@@ -199,6 +211,26 @@ export default function ReleasesPage() {
     setMetaSaved(true);
   }
 
+  function generateIsrc() {
+    const year  = new Date().getFullYear().toString().slice(-2);
+    const seq   = Math.floor(10000 + Math.random() * 90000);
+    return `NG-ORL-${year}-${seq}`;
+  }
+
+  async function saveSplits() {
+    if (!selected) return;
+    setSavingSplits(true);
+    await supabase.from("royalty_splits").delete().eq("release_id", selected.id);
+    const valid = splits.filter((s) => s.name.trim() && Number(s.percentage) > 0);
+    if (valid.length > 0) {
+      await supabase.from("royalty_splits").insert(
+        valid.map((s) => ({ release_id: selected.id, name: s.name.trim(), role: s.role.trim() || null, percentage: Number(s.percentage) }))
+      );
+    }
+    setSavingSplits(false);
+    setSplitsSaved(true);
+  }
+
   async function savePresaveSettings() {
     if (!selected) return;
     setSavingPresave(true);
@@ -237,6 +269,15 @@ export default function ReleasesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: status, release: updatedRelease }),
     }).catch(() => {});
+
+    // Write in-app notification
+    supabase.from("notifications").insert({
+      email:  selected.email,
+      type:   status,
+      title:  status === "approved" ? `"${selected.song_title}" has been approved!` : `"${selected.song_title}" was not selected`,
+      body:   notes || (status === "approved" ? "Your release has been approved and is being prepared for distribution." : "Your release was not selected at this time. Check your portal for details."),
+      link:   `/portal/releases/${selected.id}`,
+    }).then(() => {}).then(undefined, () => {});
 
     // Admin record copy
     fetch("/api/notify", {
@@ -474,14 +515,22 @@ export default function ReleasesPage() {
                     </div>
                   ))}
                 </div>
-                <button
-                  onClick={() => requestUnlock(saveMeta)}
-                  disabled={savingMeta}
-                  className="mt-3 flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors"
-                >
-                  {savingMeta ? <Loader2 size={12} className="animate-spin" /> : null}
-                  {metaSaved ? "Saved ✓" : "Save Metadata"}
-                </button>
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    onClick={() => { setEditIsrc(generateIsrc()); setMetaSaved(false); }}
+                    className="text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 px-3 py-2 rounded-lg transition-colors border border-white/[0.06]"
+                  >
+                    Generate ISRC
+                  </button>
+                  <button
+                    onClick={() => requestUnlock(saveMeta)}
+                    disabled={savingMeta}
+                    className="flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    {savingMeta ? <Loader2 size={12} className="animate-spin" /> : null}
+                    {metaSaved ? "Saved ✓" : "Save Metadata"}
+                  </button>
+                </div>
               </Section>
 
               {/* Rights */}
@@ -784,6 +833,62 @@ export default function ReleasesPage() {
                 </Section>
               )}
 
+              {/* Royalty Splits */}
+              {selected.status === "approved" && (
+                <Section title="Royalty Splits">
+                  <p className="text-white/30 text-xs mb-3">Define how earnings are split between collaborators. Percentages visible to the artist in their portal.</p>
+                  <div className="space-y-2 mb-3">
+                    {splits.map((s, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Name"
+                          value={s.name}
+                          onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], name: e.target.value }; setSplits(n); setSplitsSaved(false); }}
+                          className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Role"
+                          value={s.role}
+                          onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], role: e.target.value }; setSplits(n); setSplitsSaved(false); }}
+                          className="w-24 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                        />
+                        <input
+                          type="number"
+                          placeholder="%"
+                          min="0"
+                          max="100"
+                          value={s.percentage}
+                          onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], percentage: e.target.value }; setSplits(n); setSplitsSaved(false); }}
+                          className="w-16 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                        />
+                        <button
+                          onClick={() => { setSplits(splits.filter((_, j) => j !== i)); setSplitsSaved(false); }}
+                          className="text-white/30 hover:text-red-400 transition-colors text-xs px-2"
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => { setSplits([...splits, { name: "", role: "", percentage: "" }]); setSplitsSaved(false); }}
+                      className="text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 px-3 py-2 rounded-lg transition-colors border border-white/[0.06]"
+                    >
+                      + Add Collaborator
+                    </button>
+                    <button
+                      onClick={() => requestUnlock(saveSplits)}
+                      disabled={savingSplits}
+                      className="flex items-center gap-2 text-xs font-semibold bg-green-500/10 hover:bg-green-500/20 disabled:opacity-40 text-green-400 px-4 py-2 rounded-lg transition-colors"
+                    >
+                      {savingSplits ? <Loader2 size={12} className="animate-spin" /> : null}
+                      {splitsSaved ? "Saved ✓" : "Save Splits"}
+                    </button>
+                  </div>
+                </Section>
+              )}
+
               {/* Review notes */}
               <div>
                 <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
@@ -812,7 +917,7 @@ export default function ReleasesPage() {
               </button>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setArtistProfile(undefined); }}
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setArtistProfile(undefined); }}
                   className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
                   Cancel

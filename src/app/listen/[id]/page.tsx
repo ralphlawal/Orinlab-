@@ -146,8 +146,21 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
           </div>
         )}
 
+        {/* QR Code */}
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <p className="text-white/20 text-xs uppercase tracking-widest">Scan to listen</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://orinlabi.com/listen/${release.id}`)}&bgcolor=000000&color=ffffff&margin=6`}
+            alt="QR code"
+            width={110}
+            height={110}
+            className="rounded-xl opacity-60"
+          />
+        </div>
+
         {/* Orinlabí footer */}
-        <div className="mt-10 text-center">
+        <div className="mt-6 text-center">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-white/20 hover:text-white/40 text-xs transition-colors"

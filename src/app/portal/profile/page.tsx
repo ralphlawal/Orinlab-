@@ -30,6 +30,7 @@ type Profile = {
   youtube_channel: string;
   facebook_url: string;
   website_url: string;
+  public_slug: string;
   // Payout details
   payout_method: string;
   bank_name: string;
@@ -63,6 +64,7 @@ const EMPTY: Profile = {
   youtube_channel: "",
   facebook_url: "",
   website_url: "",
+  public_slug: "",
   payout_method: "",
   bank_name: "",
   bank_account_name: "",
@@ -436,6 +438,17 @@ export default function ProfilePage() {
           </Field>
           <Field label="Website">
             <input value={profile.website_url} onChange={set("website_url")} placeholder="https://yourwebsite.com" className={inp} />
+          </Field>
+          <Field label="Public Profile Slug" hint={`Your page: orinlabi.com/artist/${profile.public_slug || "your-name"}`}>
+            <div className="flex items-center gap-0">
+              <span className="bg-white/[0.04] border border-r-0 border-white/[0.1] text-white/30 text-sm px-3 py-3 rounded-l-xl whitespace-nowrap">orinlabi.com/artist/</span>
+              <input
+                value={profile.public_slug}
+                onChange={(e) => set("public_slug")({ target: { value: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-") } } as React.ChangeEvent<HTMLInputElement>)}
+                placeholder="your-name"
+                className={inp + " rounded-l-none border-l-0"}
+              />
+            </div>
           </Field>
         </div>
       </Card>

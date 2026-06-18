@@ -6,8 +6,10 @@ import { supabase } from "@/lib/supabase";
 import {
   Music2, Clock, CheckCircle2, XCircle,
   ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
-  BarChart2, DollarSign, Radio,
+  BarChart2, DollarSign, Radio, Megaphone, AlertTriangle, Info,
 } from "lucide-react";
+
+type Announcement = { id: string; title: string; body: string; type: "info" | "warning" | "success" };
 
 type Release = {
   id: string;
@@ -31,9 +33,10 @@ const statusConfig = {
 };
 
 export default function PortalDashboard() {
-  const [releases, setReleases] = useState<Release[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [artistName, setArtistName] = useState("");
+  const [releases, setReleases]           = useState<Release[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading]             = useState(true);
+  const [artistName, setArtistName]       = useState("");
   const [showProfileBanner, setShowProfileBanner] = useState(false);
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function PortalDashboard() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const [releasesRes, profileRes] = await Promise.all([
+      const [releasesRes, profileRes, announcementsRes] = await Promise.all([
         supabase
           .from("releases")
           .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links")
@@ -52,7 +55,14 @@ export default function PortalDashboard() {
           .select("spotify_artist_id,instagram_handle")
           .eq("email", session.user.email!)
           .maybeSingle(),
+        supabase
+          .from("announcements")
+          .select("id,title,body,type")
+          .eq("active", true)
+          .order("created_at", { ascending: false })
+          .limit(3),
       ]);
+      setAnnouncements((announcementsRes.data ?? []) as Announcement[]);
 
       const data = (releasesRes.data ?? []) as Release[];
       if (data.length > 0) {
@@ -136,6 +146,28 @@ export default function PortalDashboard() {
           </div>
         );
       })()}
+
+      {/* Platform announcements */}
+      {announcements.length > 0 && (
+        <div className="mb-6 space-y-2">
+          {announcements.map((a) => {
+            const styles = {
+              info:    { icon: <Info size={14} />,          border: "border-[#007bff]/25", bg: "bg-[#007bff]/8",  text: "text-[#007bff]"  },
+              warning: { icon: <AlertTriangle size={14} />, border: "border-amber-500/25", bg: "bg-amber-500/8",  text: "text-amber-400"  },
+              success: { icon: <CheckCircle2 size={14} />,  border: "border-green-500/25", bg: "bg-green-500/8",  text: "text-green-400"  },
+            }[a.type] ?? { icon: <Megaphone size={14} />, border: "border-white/10", bg: "bg-white/[0.03]", text: "text-white/60" };
+            return (
+              <div key={a.id} className={`${styles.bg} border ${styles.border} rounded-2xl px-4 py-3 flex items-start gap-3`}>
+                <span className={`${styles.text} flex-shrink-0 mt-0.5`}>{styles.icon}</span>
+                <div>
+                  <p className="text-white font-semibold text-sm">{a.title}</p>
+                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{a.body}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Profile completion banner */}
       {showProfileBanner && (
