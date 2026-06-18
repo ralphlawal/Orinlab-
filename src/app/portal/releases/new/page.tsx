@@ -185,7 +185,7 @@ export default function NewReleasePage() {
         album_title:      data.get("albumTitle") || null,
         genre:            data.get("genre"),
         release_date:     data.get("releaseDate"),
-        explicit:         data.get("explicit") === "Yes",
+        explicit:         data.get("explicit") === "Explicit",
         audio_file_url:   audioFileUrl,
         cover_art_url:    coverData.publicUrl,
         songwriters:      data.get("songwriters"),
@@ -472,7 +472,7 @@ export default function NewReleasePage() {
                         <p className="text-white/30 text-xs mb-1">Explicit</p>
                         <select
                           value={track.explicit ? "Yes" : "No"}
-                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, explicit: e.target.value === "Yes" } : tr))}
+                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, explicit: e.target.value === "Explicit" } : tr))}
                           className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-xs px-3 py-2 rounded-xl appearance-none"
                         >
                           <option value="No">Clean</option>

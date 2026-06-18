@@ -99,7 +99,7 @@ export default function SubmitPage() {
         album_title: data.get("albumTitle") || null,
         genre: data.get("genre"),
         release_date: data.get("releaseDate"),
-        explicit: data.get("explicit") === "Yes",
+        explicit: data.get("explicit") === "Explicit",
         audio_file_url: audioUrl || null,
         cover_art_url: coverUrl || null,
         songwriters: data.get("songwriters"),
