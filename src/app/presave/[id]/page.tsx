@@ -11,7 +11,7 @@ const db = createClient(
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<Record<string, string>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -39,21 +39,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PresavePage({ params, searchParams }: Props) {
-  const { id }          = await params;
-  const { saved, error } = await searchParams;
+export default async function PresavePage({ params }: Props) {
+  const { id } = await params;
 
   const { data: release } = await db
     .from("releases")
-    .select("id, artist_name, song_title, album_title, release_type, release_date, cover_art_url, genre")
+    .select("id, artist_name, song_title, album_title, release_type, release_date, cover_art_url, presave_url")
     .eq("id", id)
     .eq("presave_enabled", true)
     .maybeSingle();
 
-  if (!release) notFound();
-
-  const isSaved  = saved === "true";
-  const isDenied = error === "denied";
+  if (!release || !release.presave_url) notFound();
 
   const title = (release.release_type === "Album" || release.release_type === "EP")
     ? (release.album_title || release.song_title)
@@ -67,7 +63,6 @@ export default async function PresavePage({ params, searchParams }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black overflow-y-auto flex flex-col items-center justify-center px-4 py-16">
-      {/* Blurred cover art backdrop */}
       {release.cover_art_url && (
         <div
           className="fixed inset-0 opacity-20 blur-3xl scale-110 bg-cover bg-center"
@@ -77,7 +72,6 @@ export default async function PresavePage({ params, searchParams }: Props) {
       )}
 
       <div className="relative z-10 w-full max-w-sm">
-        {/* Cover Art */}
         <div className="relative w-full aspect-square rounded-2xl overflow-hidden shadow-2xl mb-7">
           {release.cover_art_url ? (
             <Image
@@ -94,7 +88,6 @@ export default async function PresavePage({ params, searchParams }: Props) {
           )}
         </div>
 
-        {/* Release info */}
         {releaseDate && (
           <p className="text-xs font-bold uppercase tracking-widest mb-3 text-center"
             style={{ color: "#1db954" }}>
@@ -109,12 +102,7 @@ export default async function PresavePage({ params, searchParams }: Props) {
           {release.artist_name}
         </p>
 
-        <PresaveActions
-          releaseId={release.id}
-          saved={isSaved}
-          denied={isDenied}
-          releaseDate={releaseDate}
-        />
+        <PresaveActions releaseId={release.id} presaveUrl={release.presave_url} />
 
         <p className="text-white/20 text-xs text-center mt-10">
           Distributed by Orinlabí

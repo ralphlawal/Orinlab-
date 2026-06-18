@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createElement } from "react";
 import { Resend } from "resend";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 import { ContractDocument } from "@/lib/contractPdf";
+
+// Anon client used only for auth token verification
+import { supabase } from "@/lib/supabase";
 
 const FROM  = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
 const ADMIN = process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com";
@@ -25,8 +28,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
+  // Create a request-scoped client using the artist's JWT so RLS resolves correctly
+  const authed = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  );
+
   // Fetch the release
-  const { data: release, error: releaseErr } = await supabase
+  const { data: release, error: releaseErr } = await authed
     .from("releases")
     .select("id, artist_name, legal_name, email, song_title, release_type, genre, status, contract_signed_at")
     .eq("id", releaseId)
@@ -158,7 +168,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Mark as signed in DB
-  await supabase
+  await authed
     .from("releases")
     .update({ contract_signed_at: signedAt, contract_signature: signatureName.trim() })
     .eq("id", releaseId);
