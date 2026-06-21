@@ -85,6 +85,52 @@ function Hero({ s }: { s: HeroSettings }) {
   );
 }
 
+/* ── Brand Statement ────────────────────────────────────── */
+function BrandStatement() {
+  return (
+    <section className="py-24 px-4 border-b border-white/5">
+      <div className="max-w-5xl mx-auto text-center">
+        <p className="text-white/30 text-xs uppercase tracking-[0.3em] mb-10">
+          Our Position
+        </p>
+        <h2 className="text-5xl sm:text-7xl md:text-8xl font-bold text-white leading-none tracking-tight mb-4">
+          Selected Worldwide.
+        </h2>
+        <h2 className="text-5xl sm:text-7xl md:text-8xl font-bold text-[#007bff] leading-none tracking-tight mb-16">
+          Curated from Africa.
+        </h2>
+        <div className="max-w-2xl mx-auto space-y-5 text-white/50 text-lg leading-relaxed">
+          <p>
+            Invitation-based distribution is not a growth hack. It is a brand statement.
+          </p>
+          <p>
+            We are not for everyone. We are for the ones who believe they matter —
+            artists whose sound carries genuine craft, vision, and cultural truth.
+          </p>
+          <p>
+            Every submission is heard by a real person. Every selection is intentional.
+            Being on Orinlabí means something.
+          </p>
+        </div>
+        <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6">
+          <Link
+            href="/submit"
+            className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-4 rounded-full text-base transition-all duration-200 hover:shadow-[0_0_30px_rgba(0,123,255,0.4)]"
+          >
+            Apply for Selection
+          </Link>
+          <Link
+            href="/about#standards"
+            className="text-white/50 hover:text-white font-medium transition-colors text-base"
+          >
+            What we look for →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ── Streaming Platforms ────────────────────────────────── */
 function Platforms() {
   const platforms = [
@@ -415,6 +461,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero s={hero} />
+      <BrandStatement />
       <Platforms />
       <Features items={features} />
       <WhyOrinlabí items={why} />

@@ -83,8 +83,8 @@ export default function TermsPage() {
 
           <Section title="5. Distribution & Royalties">
             <p>
-              Distribution through Orinlabí is provided at no cost to selected artists.
-              We do not charge fees or take a commission on your streaming royalties.
+              Distribution through Orinlabí is provided to selected artists under terms
+              agreed in your individual artist agreement. We do not take a commission on your streaming royalties.
             </p>
             <p>
               Royalties are collected from streaming platforms and disbursed to artists
@@ -109,7 +109,7 @@ export default function TermsPage() {
               arising from your use of our services, including but not limited to loss of
               revenue, data, or business opportunities. Our total liability for any claim
               shall not exceed the amount paid by you to Orinlabí in the preceding 12 months
-              (which, for free distribution, is zero).
+              (which shall not exceed the amount paid by you to Orinlabí under your artist agreement).
             </p>
           </Section>
 

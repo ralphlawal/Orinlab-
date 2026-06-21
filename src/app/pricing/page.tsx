@@ -7,7 +7,7 @@ import {
 export const metadata = {
   title: "How It Works – Orinlabí",
   description:
-    "Orinlabí is an invitation-based distribution platform. Selected artists receive free global distribution to 150+ streaming services.",
+    "Orinlabí is an invitation-based distribution platform for African artists. Selected Worldwide. Curated from Africa. Every application reviewed by our team.",
 };
 
 const steps = [
@@ -31,9 +31,9 @@ const steps = [
   },
   {
     number: "04",
-    title: "Global Distribution — Free",
+    title: "Global Distribution",
     description:
-      "Your music goes live on Spotify, Apple Music, Boomplay, AudioMack, YouTube Music, and 150+ more stores worldwide. At no cost to you.",
+      "Your music goes live on Spotify, Apple Music, Boomplay, AudioMack, YouTube Music, and 150+ more stores worldwide.",
   },
 ];
 
@@ -48,20 +48,20 @@ const included = [
 
 const faqs = [
   {
-    q: "Is distribution really free?",
-    a: "Yes — 100% free for artists we select. We built Orinlabí to remove financial barriers from African music distribution. There are no hidden fees, no annual subscriptions, no per-release charges.",
+    q: "How are artists selected?",
+    a: "Every application is reviewed by our team personally — no algorithms. We select based on three things: sound quality, artistic vision, and cultural authenticity. There are no follower count requirements.",
   },
   {
-    q: "How are artists selected?",
-    a: "We review every application manually. We look at music quality, artist consistency, and alignment with our mission of amplifying authentic African sound globally. There is no fixed quota — we choose based on merit.",
+    q: "What happens if I'm not selected?",
+    a: "We provide feedback where we can, and encourage you to keep creating and reapply. Many of our artists reapplied after an initial pass. A rejection is not a door closed permanently.",
   },
   {
     q: "How long does selection take?",
     a: "We aim to respond within 3–5 business days of receiving your application. If you haven't heard back after 7 days, feel free to reach out via our contact page.",
   },
   {
-    q: "What happens if I'm not selected?",
-    a: "We encourage you to keep creating and reapply in the future. We may not select every artist in the first round, but our roster grows continuously as we scale.",
+    q: "How long does selection take?",
+    a: "We aim to respond within 3–5 business days. If you haven't heard back after 7 days, reach out via our contact page.",
   },
   {
     q: "Do I keep ownership of my music?",
@@ -81,15 +81,15 @@ export default function PricingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
           <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-            Invitation-Based · Always Free
+            Invitation-Based · Curated from Africa
           </p>
           <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6">
-            No Plans.<br />No Fees.<br />Just Music.
+            No Algorithms.<br />No Auto-Approvals.<br />Just Selection.
           </h1>
           <p className="text-white/60 text-lg leading-relaxed">
-            Orinlabí is an invitation-based distribution platform. We hand-pick
-            artists we believe in — and for those we select, distribution is
-            completely <strong className="text-white">free</strong>.
+            Orinlabí is an invitation-based distribution platform. Every application
+            is reviewed by our team — we select based on sound quality, artistic
+            vision, and cultural authenticity.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link

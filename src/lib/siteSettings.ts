@@ -59,11 +59,11 @@ export type FaqItem = {
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 export const DEFAULT_HERO: HeroSettings = {
-  badge: "Now accepting artist applications",
-  headline: "Release Your Music",
-  highlight: "Worldwide.",
+  badge: "Selected Worldwide. Curated from Africa.",
+  headline: "Not Everyone Gets",
+  highlight: "Selected.",
   subheadline:
-    "Invitation-based global distribution for independent African artists. Apply, get selected, and release to 150+ platforms — completely free.",
+    "Orinlabí is invitation-based distribution for African artists who believe their music matters. Every application is reviewed by our team — no algorithms, no auto-approvals.",
   stats: [
     { value: "150+", label: "Platforms" },
     { value: "50+", label: "Countries" },
@@ -157,15 +157,15 @@ export const DEFAULT_WHY: WhyCard[] = [
     desc: "Track your streams, earnings, and audience growth across all platforms.",
   },
   {
-    title: "Always Free",
-    desc: "No subscription, no hidden fees. Selected artists distribute at zero cost — ever.",
+    title: "Curated Selection",
+    desc: "Every application is reviewed by our team. We select based on sound quality, artistic vision, and cultural authenticity — not follower counts.",
   },
 ];
 
 export const DEFAULT_FAQ: FaqItem[] = [
   {
     q: "How does Orinlabí distribute my music?",
-    a: "You submit an application with your release details. Our team reviews it and if selected, we deliver your music to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, Audiomack, and more — at no cost.",
+    a: "You submit an application with your release details. Our team reviews it personally and if selected, we deliver your music to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, Audiomack, and more.",
   },
   {
     q: "Do I keep ownership of my music?",

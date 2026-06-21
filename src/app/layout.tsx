@@ -16,23 +16,23 @@ const sora = Sora({
 export const metadata: Metadata = {
   metadataBase: new URL("https://orinlabi.com"),
   title: {
-    default: "Orinlabí – Apply for Free Global Music Distribution",
+    default: "Orinlabí – Global Music Distribution for African Artists",
     template: "%s – Orinlabí",
   },
   description:
-    "Orinlabí is an invitation-based music distribution platform for independent African artists. Selected artists distribute to 150+ platforms worldwide for free.",
+    "Orinlabí is an invitation-based music distribution platform for independent African artists. Selected Worldwide. Curated from Africa. Every application reviewed by our team.",
   keywords: [
     "African music distribution",
-    "free music distribution Africa",
+    "African music distribution platform",
     "independent artist distribution",
     "Afrobeats distribution",
     "music distribution Nigeria Ghana",
     "apply music distribution",
   ],
   openGraph: {
-    title: "Orinlabí – Free Global Music Distribution for African Artists",
+    title: "Orinlabí – Global Music Distribution for African Artists",
     description:
-      "Invitation-based distribution platform. Apply, get selected, and release your music to 150+ platforms worldwide — completely free.",
+      "Selected Worldwide. Curated from Africa. Invitation-based distribution platform for independent African artists — apply and release your music to 150+ platforms worldwide.",
     siteName: "Orinlabí",
     type: "website",
     url: "https://orinlabi.com",
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Orinlabí – Free Global Music Distribution for African Artists",
+    title: "Orinlabí – Global Music Distribution for African Artists",
     description:
-      "Invitation-based distribution platform. Apply and release your music to 150+ platforms — free for selected artists.",
+      "Selected Worldwide. Curated from Africa. Invitation-based distribution platform for independent African artists — every submission reviewed by our team.",
     images: ["/og-image.png"],
   },
 };

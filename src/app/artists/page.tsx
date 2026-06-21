@@ -196,7 +196,7 @@ export default async function ArtistsPage() {
           </h2>
           <p className="text-white/50 text-lg mb-10">
             Orinlabí is invitation-based. If you believe your music deserves
-            a global audience, apply — distribution is free for selected artists.
+            a global audience, apply — every submission is reviewed by our team.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

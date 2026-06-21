@@ -224,8 +224,9 @@ export default function SubmitPage() {
             Submit Your Application.
           </h1>
           <p className="text-white/60 leading-relaxed max-w-lg mx-auto">
-            Orinlabí is invitation-based. Apply below and our team will review
-            your music. Selected artists receive free global distribution.
+            Every submission is reviewed by our team — no algorithms, no
+            auto-approvals. We select based on sound quality, artistic vision,
+            and cultural authenticity.
           </p>
         </div>
       </section>
@@ -239,7 +240,7 @@ export default function SubmitPage() {
               <p><strong className="text-white">How it works:</strong></p>
               <p>1. Fill in your details and upload your release below.</p>
               <p>2. Our team reviews your application within 3–5 business days.</p>
-              <p>3. Selected artists receive free global distribution to 150+ platforms.</p>
+              <p>3. Selected artists receive global distribution to 150+ platforms worldwide.</p>
             </div>
           </div>
         </div>

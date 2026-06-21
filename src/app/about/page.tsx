@@ -16,13 +16,16 @@ function Hero() {
         <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
           Our Story
         </p>
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6">
-          Built For African Artists.
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-4">
+          Selected Worldwide.
+        </h1>
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#007bff] mb-8">
+          Curated from Africa.
         </h1>
         <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-          Orinlabí is more than a music distributor. It is a complete artist
-          growth ecosystem designed to empower independent African creators to
-          release globally, earn fairly, and own their legacy.
+          Orinlabí is not for every artist — it is for the right ones. We built
+          invitation-based global distribution for African creators who have
+          something genuine to say and the craft to say it.
         </p>
       </div>
     </section>
@@ -144,6 +147,70 @@ function VisionMission() {
             To help independent African artists release music globally while
             maintaining full ownership of their work — providing distribution,
             marketing, development, and royalty management under one roof.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Standards() {
+  const criteria = [
+    {
+      number: "01",
+      title: "Sound Quality",
+      desc: "Your production does not need to be expensive — but it needs to be intentional. Clean mix, clear vision, audible craft. We can hear the difference between rushed and ready.",
+    },
+    {
+      number: "02",
+      title: "Artistic Vision",
+      desc: "We look for artists who know what they are building. A coherent identity, a point of view, a direction. Not perfection — just clarity about who you are and where you are going.",
+    },
+    {
+      number: "03",
+      title: "Cultural Authenticity",
+      desc: "Your music should feel rooted — in a place, a community, a lived experience. Africa has too many distinct voices to celebrate for us to distribute anything generic.",
+    },
+  ];
+
+  return (
+    <section id="standards" className="py-20 px-4 bg-white/[0.02]">
+      <div className="max-w-7xl mx-auto">
+        <div className="max-w-2xl mb-16">
+          <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
+            Selection Criteria
+          </p>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
+            What We Look For.
+          </h2>
+          <p className="text-white/50 leading-relaxed">
+            Our selection is not based on follower counts or streaming numbers.
+            We review every application ourselves and select based on three things.
+            If your music does all three, you belong here.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {criteria.map((c) => (
+            <div
+              key={c.number}
+              className="bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl p-8 transition-colors duration-300"
+            >
+              <p className="text-[#007bff]/40 text-5xl font-bold mb-6 leading-none">
+                {c.number}
+              </p>
+              <h4 className="text-white font-bold text-xl mb-3">{c.title}</h4>
+              <p className="text-white/50 text-sm leading-relaxed">{c.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-12 bg-[#007bff]/5 border border-[#007bff]/15 rounded-2xl p-8 max-w-2xl">
+          <p className="text-white/70 text-sm leading-relaxed">
+            <span className="text-white font-semibold">Not selected?</span> We
+            review every submission and if we pass, we will tell you why. A
+            rejection is not a door closed — it is feedback. Many of our current
+            artists reapplied after their first submission.
           </p>
         </div>
       </div>
@@ -310,6 +377,7 @@ export default function AboutPage() {
       <Story />
       <FounderMessage />
       <VisionMission />
+      <Standards />
       <Values />
       <Roadmap />
       <CTA />

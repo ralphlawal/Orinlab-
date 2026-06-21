@@ -55,7 +55,7 @@ export default function OGImage() {
             }}
           />
           <span style={{ color: "#007bff", fontSize: 16, fontWeight: 600 }}>
-            Invitation-Based · Always Free
+            Selected Worldwide · Curated from Africa
           </span>
         </div>
 
@@ -86,8 +86,8 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          Invitation-based distribution for African artists. Selected artists
-          distribute to 150+ platforms — free.
+          Invitation-based distribution for African artists. Every application
+          reviewed by our team. 150+ platforms worldwide.
         </div>
 
         {/* Brand */}

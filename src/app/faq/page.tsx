@@ -13,8 +13,8 @@ const FAQS = [
         a: "You submit your release through our application form. Our team reviews it within 24–48 hours. If approved, we distribute your music to 150+ streaming platforms worldwide — including Spotify, Apple Music, Boomplay, Audiomack, Deezer, TIDAL, and more.",
       },
       {
-        q: "Is distribution really free?",
-        a: "Yes. Orinlabí is invitation-based — if your release is selected, distribution is 100% free. There are no upfront fees, no annual charges, and no per-release costs.",
+        q: "How does the selection process work?",
+        a: "Orinlabí is invitation-based — every application is reviewed by our team personally. We select based on sound quality, artistic vision, and cultural authenticity. If selected, your music goes to 150+ platforms worldwide.",
       },
       {
         q: "How long does it take for my music to go live?",

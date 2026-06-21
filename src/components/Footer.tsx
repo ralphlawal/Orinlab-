@@ -42,8 +42,8 @@ export default function Footer() {
               />
             </Link>
             <p className="text-white/50 text-sm leading-relaxed mb-6">
-              Invitation-based global distribution for African artists. Selected
-              artists distribute free. Always.
+              Invitation-based global distribution for African artists.
+              Selected. Supported. Global.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -127,7 +127,7 @@ export default function Footer() {
               Get Started
             </h4>
             <p className="text-white/50 text-sm mb-6 leading-relaxed">
-              Think your music deserves a global audience? Apply to distribute with Orinlabí — free for selected artists.
+              Think your music deserves a global audience? Apply to distribute with Orinlabí — every submission is reviewed by our team.
             </p>
             <Link
               href="/submit"
