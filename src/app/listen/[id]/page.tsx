@@ -172,9 +172,7 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
               <div className="text-center">
                 <p className="text-white/35 text-xs mb-5 uppercase tracking-widest">Now streaming on all platforms</p>
                 <a
-                  href={release.ditto_smart_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`/api/go/${release.id}`}
                   className="inline-flex items-center gap-3 bg-[#007bff] hover:bg-[#0063d1] active:scale-[0.98] text-white font-bold text-sm px-8 py-4 rounded-2xl transition-all duration-150 shadow-lg shadow-[#007bff]/25"
                 >
                   <Music2 size={18} />

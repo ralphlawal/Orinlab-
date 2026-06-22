@@ -386,9 +386,7 @@ export default function ReleaseDetailPage() {
                 <div className="mt-3 pt-3 border-t border-white/[0.06]">
                   <p className="text-white/25 text-[10px] mb-2 uppercase tracking-widest">Also available via all platforms</p>
                   <a
-                    href={release.ditto_smart_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/api/go/${release.id}`}
                     className="inline-flex items-center gap-2 text-xs font-semibold text-[#007bff] hover:text-white border border-[#007bff]/20 hover:border-[#007bff]/60 bg-[#007bff]/5 hover:bg-[#007bff]/10 px-4 py-2 rounded-lg transition-all"
                   >
                     <ExternalLink size={12} /> Listen on all platforms
