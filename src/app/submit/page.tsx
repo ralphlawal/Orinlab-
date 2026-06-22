@@ -37,6 +37,7 @@ export default function SubmitPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [samplesUsed, setSamplesUsed] = useState(false);
   const [coverSong, setCoverSong] = useState(false);
+  const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>([]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -104,7 +105,9 @@ export default function SubmitPage() {
         cover_art_url: coverUrl || null,
         songwriters: data.get("songwriters"),
         producers: data.get("producers"),
-        featured_artists: data.get("featuredArtists") || null,
+        featured_artists: featuredArtists.length > 0
+          ? JSON.stringify(featuredArtists.filter((a) => a.name.trim()))
+          : null,
         isrc: data.get("isrc") || null,
         copyright_owner: data.get("copyrightOwner"),
         copyright_year: data.get("copyrightYear"),
@@ -336,7 +339,74 @@ export default function SubmitPage() {
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Songwriters" name="songwriters" placeholder="Separate with commas" required />
                 <Field label="Producers" name="producers" placeholder="Separate with commas" required />
-                <Field label="Featured Artists" name="featuredArtists" placeholder="If any" />
+                {/* Featured Artists — dynamic */}
+                <div className="sm:col-span-2">
+                  <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
+                    Featured Artists
+                  </label>
+                  <div className="space-y-3 mb-2">
+                    {featuredArtists.map((fa, i) => (
+                      <div key={i} className="grid grid-cols-[1fr_1fr_1fr_28px] gap-2 items-start">
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Artist name *"
+                            value={fa.name}
+                            onChange={(e) => {
+                              const n = [...featuredArtists];
+                              n[i] = { ...n[i], name: e.target.value };
+                              setFeaturedArtists(n);
+                            }}
+                            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Spotify Artist ID (optional)"
+                            value={fa.spotify_id}
+                            onChange={(e) => {
+                              const n = [...featuredArtists];
+                              n[i] = { ...n[i], spotify_id: e.target.value };
+                              setFeaturedArtists(n);
+                            }}
+                            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Apple Music Artist ID (optional)"
+                            value={fa.apple_id}
+                            onChange={(e) => {
+                              const n = [...featuredArtists];
+                              n[i] = { ...n[i], apple_id: e.target.value };
+                              setFeaturedArtists(n);
+                            }}
+                            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFeaturedArtists(featuredArtists.filter((_, j) => j !== i))}
+                          className="text-white/30 hover:text-red-400 transition-colors text-sm pt-3"
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFeaturedArtists([...featuredArtists, { name: "", spotify_id: "", apple_id: "" }])}
+                    className="text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 px-3 py-2 rounded-lg transition-colors border border-white/[0.06]"
+                  >
+                    + Add Featured Artist
+                  </button>
+                  {featuredArtists.length > 0 && (
+                    <p className="text-white/25 text-xs mt-2">
+                      Spotify/Apple Music IDs help us properly credit featured artists on their profiles. Find them in the artist&apos;s profile URL.
+                    </p>
+                  )}
+                </div>
                 <Select label="Instrumental?" name="instrumental" options={["No", "Yes"]} required />
                 <Field label="ISRC Code" name="isrc" placeholder="Optional — leave blank to auto-generate" />
                 <Field label="UPC / EAN Code" name="upc" placeholder="Optional — leave blank if you don't have one" />

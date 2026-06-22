@@ -515,7 +515,28 @@ export default function ReleasesPage() {
               <Section title="Credits">
                 <Row label="Songwriters" value={selected.songwriters} />
                 <Row label="Producers" value={selected.producers} />
-                <Row label="Featured" value={selected.featured_artists} />
+                {/* Featured artists — may be JSON or plain text */}
+                {selected.featured_artists ? (() => {
+                  try {
+                    const fa = JSON.parse(selected.featured_artists) as { name: string; spotify_id?: string; apple_id?: string }[];
+                    return (
+                      <div className="py-1.5">
+                        <p className="text-white/30 text-[10px] uppercase tracking-widest mb-2">Featured Artists</p>
+                        <div className="space-y-2">
+                          {fa.map((a, i) => (
+                            <div key={i} className="bg-white/[0.03] rounded-xl px-3 py-2 space-y-0.5">
+                              <p className="text-white/80 text-xs font-semibold">{a.name}</p>
+                              {a.spotify_id && <p className="text-white/30 text-[10px]">Spotify: {a.spotify_id}</p>}
+                              {a.apple_id && <p className="text-white/30 text-[10px]">Apple Music: {a.apple_id}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  } catch {
+                    return <Row label="Featured" value={selected.featured_artists} />;
+                  }
+                })() : null}
               </Section>
 
               {/* Metadata — editable */}
