@@ -84,13 +84,17 @@ export default function ReleaseDetailPage() {
   const [editingFeatured, setEditingFeatured] = useState(false);
   const [savingFeatured, setSavingFeatured] = useState(false);
   const [featuredSaved, setFeaturedSaved] = useState(false);
+  const [splits, setSplits] = useState<{ role: string; email: string; percentage: string }[]>([]);
+  const [editingSplits, setEditingSplits] = useState(false);
+  const [savingSplits, setSavingSplits] = useState(false);
+  const [splitsSaved, setSplitsSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const [{ data }, { data: profileData }] = await Promise.all([
+      const [{ data }, { data: profileData }, { data: splitsData }] = await Promise.all([
         supabase
           .from("releases")
           .select("*")
@@ -102,7 +106,20 @@ export default function ReleaseDetailPage() {
           .select("payout_method")
           .eq("email", session.user.email!)
           .maybeSingle(),
+        supabase
+          .from("royalty_splits")
+          .select("name, email, percentage")
+          .eq("release_id", id)
+          .order("created_at", { ascending: true }),
       ]);
+
+      if (splitsData?.length) {
+        setSplits(splitsData.map((s: { name: string; email: string | null; percentage: number }) => ({
+          role: s.name,
+          email: s.email ?? "",
+          percentage: String(s.percentage),
+        })));
+      }
 
       if (!data) setNotFound(true);
       else {
@@ -143,6 +160,27 @@ export default function ReleaseDetailPage() {
         </Link>
       </div>
     );
+  }
+
+  async function saveSplits() {
+    if (!release) return;
+    setSavingSplits(true);
+    await supabase.from("royalty_splits").delete().eq("release_id", release.id);
+    const valid = splits.filter((s) => s.role && Number(s.percentage) > 0);
+    if (valid.length > 0) {
+      await supabase.from("royalty_splits").insert(
+        valid.map((s) => ({
+          release_id: release.id,
+          name: s.role,
+          email: s.email.trim() || null,
+          percentage: Number(s.percentage),
+        }))
+      );
+    }
+    setSavingSplits(false);
+    setSplitsSaved(true);
+    setEditingSplits(false);
+    setTimeout(() => setSplitsSaved(false), 3000);
   }
 
   async function saveFeaturedArtists() {
@@ -817,6 +855,159 @@ export default function ReleaseDetailPage() {
 
         <InfoCard icon={<FileText size={16} />} title="Rights">
           <Row label="Copyright" value={`© ${release.copyright_year} ${release.copyright_owner}`} />
+        </InfoCard>
+
+        {/* Royalty Splits */}
+        <InfoCard icon={<DollarSign size={16} />} title="Royalty Splits">
+          <div className="space-y-1 mb-3">
+            <p className="text-white/30 text-xs leading-relaxed">
+              Define how earnings are split between everyone who contributed — producers, songwriters, featured artists, managers, etc. Our team uses this to manage payouts.
+            </p>
+          </div>
+
+          {/* Column headers when editing */}
+          {editingSplits && splits.length > 0 && (
+            <div className="grid grid-cols-[1fr_1fr_72px_24px] gap-2 mb-1 px-0.5">
+              <span className="text-white/20 text-[10px] uppercase tracking-widest">Role / Position</span>
+              <span className="text-white/20 text-[10px] uppercase tracking-widest">Email</span>
+              <span className="text-white/20 text-[10px] uppercase tracking-widest">%</span>
+              <span />
+            </div>
+          )}
+
+          {editingSplits ? (
+            <div className="space-y-2">
+              {splits.map((s, i) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_72px_24px] gap-2 items-center">
+                  <select
+                    value={s.role}
+                    onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], role: e.target.value }; setSplits(n); }}
+                    className="bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 text-xs px-2 py-2 rounded-lg transition-colors"
+                  >
+                    <option value="">Select role…</option>
+                    <optgroup label="── Song / Publishing">
+                      <option>Artist</option>
+                      <option>Featured Artist</option>
+                      <option>Songwriter / Lyricist</option>
+                      <option>Composer</option>
+                      <option>Topline Writer</option>
+                      <option>Beatmaker</option>
+                      <option>Producer</option>
+                      <option>Co-Producer</option>
+                      <option>Additional Producer</option>
+                      <option>Melody Writer</option>
+                      <option>Hook Writer</option>
+                      <option>Arranger</option>
+                      <option>Sample Creator</option>
+                      <option>Translator / Adaptor</option>
+                    </optgroup>
+                    <optgroup label="── Master Recording">
+                      <option>Main Artist</option>
+                      <option>Executive Producer</option>
+                      <option>Vocal Producer</option>
+                      <option>Background Vocalist</option>
+                      <option>Session Musician</option>
+                      <option>Mixing Engineer</option>
+                      <option>Mastering Engineer</option>
+                      <option>DJ / Remixer</option>
+                      <option>Programmer / Sound Designer</option>
+                    </optgroup>
+                    <optgroup label="── Business">
+                      <option>Manager</option>
+                      <option>Label</option>
+                      <option>Distributor</option>
+                      <option>Publisher</option>
+                      <option>Investor / Funder</option>
+                      <option>A&R Representative</option>
+                    </optgroup>
+                  </select>
+                  <input
+                    type="email"
+                    placeholder="email@example.com"
+                    value={s.email}
+                    onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], email: e.target.value }; setSplits(n); }}
+                    className="bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-2 py-2 rounded-lg transition-colors"
+                  />
+                  <input
+                    type="number"
+                    placeholder="%"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={s.percentage}
+                    onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], percentage: e.target.value }; setSplits(n); }}
+                    className="bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-2 py-2 rounded-lg transition-colors"
+                  />
+                  <button
+                    onClick={() => setSplits(splits.filter((_, j) => j !== i))}
+                    className="text-white/20 hover:text-red-400 transition-colors text-sm"
+                  >✕</button>
+                </div>
+              ))}
+
+              {/* Total */}
+              {splits.length > 0 && (
+                <p className={`text-xs ${
+                  Math.abs(splits.reduce((a, s) => a + Number(s.percentage || 0), 0) - 100) < 0.01
+                    ? "text-green-400/60" : "text-yellow-400/60"
+                }`}>
+                  Total: {splits.reduce((a, s) => a + Number(s.percentage || 0), 0).toFixed(1)}%
+                  {Math.abs(splits.reduce((a, s) => a + Number(s.percentage || 0), 0) - 100) >= 0.01 && " (should equal 100%)"}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setSplits([...splits, { role: "", email: "", percentage: "" }])}
+                className="text-xs text-white/40 hover:text-white transition-colors"
+              >
+                + Add person
+              </button>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={saveSplits}
+                  disabled={savingSplits}
+                  className="flex items-center gap-1.5 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 text-[#007bff] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                >
+                  {savingSplits ? <Loader2 size={11} className="animate-spin" /> : null}
+                  Save Splits
+                </button>
+                <button
+                  onClick={() => setEditingSplits(false)}
+                  className="text-xs text-white/30 hover:text-white transition-colors px-2"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {splits.length > 0 ? (
+                <div className="space-y-2 mb-3">
+                  {splits.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/[0.04] last:border-0">
+                      <div>
+                        <p className="text-white/70 text-xs font-medium">{s.role}</p>
+                        {s.email && <p className="text-white/30 text-[10px]">{s.email}</p>}
+                      </div>
+                      <span className="text-white/50 text-xs font-semibold tabular-nums">{Number(s.percentage).toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/20 text-xs mb-3">No splits defined yet.</p>
+              )}
+              <button
+                onClick={() => { setEditingSplits(true); if (splits.length === 0) setSplits([{ role: "", email: "", percentage: "" }]); }}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white px-3 py-1.5 rounded-lg transition-colors border border-white/[0.06]"
+              >
+                <PenLine size={11} />
+                {splits.length > 0 ? "Edit Splits" : "Define Splits"}
+              </button>
+              {splitsSaved && <span className="text-green-400 text-xs ml-3">Saved ✓</span>}
+            </div>
+          )}
         </InfoCard>
 
         <InfoCard icon={<Calendar size={16} />} title="Timeline">
