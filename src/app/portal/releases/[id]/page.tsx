@@ -728,6 +728,165 @@ export default function ReleaseDetailPage() {
         </div>
       )}
 
+      {/* ── Royalty Splits ── prominent standalone section ── */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3">
+            <DollarSign size={18} className="text-[#007bff]" />
+            <p className="text-white font-semibold">Royalty Splits</p>
+          </div>
+          {splitsSaved && <span className="text-green-400 text-xs font-medium">Saved ✓</span>}
+        </div>
+        <p className="text-white/40 text-sm mb-5 ml-7">
+          Define how earnings are split between everyone who contributed — producers, songwriters, featured artists, managers, and more.
+        </p>
+
+        {/* Column headers */}
+        {splits.length > 0 && (
+          <div className="hidden sm:grid grid-cols-[1fr_1fr_80px_28px] gap-3 mb-2 px-1">
+            <span className="text-white/25 text-[10px] uppercase tracking-widest">Role / Position</span>
+            <span className="text-white/25 text-[10px] uppercase tracking-widest">Email</span>
+            <span className="text-white/25 text-[10px] uppercase tracking-widest">%</span>
+            <span />
+          </div>
+        )}
+
+        <div className="space-y-3 mb-4">
+          {splits.map((s, i) => (
+            <div key={i} className={editingSplits ? "grid grid-cols-[1fr_28px] sm:grid-cols-[1fr_1fr_80px_28px] gap-2 items-start" : "flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0"}>
+              {editingSplits ? (
+                <>
+                  <div className="flex flex-col sm:contents gap-2">
+                    <select
+                      value={s.role}
+                      onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], role: e.target.value }; setSplits(n); }}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                    >
+                      <option value="">Select role…</option>
+                      <optgroup label="── Song / Publishing">
+                        <option>Artist</option>
+                        <option>Featured Artist</option>
+                        <option>Songwriter / Lyricist</option>
+                        <option>Composer</option>
+                        <option>Topline Writer</option>
+                        <option>Beatmaker</option>
+                        <option>Producer</option>
+                        <option>Co-Producer</option>
+                        <option>Additional Producer</option>
+                        <option>Melody Writer</option>
+                        <option>Hook Writer</option>
+                        <option>Arranger</option>
+                        <option>Sample Creator</option>
+                        <option>Translator / Adaptor</option>
+                      </optgroup>
+                      <optgroup label="── Master Recording">
+                        <option>Main Artist</option>
+                        <option>Executive Producer</option>
+                        <option>Vocal Producer</option>
+                        <option>Background Vocalist</option>
+                        <option>Session Musician</option>
+                        <option>Mixing Engineer</option>
+                        <option>Mastering Engineer</option>
+                        <option>DJ / Remixer</option>
+                        <option>Programmer / Sound Designer</option>
+                      </optgroup>
+                      <optgroup label="── Business">
+                        <option>Manager</option>
+                        <option>Label</option>
+                        <option>Distributor</option>
+                        <option>Publisher</option>
+                        <option>Investor / Funder</option>
+                        <option>A&R Representative</option>
+                      </optgroup>
+                    </select>
+                    <input
+                      type="email"
+                      placeholder="Email (optional)"
+                      value={s.email}
+                      onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], email: e.target.value }; setSplits(n); }}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                    />
+                    <input
+                      type="number"
+                      placeholder="%"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value={s.percentage}
+                      onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], percentage: e.target.value }; setSplits(n); }}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                    />
+                  </div>
+                  <button
+                    onClick={() => setSplits(splits.filter((_, j) => j !== i))}
+                    className="text-white/20 hover:text-red-400 transition-colors text-base pt-2.5 sm:pt-0"
+                  >✕</button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <p className="text-white/80 text-sm font-medium">{s.role}</p>
+                    {s.email && <p className="text-white/30 text-xs mt-0.5">{s.email}</p>}
+                  </div>
+                  <span className="text-white/60 text-sm font-semibold tabular-nums">{Number(s.percentage).toFixed(1)}%</span>
+                </>
+              )}
+            </div>
+          ))}
+
+          {splits.length === 0 && !editingSplits && (
+            <p className="text-white/25 text-sm py-2">No splits defined yet. Click below to add collaborators.</p>
+          )}
+        </div>
+
+        {/* Total indicator */}
+        {editingSplits && splits.length > 0 && (
+          <p className={`text-sm mb-3 font-medium ${
+            Math.abs(splits.reduce((a, s) => a + Number(s.percentage || 0), 0) - 100) < 0.01
+              ? "text-green-400" : "text-yellow-400"
+          }`}>
+            Total: {splits.reduce((a, s) => a + Number(s.percentage || 0), 0).toFixed(1)}%
+            {Math.abs(splits.reduce((a, s) => a + Number(s.percentage || 0), 0) - 100) >= 0.01 && " — should add up to 100%"}
+          </p>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          {editingSplits ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setSplits([...splits, { role: "", email: "", percentage: "" }])}
+                className="text-sm text-white/50 hover:text-white transition-colors border border-white/[0.08] hover:border-white/20 px-4 py-2 rounded-xl"
+              >
+                + Add person
+              </button>
+              <button
+                onClick={saveSplits}
+                disabled={savingSplits}
+                className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
+              >
+                {savingSplits ? <Loader2 size={14} className="animate-spin" /> : null}
+                Save Splits
+              </button>
+              <button
+                onClick={() => setEditingSplits(false)}
+                className="text-sm text-white/30 hover:text-white transition-colors px-3 py-2"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => { setEditingSplits(true); if (splits.length === 0) setSplits([{ role: "", email: "", percentage: "" }]); }}
+              className="flex items-center gap-2 bg-white/[0.05] hover:bg-white/[0.10] border border-white/[0.08] hover:border-[#007bff]/40 text-white/70 hover:text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all"
+            >
+              <PenLine size={14} />
+              {splits.length > 0 ? "Edit Splits" : "Define Splits"}
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Release details */}
       <div className="grid sm:grid-cols-2 gap-5">
         <InfoCard icon={<Calendar size={16} />} title="Release Info">
@@ -855,159 +1014,6 @@ export default function ReleaseDetailPage() {
 
         <InfoCard icon={<FileText size={16} />} title="Rights">
           <Row label="Copyright" value={`© ${release.copyright_year} ${release.copyright_owner}`} />
-        </InfoCard>
-
-        {/* Royalty Splits */}
-        <InfoCard icon={<DollarSign size={16} />} title="Royalty Splits">
-          <div className="space-y-1 mb-3">
-            <p className="text-white/30 text-xs leading-relaxed">
-              Define how earnings are split between everyone who contributed — producers, songwriters, featured artists, managers, etc. Our team uses this to manage payouts.
-            </p>
-          </div>
-
-          {/* Column headers when editing */}
-          {editingSplits && splits.length > 0 && (
-            <div className="grid grid-cols-[1fr_1fr_72px_24px] gap-2 mb-1 px-0.5">
-              <span className="text-white/20 text-[10px] uppercase tracking-widest">Role / Position</span>
-              <span className="text-white/20 text-[10px] uppercase tracking-widest">Email</span>
-              <span className="text-white/20 text-[10px] uppercase tracking-widest">%</span>
-              <span />
-            </div>
-          )}
-
-          {editingSplits ? (
-            <div className="space-y-2">
-              {splits.map((s, i) => (
-                <div key={i} className="grid grid-cols-[1fr_1fr_72px_24px] gap-2 items-center">
-                  <select
-                    value={s.role}
-                    onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], role: e.target.value }; setSplits(n); }}
-                    className="bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 text-xs px-2 py-2 rounded-lg transition-colors"
-                  >
-                    <option value="">Select role…</option>
-                    <optgroup label="── Song / Publishing">
-                      <option>Artist</option>
-                      <option>Featured Artist</option>
-                      <option>Songwriter / Lyricist</option>
-                      <option>Composer</option>
-                      <option>Topline Writer</option>
-                      <option>Beatmaker</option>
-                      <option>Producer</option>
-                      <option>Co-Producer</option>
-                      <option>Additional Producer</option>
-                      <option>Melody Writer</option>
-                      <option>Hook Writer</option>
-                      <option>Arranger</option>
-                      <option>Sample Creator</option>
-                      <option>Translator / Adaptor</option>
-                    </optgroup>
-                    <optgroup label="── Master Recording">
-                      <option>Main Artist</option>
-                      <option>Executive Producer</option>
-                      <option>Vocal Producer</option>
-                      <option>Background Vocalist</option>
-                      <option>Session Musician</option>
-                      <option>Mixing Engineer</option>
-                      <option>Mastering Engineer</option>
-                      <option>DJ / Remixer</option>
-                      <option>Programmer / Sound Designer</option>
-                    </optgroup>
-                    <optgroup label="── Business">
-                      <option>Manager</option>
-                      <option>Label</option>
-                      <option>Distributor</option>
-                      <option>Publisher</option>
-                      <option>Investor / Funder</option>
-                      <option>A&R Representative</option>
-                    </optgroup>
-                  </select>
-                  <input
-                    type="email"
-                    placeholder="email@example.com"
-                    value={s.email}
-                    onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], email: e.target.value }; setSplits(n); }}
-                    className="bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-2 py-2 rounded-lg transition-colors"
-                  />
-                  <input
-                    type="number"
-                    placeholder="%"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={s.percentage}
-                    onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], percentage: e.target.value }; setSplits(n); }}
-                    className="bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-2 py-2 rounded-lg transition-colors"
-                  />
-                  <button
-                    onClick={() => setSplits(splits.filter((_, j) => j !== i))}
-                    className="text-white/20 hover:text-red-400 transition-colors text-sm"
-                  >✕</button>
-                </div>
-              ))}
-
-              {/* Total */}
-              {splits.length > 0 && (
-                <p className={`text-xs ${
-                  Math.abs(splits.reduce((a, s) => a + Number(s.percentage || 0), 0) - 100) < 0.01
-                    ? "text-green-400/60" : "text-yellow-400/60"
-                }`}>
-                  Total: {splits.reduce((a, s) => a + Number(s.percentage || 0), 0).toFixed(1)}%
-                  {Math.abs(splits.reduce((a, s) => a + Number(s.percentage || 0), 0) - 100) >= 0.01 && " (should equal 100%)"}
-                </p>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setSplits([...splits, { role: "", email: "", percentage: "" }])}
-                className="text-xs text-white/40 hover:text-white transition-colors"
-              >
-                + Add person
-              </button>
-
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={saveSplits}
-                  disabled={savingSplits}
-                  className="flex items-center gap-1.5 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 text-[#007bff] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
-                >
-                  {savingSplits ? <Loader2 size={11} className="animate-spin" /> : null}
-                  Save Splits
-                </button>
-                <button
-                  onClick={() => setEditingSplits(false)}
-                  className="text-xs text-white/30 hover:text-white transition-colors px-2"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div>
-              {splits.length > 0 ? (
-                <div className="space-y-2 mb-3">
-                  {splits.map((s, i) => (
-                    <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/[0.04] last:border-0">
-                      <div>
-                        <p className="text-white/70 text-xs font-medium">{s.role}</p>
-                        {s.email && <p className="text-white/30 text-[10px]">{s.email}</p>}
-                      </div>
-                      <span className="text-white/50 text-xs font-semibold tabular-nums">{Number(s.percentage).toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-white/20 text-xs mb-3">No splits defined yet.</p>
-              )}
-              <button
-                onClick={() => { setEditingSplits(true); if (splits.length === 0) setSplits([{ role: "", email: "", percentage: "" }]); }}
-                className="flex items-center gap-1.5 text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white px-3 py-1.5 rounded-lg transition-colors border border-white/[0.06]"
-              >
-                <PenLine size={11} />
-                {splits.length > 0 ? "Edit Splits" : "Define Splits"}
-              </button>
-              {splitsSaved && <span className="text-green-400 text-xs ml-3">Saved ✓</span>}
-            </div>
-          )}
         </InfoCard>
 
         <InfoCard icon={<Calendar size={16} />} title="Timeline">
