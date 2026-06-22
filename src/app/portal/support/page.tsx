@@ -68,13 +68,22 @@ export default function SupportPage() {
       email, artist_name: artistName, subject: subject.trim(),
       category, description: description.trim(), status: "open",
     });
-    // Email Ralph
+    // Notify admin
     await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "support-ticket",
         data: { email, artist_name: artistName, subject: subject.trim(), category, description: description.trim() },
+      }),
+    }).catch(() => {});
+    // Artist confirmation
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "support-confirmation",
+        data: { email, artist_name: artistName, subject: subject.trim(), category },
       }),
     }).catch(() => {});
     setSubject(""); setDescription(""); setCategory(CATEGORIES[0]);

@@ -158,6 +158,15 @@ export default function ReleasesPage() {
       body:  "Your music is live on streaming platforms. Head to your portal to get your smart link and share it with the world.",
       link:  `/portal/releases/${selected.id}`,
     }).then(() => {}).then(undefined, () => {});
+    // Admin record — logs that the live email was sent
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "live-sent",
+        data: { email: selected.email, artist_name: selected.artist_name, song_title: selected.song_title },
+      }),
+    }).catch(() => {});
     setNotifyingLive(false);
     setLiveNotified(true);
   }
@@ -266,6 +275,23 @@ export default function ReleasesPage() {
     if (!selected) return;
     setSavingStage(true);
     await supabase.from("releases").update({ distribution_stage: distStage }).eq("id", selected.id);
+    // Email artist when stage changes to a meaningful step
+    if (distStage === "in_distribution" || distStage === "live") {
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "stage-update",
+          data: {
+            email:       selected.email,
+            artist_name: selected.artist_name,
+            song_title:  selected.song_title,
+            stage:       distStage,
+            store_links: distStage === "live" ? (storeLinks ?? {}) : {},
+          },
+        }),
+      }).catch(() => {});
+    }
     setSavingStage(false);
     setStageSaved(true);
   }

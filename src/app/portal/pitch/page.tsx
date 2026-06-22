@@ -55,6 +55,24 @@ export default function PitchPage() {
       pitch_notes: pitchNotes.trim(),
       status: "pending",
     });
+    // Notify admin
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "pitch-submitted",
+        data: { email, artist_name: artistName, song_title: release?.song_title ?? "", genre: release?.genre ?? null, mood: mood || null, pitch_notes: pitchNotes.trim() },
+      }),
+    }).catch(() => {});
+    // Artist confirmation
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "pitch-confirmation",
+        data: { email, artist_name: artistName, song_title: release?.song_title ?? "" },
+      }),
+    }).catch(() => {});
     setSubmitting(false);
     setDone(true);
   }

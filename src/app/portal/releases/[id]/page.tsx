@@ -233,6 +233,15 @@ export default function ReleaseDetailPage() {
     const filtered = Object.fromEntries(Object.entries(localLinks).filter(([, v]) => v.trim() !== ""));
     await supabase.from("releases").update({ store_links: filtered }).eq("id", release.id);
     setRelease((r) => r ? { ...r, store_links: filtered } : r);
+    // Notify admin that artist added their own links
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "store-links-added",
+        data: { email: release.email, artist_name: release.artist_name, song_title: release.song_title, store_links: filtered },
+      }),
+    }).catch(() => {});
     setSavingLinks(false);
     setLinksSaved(true);
     setEditingLinks(false);
@@ -288,6 +297,15 @@ export default function ReleaseDetailPage() {
           },
         }),
       });
+      // Artist confirmation email
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "payout-confirmation",
+          data: { email: release.email, artist_name: release.artist_name, song_title: release.song_title, amount_usd: release.royalties_usd ?? 0 },
+        }),
+      }).catch(() => {});
       setPayoutState("sent");
     } catch {
       setPayoutState("idle");
@@ -474,6 +492,15 @@ export default function ReleaseDetailPage() {
                               release_type: release.release_type,
                               release_id: release.id,
                             },
+                          }),
+                        }).catch(() => {});
+                        // Artist confirmation email
+                        fetch("/api/email", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            type: "takedown-confirmation",
+                            data: { email: release.email, artist_name: release.artist_name, song_title: release.song_title },
                           }),
                         }).catch(() => {});
                         setSendingTakedown(false);

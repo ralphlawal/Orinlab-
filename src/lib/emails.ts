@@ -140,9 +140,14 @@ export function liveEmail(data: {
   storeLinks: Record<string, string>;
 }) {
   const platformNames: Record<string, string> = {
-    spotify: "Spotify", apple_music: "Apple Music", boomplay: "Boomplay",
-    audiomack: "Audiomack", youtube_music: "YouTube Music", deezer: "Deezer",
-    tidal: "TIDAL", amazon_music: "Amazon Music",
+    spotify: "Spotify", apple_music: "Apple Music", youtube_music: "YouTube Music",
+    amazon_music: "Amazon Music", deezer: "Deezer", tidal: "TIDAL",
+    pandora: "Pandora", audiomack: "Audiomack", boomplay: "Boomplay",
+    soundcloud: "SoundCloud", anghami: "Anghami", napster: "Napster",
+    iheartradio: "iHeartRadio", tiktok: "TikTok", shazam: "Shazam",
+    beatport: "Beatport", jio_saavn: "JioSaavn", gaana: "Gaana",
+    wynk: "Wynk Music", kkbox: "KKBOX", claro_musica: "Claro Música",
+    "7digital": "7digital",
   };
   const linkRows = Object.entries(data.storeLinks)
     .filter(([, url]) => url?.trim())
@@ -168,7 +173,114 @@ export function liveEmail(data: {
   `);
 }
 
-/* ── 4. Rejection ── */
+/* ── 4. Takedown confirmation (artist) ── */
+export function takedownConfirmEmail(data: { artistName: string; songTitle: string }) {
+  return base(`
+    ${badge("Takedown Request Received", "#6b7280", "#f3f4f6")}
+    ${h1("We've received your takedown request.")}
+    ${p(`Hi ${data.artistName}, your request to remove <strong style="color:#111111;">${data.songTitle}</strong> from all streaming platforms has been logged.`)}
+    ${divider()}
+    ${p("Our team will begin the takedown process within 1–3 business days. You will receive a follow-up once it is complete.")}
+    ${p("If you submitted this request by mistake, contact us immediately at <a href='mailto:info@orinlabi.com' style='color:#007bff;'>info@orinlabi.com</a>.")}
+    ${btn("Visit Your Portal", "https://orinlabi.com/portal/login")}
+  `);
+}
+
+/* ── 5. Payout request confirmation (artist) ── */
+export function payoutConfirmEmail(data: { artistName: string; songTitle: string; amountUsd: number }) {
+  return base(`
+    ${badge("Payout Request Received", "#16a34a", "#dcfce7")}
+    ${h1("Your payout request is in.")}
+    ${p(`Hi ${data.artistName}, we've received your withdrawal request for royalties earned on <strong style="color:#111111;">${data.songTitle}</strong>.`)}
+    ${divider()}
+    <table cellpadding="0" cellspacing="0" width="100%">
+      ${infoRow("Release", data.songTitle)}
+      ${infoRow("Amount Requested", `$${data.amountUsd.toFixed(2)} USD`)}
+      ${infoRow("Status", "Pending — under review")}
+    </table>
+    ${divider()}
+    ${p("Our team will review and process your payout within 3–5 business days. Funds are sent to the payout method saved in your profile.")}
+    ${btn("View My Portal", "https://orinlabi.com/portal/login")}
+  `);
+}
+
+/* ── 6. Support ticket confirmation (artist) ── */
+export function supportConfirmEmail(data: { artistName: string; subject: string; category: string }) {
+  return base(`
+    ${badge("Support Ticket Open", "#007bff", "#e8f0fe")}
+    ${h1("We've received your support request.")}
+    ${p(`Hi ${data.artistName}, your ticket has been submitted and our team will get back to you within 1–2 business days.`)}
+    ${divider()}
+    <table cellpadding="0" cellspacing="0" width="100%">
+      ${infoRow("Category", data.category)}
+      ${infoRow("Subject", data.subject)}
+      ${infoRow("Status", "Open")}
+    </table>
+    ${divider()}
+    ${p("You can view your ticket and check for our response in your artist portal at any time.")}
+    ${btn("View My Tickets", "https://orinlabi.com/portal/support")}
+  `);
+}
+
+/* ── 7. Playlist pitch confirmation (artist) ── */
+export function pitchConfirmEmail(data: { artistName: string; songTitle: string }) {
+  return base(`
+    ${badge("Pitch Submitted", "#7c3aed", "#ede9fe")}
+    ${h1("Your playlist pitch is in!")}
+    ${p(`Hi ${data.artistName}, we've received your pitch for <strong style="color:#111111;">${data.songTitle}</strong> and our team will review it shortly.`)}
+    ${divider()}
+    ${p("We'll pitch your song to playlist curators on your behalf. This typically takes 2–5 business days. We'll reach out if we need anything else from you.")}
+    ${p("Keep creating and promoting your music in the meantime — curator engagement loves active artists.")}
+    ${btn("Go to My Portal", "https://orinlabi.com/portal/login")}
+  `);
+}
+
+/* ── 8. Distribution stage update (artist) ── */
+export function stageUpdateEmail(data: {
+  artistName: string;
+  songTitle: string;
+  stage: "in_distribution" | "live";
+  storeLinks?: Record<string, string>;
+}) {
+  const platformNames: Record<string, string> = {
+    spotify: "Spotify", apple_music: "Apple Music", boomplay: "Boomplay",
+    audiomack: "Audiomack", youtube_music: "YouTube Music", deezer: "Deezer",
+    tidal: "TIDAL", amazon_music: "Amazon Music", soundcloud: "SoundCloud",
+    anghami: "Anghami", tiktok: "TikTok", pandora: "Pandora",
+  };
+
+  if (data.stage === "live") {
+    const links = data.storeLinks ?? {};
+    const linkRows = Object.entries(links)
+      .filter(([, url]) => url?.trim())
+      .map(([key, url]) => {
+        const label = platformNames[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        return `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><a href="${url}" style="color:#007bff;font-size:14px;font-weight:600;text-decoration:none;font-family:Arial,sans-serif;">${label} &rarr;</a></td></tr>`;
+      })
+      .join("");
+
+    return base(`
+      ${badge("Your Music is Live!", "#16a34a", "#dcfce7")}
+      ${h1(`${data.songTitle} is streaming worldwide!`)}
+      ${p(`Congratulations, ${data.artistName} — your release is officially live on streaming platforms around the world. Start sharing and let your fans know.`)}
+      ${linkRows ? `${divider()}<p style="margin:0 0 12px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">YOUR STREAMING LINKS</p><table cellpadding="0" cellspacing="0" width="100%">${linkRows}</table>` : ""}
+      ${divider()}
+      ${p("Log in to your portal to get your smart link, share it everywhere, and check your streaming stats.")}
+      ${btn("Open My Portal", "https://orinlabi.com/portal/login")}
+    `);
+  }
+
+  return base(`
+    ${badge("Distribution Update", "#007bff", "#e8f0fe")}
+    ${h1("Your release is being distributed.")}
+    ${p(`Hi ${data.artistName}, <strong style="color:#111111;">${data.songTitle}</strong> has entered our distribution pipeline and is on its way to streaming platforms.`)}
+    ${divider()}
+    ${p("Your music typically appears on platforms within 24–72 hours. We'll send you another email as soon as it goes live.")}
+    ${btn("Track My Release", "https://orinlabi.com/portal/login")}
+  `);
+}
+
+/* ── 9. Rejection ── */
 export function rejectionEmail(data: {
   artistName: string;
   songTitle: string;

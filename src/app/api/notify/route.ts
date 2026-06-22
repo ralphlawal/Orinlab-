@@ -522,6 +522,62 @@ export async function POST(req: NextRequest) {
         ${btn("Respond in Admin Panel", "https://orinlabi.com/admin/support")}`
       );
 
+    } else if (type === "pitch-submitted") {
+      subject = `Playlist pitch — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = wrap(
+        "#7c3aed",
+        "Pitch Received",
+        `New Playlist Pitch: ${esc(data.song_title)}`,
+        `${esc(data.artist_name)} has submitted a playlist pitch.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+          ${row("Artist",  data.artist_name)}
+          ${row("Email",   data.email)}
+          ${row("Release", data.song_title)}
+          ${data.genre ? row("Genre",  data.genre)  : ""}
+          ${data.mood  ? row("Mood",   data.mood)   : ""}
+        </table>
+        ${data.pitch_notes ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Pitch Notes</p>${quote(data.pitch_notes)}` : ""}
+        ${btn("Review in Admin Panel", "https://orinlabi.com/admin/pitches", "#7c3aed")}`
+      );
+
+    } else if (type === "store-links-added") {
+      const linkEntries = Object.entries(data.store_links ?? {}) as [string, string][];
+      const linksBlock = linkEntries.length > 0
+        ? `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+            ${linkEntries.map(([k, u]) => row(k.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()), u)).join("")}
+          </table>`
+        : "";
+      subject = `Artist added streaming links — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = wrap(
+        "#007bff",
+        "Portal Activity",
+        "Artist Added Streaming Links",
+        `${esc(data.artist_name)} has added their own streaming links to their release.`,
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+          ${row("Artist",  data.artist_name)}
+          ${row("Email",   data.email)}
+          ${row("Release", data.song_title)}
+        </table>
+        ${linksBlock ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Links Added</p>${linksBlock}` : ""}
+        ${btn("View in Admin Panel", `https://orinlabi.com/admin/releases`)}`
+      );
+
+    } else if (type === "live-sent") {
+      subject = `Live email sent — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      html = wrap(
+        "#16a34a",
+        "Action Logged",
+        `Live Notification Sent: ${esc(data.song_title)}`,
+        "You just sent the live notification email to this artist.",
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+          ${row("Artist",  data.artist_name)}
+          ${row("Email",   data.email)}
+          ${row("Release", data.song_title)}
+          ${row("Sent At", new Date().toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short", timeZone: "UTC" }) + " UTC")}
+        </table>
+        ${btn("View Release", "https://orinlabi.com/admin/releases", "#16a34a")}`
+      );
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }
