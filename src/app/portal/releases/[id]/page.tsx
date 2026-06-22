@@ -28,6 +28,7 @@ type Release = {
   cover_art_url: string | null;
   audio_file_url: string | null;
   store_links: Record<string, string> | null;
+  ditto_smart_link: string | null;
   streams: Record<string, number> | null;
   royalties_usd: number | null;
   upc: string | null;
@@ -381,6 +382,19 @@ export default function ReleaseDetailPage() {
                 </button>
               </div>
               <a href={`/listen/${release.id}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-white/30 hover:text-white/60 text-xs transition-colors"><ExternalLink size={11} /> Open link</a>
+              {release.ditto_smart_link && (
+                <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                  <p className="text-white/25 text-[10px] mb-2 uppercase tracking-widest">Also available via all platforms</p>
+                  <a
+                    href={release.ditto_smart_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[#007bff] hover:text-white border border-[#007bff]/20 hover:border-[#007bff]/60 bg-[#007bff]/5 hover:bg-[#007bff]/10 px-4 py-2 rounded-lg transition-all"
+                  >
+                    <ExternalLink size={12} /> Listen on all platforms
+                  </a>
+                </div>
+              )}
             </div>
           )}
 

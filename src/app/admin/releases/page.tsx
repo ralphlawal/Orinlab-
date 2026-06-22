@@ -38,6 +38,7 @@ type Release = {
   submitted_at: string;
   review_notes: string;
   store_links: Record<string, string> | null;
+  ditto_smart_link: string | null;
   streams: Record<string, number> | null;
   royalties_usd: number | null;
   contract_signed_at: string | null;
@@ -76,6 +77,9 @@ export default function ReleasesPage() {
   const [storeLinks, setStoreLinks] = useState<Record<string, string>>({});
   const [savingLinks, setSavingLinks] = useState(false);
   const [linksSaved, setLinksSaved] = useState(false);
+  const [dittoLink, setDittoLink] = useState("");
+  const [savingDitto, setSavingDitto] = useState(false);
+  const [dittoSaved, setDittoSaved] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null | undefined>(undefined);
   const [streams, setStreams] = useState<Record<string, number>>({});
@@ -153,6 +157,8 @@ export default function ReleasesPage() {
     setSelected(r);
     setNotes(r.review_notes ?? "");
     setStoreLinks(r.store_links ?? {});
+    setDittoLink(r.ditto_smart_link ?? "");
+    setDittoSaved(false);
     setStreams(r.streams ?? {});
     setRoyalties(r.royalties_usd?.toString() ?? "");
     setEditIsrc(r.isrc ?? "");
@@ -182,6 +188,17 @@ export default function ReleasesPage() {
       .eq("email", r.email)
       .maybeSingle()
       .then(({ data }) => setArtistProfile((data as ArtistProfile) ?? null));
+  }
+
+  async function saveDittoLink() {
+    if (!selected) return;
+    setSavingDitto(true);
+    const val = dittoLink.trim() || null;
+    await supabase.from("releases").update({ ditto_smart_link: val }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, ditto_smart_link: val } : s);
+    setSavingDitto(false);
+    setDittoSaved(true);
+    setTimeout(() => setDittoSaved(false), 3000);
   }
 
   async function saveStoreLinks() {
@@ -718,6 +735,30 @@ export default function ReleasesPage() {
                       {savingStage ? <Loader2 size={11} className="animate-spin" /> : null}
                       {stageSaved ? "Stage Saved ✓" : "Save Stage"}
                     </button>
+                  </div>
+                  {/* Ditto smart link */}
+                  <div className="mb-4 pb-4 border-b border-white/[0.06]">
+                    <p className="text-white/30 text-xs mb-1.5">Ditto Smart Link</p>
+                    <p className="text-white/20 text-[10px] mb-2">
+                      Copy the <span className="text-white/40">ditto.fm/…</span> link from the Ditto dashboard and paste it here. It shows on the artist's smart link page until individual store URLs are entered.
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://ditto.fm/slug"
+                        value={dittoLink}
+                        onChange={(e) => { setDittoLink(e.target.value); setDittoSaved(false); }}
+                        className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                      />
+                      <button
+                        onClick={() => requestUnlock(saveDittoLink)}
+                        disabled={savingDitto}
+                        className="flex items-center gap-2 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 disabled:opacity-40 text-[#007bff] px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+                      >
+                        {savingDitto ? <Loader2 size={12} className="animate-spin" /> : null}
+                        {dittoSaved ? "Saved ✓" : "Save"}
+                      </button>
+                    </div>
                   </div>
                   <p className="text-white/30 text-xs mb-3">
                     Paste the streaming URLs once the release is live. Artists will see these in their portal.

@@ -13,6 +13,7 @@ type Release = {
   genre: string;
   cover_art_url: string | null;
   store_links: Record<string, string> | null;
+  ditto_smart_link: string | null;
   status: string;
   featured_artists: string | null;
 };
@@ -20,7 +21,7 @@ type Release = {
 async function getRelease(id: string): Promise<Release | null> {
   const { data } = await supabase
     .from("releases")
-    .select("id, artist_name, song_title, release_type, genre, cover_art_url, store_links, status, featured_artists")
+    .select("id, artist_name, song_title, release_type, genre, cover_art_url, store_links, ditto_smart_link, status, featured_artists")
     .eq("id", id)
     .eq("status", "approved")
     .maybeSingle();
@@ -149,7 +150,6 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
                         rel="noopener noreferrer"
                         className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150 group"
                       >
-                        {/* Platform icon — colored circle with initial */}
                         <div
                           className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
                           style={{ background: `${platform.color}25`, color: platform.color }}
@@ -168,6 +168,20 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
                   })}
                 </div>
               </>
+            ) : release.ditto_smart_link ? (
+              <div className="text-center">
+                <p className="text-white/35 text-xs mb-5 uppercase tracking-widest">Now streaming on all platforms</p>
+                <a
+                  href={release.ditto_smart_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-[#007bff] hover:bg-[#0063d1] active:scale-[0.98] text-white font-bold text-sm px-8 py-4 rounded-2xl transition-all duration-150 shadow-lg shadow-[#007bff]/25"
+                >
+                  <Music2 size={18} />
+                  Listen on all platforms
+                </a>
+                <p className="text-white/20 text-[10px] mt-4">Individual streaming links updating soon</p>
+              </div>
             ) : (
               <div className="text-center py-10 text-white/30 text-sm">
                 Store links coming soon — check back shortly.
