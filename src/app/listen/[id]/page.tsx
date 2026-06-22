@@ -23,7 +23,6 @@ async function getRelease(id: string): Promise<Release | null> {
     .from("releases")
     .select("id, artist_name, song_title, release_type, genre, cover_art_url, store_links, ditto_smart_link, status, featured_artists")
     .eq("id", id)
-    .eq("status", "approved")
     .maybeSingle();
   return (data as Release) ?? null;
 }
@@ -58,6 +57,31 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const release = await getRelease(id);
   if (!release) notFound();
+
+  // Release exists but not yet approved — show a holding page
+  if (release.status !== "approved") {
+    return (
+      <div className="min-h-screen bg-[#111] flex flex-col items-center justify-center px-6 text-center">
+        {release.cover_art_url && (
+          <div className="fixed inset-0 scale-110" style={{ backgroundImage: `url(${release.cover_art_url})`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(60px) brightness(0.15) saturate(1.2)" }} />
+        )}
+        <div className="fixed inset-0 bg-black/70" />
+        <div className="relative z-10 max-w-sm">
+          {release.cover_art_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={release.cover_art_url} alt={release.song_title} className="w-32 h-32 object-cover rounded-2xl mx-auto mb-6 shadow-2xl" />
+          )}
+          <p className="text-white/25 text-[10px] uppercase tracking-[0.2em] mb-3">Distributed by ORINLABÍ</p>
+          <h1 className="text-white font-bold text-2xl mb-2">{release.song_title}</h1>
+          <p className="text-white/50 text-sm mb-8">{release.artist_name}</p>
+          <div className="bg-white/[0.06] border border-white/[0.10] rounded-2xl px-6 py-5">
+            <p className="text-white font-semibold mb-1">Coming soon</p>
+            <p className="text-white/40 text-sm">This release is on its way to streaming platforms. Check back shortly.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const links = release.store_links
     ? Object.entries(release.store_links).filter(([, url]) => url?.trim())
