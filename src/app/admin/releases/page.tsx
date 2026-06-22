@@ -758,22 +758,31 @@ export default function ReleasesPage() {
                       {liveNotified ? "Artist Notified ✓" : "Email Artist: Music is Live"}
                     </button>
                   </div>
-                  {/* Smart link preview — shown once at least one link is saved */}
-                  {selected.store_links && Object.keys(selected.store_links).length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-white/[0.06]">
-                      <p className="text-white/30 text-xs mb-2 flex items-center gap-1.5">
-                        <Share2 size={11} /> Fan smart link
-                      </p>
+                  {/* Smart link — always visible for approved releases */}
+                  <div className="mt-4 pt-4 border-t border-white/[0.06]">
+                    <p className="text-white/30 text-xs mb-2 flex items-center gap-1.5">
+                      <Share2 size={11} /> Fan smart link
+                    </p>
+                    <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2">
+                      <span className="text-white/50 text-xs font-mono flex-1 truncate">
+                        orinlabi.com/listen/{selected.id}
+                      </span>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(`https://orinlabi.com/listen/${selected.id}`); }}
+                        className="text-[#007bff] hover:text-white text-xs font-semibold flex-shrink-0 transition-colors"
+                      >
+                        Copy
+                      </button>
                       <a
                         href={`https://orinlabi.com/listen/${selected.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#007bff] text-xs hover:underline font-mono break-all"
+                        className="text-white/30 hover:text-white transition-colors flex-shrink-0"
                       >
-                        orinlabi.com/listen/{selected.id}
+                        <ExternalLink size={12} />
                       </a>
                     </div>
-                  )}
+                  </div>
 
                 </Section>
               )}

@@ -365,18 +365,22 @@ export default function ReleaseDetailPage() {
             </div>
           )}
 
-          {/* Smart link */}
-          {release.status === "approved" && release.store_links && Object.keys(release.store_links).length > 0 && (
+          {/* Smart link — visible for all approved releases */}
+          {release.status === "approved" && (
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-2"><Share2 size={17} className="text-[#007bff]" /><p className="text-white font-semibold">Share Your Music</p></div>
-              <p className="text-white/40 text-sm mb-4">One link for all your streaming platforms.</p>
+              <div className="flex items-center gap-3 mb-2"><Share2 size={17} className="text-[#007bff]" /><p className="text-white font-semibold">Your Smart Link</p></div>
+              <p className="text-white/40 text-sm mb-4">
+                {release.store_links && Object.keys(release.store_links).length > 0
+                  ? "Share this one link — fans pick their preferred streaming platform."
+                  : "Your smart link is ready. Share it now — streaming links will appear as your release goes live."}
+              </p>
               <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
-                <span className="text-white/60 text-xs flex-1 truncate font-mono">https://orinlabi.com/listen/{release.id}</span>
+                <span className="text-white/60 text-xs flex-1 truncate font-mono">orinlabi.com/listen/{release.id}</span>
                 <button onClick={() => { navigator.clipboard.writeText(`https://orinlabi.com/listen/${release.id}`); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs font-semibold text-[#007bff] hover:text-white transition-colors flex-shrink-0">
                   {linkCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}{linkCopied ? "Copied!" : "Copy"}
                 </button>
               </div>
-              <a href={`/listen/${release.id}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-white/30 hover:text-white/60 text-xs transition-colors"><ExternalLink size={11} /> Preview link</a>
+              <a href={`/listen/${release.id}`} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1.5 text-white/30 hover:text-white/60 text-xs transition-colors"><ExternalLink size={11} /> Open link</a>
             </div>
           )}
 
