@@ -80,6 +80,10 @@ export default function ReleaseDetailPage() {
   const [payoutState, setPayoutState] = useState<"idle" | "confirm" | "sent">("idle");
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [hasPayoutDetails, setHasPayoutDetails] = useState(false);
+  const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>([]);
+  const [editingFeatured, setEditingFeatured] = useState(false);
+  const [savingFeatured, setSavingFeatured] = useState(false);
+  const [featuredSaved, setFeaturedSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -101,7 +105,21 @@ export default function ReleaseDetailPage() {
       ]);
 
       if (!data) setNotFound(true);
-      else setRelease(data as Release);
+      else {
+        setRelease(data as Release);
+        // Parse featured artists — handles both JSON (new) and plain text (old)
+        const raw = (data as Release).featured_artists;
+        if (raw) {
+          try {
+            setFeaturedArtists(JSON.parse(raw));
+          } catch {
+            // Old format: comma-separated names
+            setFeaturedArtists(
+              raw.split(",").map((n: string) => ({ name: n.trim(), spotify_id: "", apple_id: "" })).filter((a: { name: string }) => a.name)
+            );
+          }
+        }
+      }
       setHasPayoutDetails(!!profileData?.payout_method);
       setLoading(false);
     }
@@ -125,6 +143,20 @@ export default function ReleaseDetailPage() {
         </Link>
       </div>
     );
+  }
+
+  async function saveFeaturedArtists() {
+    if (!release) return;
+    setSavingFeatured(true);
+    const valid = featuredArtists.filter((a) => a.name.trim());
+    await supabase
+      .from("releases")
+      .update({ featured_artists: valid.length > 0 ? JSON.stringify(valid) : null })
+      .eq("id", release.id);
+    setSavingFeatured(false);
+    setFeaturedSaved(true);
+    setEditingFeatured(false);
+    setTimeout(() => setFeaturedSaved(false), 3000);
   }
 
   async function handlePayoutRequest() {
@@ -674,7 +706,111 @@ export default function ReleaseDetailPage() {
         <InfoCard icon={<Mic2 size={16} />} title="Credits">
           <Row label="Songwriters" value={release.songwriters} />
           <Row label="Producers" value={release.producers} />
-          <Row label="Featured" value={release.featured_artists} />
+          {/* Featured artists — editable inline */}
+          <div className="py-1.5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-white/30 text-[10px] uppercase tracking-widest">Featured Artists</p>
+              {!editingFeatured && (
+                <button
+                  onClick={() => setEditingFeatured(true)}
+                  className="flex items-center gap-1 text-[#007bff] text-xs hover:text-white transition-colors"
+                >
+                  <PenLine size={11} />
+                  {featuredArtists.length > 0 ? "Edit / Add IDs" : "Add"}
+                </button>
+              )}
+              {featuredSaved && <span className="text-green-400 text-xs">Saved ✓</span>}
+            </div>
+
+            {editingFeatured ? (
+              <div className="space-y-2">
+                {featuredArtists.map((fa, i) => (
+                  <div key={i} className="space-y-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Artist name *"
+                        value={fa.name}
+                        onChange={(e) => {
+                          const n = [...featuredArtists];
+                          n[i] = { ...n[i], name: e.target.value };
+                          setFeaturedArtists(n);
+                        }}
+                        className="flex-1 bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFeaturedArtists(featuredArtists.filter((_, j) => j !== i))}
+                        className="text-white/20 hover:text-red-400 transition-colors text-sm flex-shrink-0"
+                      >✕</button>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Spotify Artist ID (optional — from spotify.com/artist/...)"
+                      value={fa.spotify_id}
+                      onChange={(e) => {
+                        const n = [...featuredArtists];
+                        n[i] = { ...n[i], spotify_id: e.target.value };
+                        setFeaturedArtists(n);
+                      }}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Apple Music Artist ID (optional — from music.apple.com/artist/...)"
+                      value={fa.apple_id}
+                      onChange={(e) => {
+                        const n = [...featuredArtists];
+                        n[i] = { ...n[i], apple_id: e.target.value };
+                        setFeaturedArtists(n);
+                      }}
+                      className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                    />
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFeaturedArtists([...featuredArtists, { name: "", spotify_id: "", apple_id: "" }])}
+                  className="text-xs text-white/40 hover:text-white transition-colors"
+                >
+                  + Add artist
+                </button>
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={saveFeaturedArtists}
+                    disabled={savingFeatured}
+                    className="flex items-center gap-1.5 text-xs font-semibold bg-[#007bff]/10 hover:bg-[#007bff]/20 text-[#007bff] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                  >
+                    {savingFeatured ? <Loader2 size={11} className="animate-spin" /> : null}
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditingFeatured(false)}
+                    className="text-xs text-white/30 hover:text-white transition-colors px-2"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              featuredArtists.length > 0 ? (
+                <div className="space-y-1.5">
+                  {featuredArtists.map((fa, i) => (
+                    <div key={i} className="space-y-0.5">
+                      <p className="text-white/70 text-xs font-medium">{fa.name}</p>
+                      {fa.spotify_id && <p className="text-white/30 text-[10px]">Spotify: {fa.spotify_id}</p>}
+                      {fa.apple_id && <p className="text-white/30 text-[10px]">Apple Music: {fa.apple_id}</p>}
+                      {!fa.spotify_id && !fa.apple_id && (
+                        <p className="text-yellow-400/50 text-[10px]">No platform IDs yet — tap Edit to add</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-white/20 text-xs">None</p>
+              )
+            )}
+          </div>
           <Row label="ISRC" value={release.isrc} />
           <Row label="UPC" value={release.upc} />
         </InfoCard>
