@@ -98,7 +98,7 @@ export default function ReleasesPage() {
   const [metaSaved, setMetaSaved] = useState(false);
 
   // Royalty splits
-  const [splits, setSplits]       = useState<{ name: string; role: string; percentage: string }[]>([]);
+  const [splits, setSplits]       = useState<{ role: string; email: string; percentage: string }[]>([]);
   const [savingSplits, setSavingSplits] = useState(false);
   const [splitsSaved, setSplitsSaved]   = useState(false);
   const [search, setSearch] = useState("");
@@ -162,10 +162,10 @@ export default function ReleasesPage() {
     setLiveNotified(false);
     setSplits([]);
     setSplitsSaved(false);
-    supabase.from("royalty_splits").select("name,role,percentage").eq("release_id", r.id)
+    supabase.from("royalty_splits").select("name,email,percentage").eq("release_id", r.id)
       .then(({ data }) => {
-        if (data?.length) setSplits(data.map((s: { name: string; role: string | null; percentage: number }) =>
-          ({ name: s.name, role: s.role ?? "", percentage: String(s.percentage) })));
+        if (data?.length) setSplits(data.map((s: { name: string; email: string | null; percentage: number }) =>
+          ({ role: s.name, email: s.email ?? "", percentage: String(s.percentage) })));
       });
     setDistStage((r as Release & { distribution_stage?: string }).distribution_stage as "submitted" | "in_distribution" | "live" ?? "submitted");
     setStageSaved(false);
@@ -236,10 +236,10 @@ export default function ReleasesPage() {
     if (!selected) return;
     setSavingSplits(true);
     await supabase.from("royalty_splits").delete().eq("release_id", selected.id);
-    const valid = splits.filter((s) => s.name.trim() && Number(s.percentage) > 0);
+    const valid = splits.filter((s) => s.role && Number(s.percentage) > 0);
     if (valid.length > 0) {
       await supabase.from("royalty_splits").insert(
-        valid.map((s) => ({ release_id: selected.id, name: s.name.trim(), role: s.role.trim() || null, percentage: Number(s.percentage) }))
+        valid.map((s) => ({ release_id: selected.id, name: s.role, email: s.email.trim() || null, percentage: Number(s.percentage) }))
       );
     }
     setSavingSplits(false);
@@ -879,43 +879,105 @@ export default function ReleasesPage() {
               {/* Royalty Splits */}
               {selected.status === "approved" && (
                 <Section title="Royalty Splits">
-                  <p className="text-white/30 text-xs mb-3">Define how earnings are split between collaborators. Percentages visible to the artist in their portal.</p>
+                  <p className="text-white/30 text-xs mb-4">Define how earnings are split between collaborators. Visible to the artist in their portal.</p>
+
+                  {/* Column headers */}
+                  {splits.length > 0 && (
+                    <div className="grid grid-cols-[1fr_1fr_80px_28px] gap-2 mb-1 px-1">
+                      <span className="text-white/25 text-[10px] uppercase tracking-widest">Position / Role</span>
+                      <span className="text-white/25 text-[10px] uppercase tracking-widest">Email</span>
+                      <span className="text-white/25 text-[10px] uppercase tracking-widest">%</span>
+                      <span />
+                    </div>
+                  )}
+
                   <div className="space-y-2 mb-3">
                     {splits.map((s, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          placeholder="Name"
-                          value={s.name}
-                          onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], name: e.target.value }; setSplits(n); setSplitsSaved(false); }}
-                          className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Role"
+                      <div key={i} className="grid grid-cols-[1fr_1fr_80px_28px] gap-2 items-center">
+                        {/* Role dropdown */}
+                        <select
                           value={s.role}
                           onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], role: e.target.value }; setSplits(n); setSplitsSaved(false); }}
-                          className="w-24 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                          className="bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 text-xs px-3 py-2 rounded-lg transition-colors"
+                        >
+                          <option value="">Select position…</option>
+                          <optgroup label="── Song / Publishing">
+                            <option>Artist</option>
+                            <option>Featured Artist</option>
+                            <option>Songwriter / Lyricist</option>
+                            <option>Composer</option>
+                            <option>Topline Writer</option>
+                            <option>Beatmaker</option>
+                            <option>Producer</option>
+                            <option>Co-Producer</option>
+                            <option>Additional Producer</option>
+                            <option>Melody Writer</option>
+                            <option>Hook Writer</option>
+                            <option>Arranger</option>
+                            <option>Sample Creator</option>
+                            <option>Translator / Adaptor</option>
+                          </optgroup>
+                          <optgroup label="── Master Recording">
+                            <option>Main Artist</option>
+                            <option>Executive Producer</option>
+                            <option>Vocal Producer</option>
+                            <option>Background Vocalist</option>
+                            <option>Session Musician</option>
+                            <option>Mixing Engineer</option>
+                            <option>Mastering Engineer</option>
+                            <option>DJ / Remixer</option>
+                            <option>Programmer / Sound Designer</option>
+                          </optgroup>
+                          <optgroup label="── Business">
+                            <option>Manager</option>
+                            <option>Label</option>
+                            <option>Distributor</option>
+                            <option>Publisher</option>
+                            <option>Investor / Funder</option>
+                            <option>A&R Representative</option>
+                          </optgroup>
+                        </select>
+                        {/* Email */}
+                        <input
+                          type="email"
+                          placeholder="email@example.com"
+                          value={s.email}
+                          onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], email: e.target.value }; setSplits(n); setSplitsSaved(false); }}
+                          className="bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
                         />
+                        {/* Percentage */}
                         <input
                           type="number"
                           placeholder="%"
                           min="0"
                           max="100"
+                          step="0.1"
                           value={s.percentage}
                           onChange={(e) => { const n = [...splits]; n[i] = { ...n[i], percentage: e.target.value }; setSplits(n); setSplitsSaved(false); }}
-                          className="w-16 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                          className="bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
                         />
                         <button
                           onClick={() => { setSplits(splits.filter((_, j) => j !== i)); setSplitsSaved(false); }}
-                          className="text-white/30 hover:text-red-400 transition-colors text-xs px-2"
+                          className="text-white/30 hover:text-red-400 transition-colors text-sm leading-none"
                         >✕</button>
                       </div>
                     ))}
                   </div>
+
+                  {/* Total */}
+                  {splits.length > 0 && (
+                    <p className={`text-xs mb-3 ${
+                      Math.abs(splits.reduce((acc, s) => acc + Number(s.percentage || 0), 0) - 100) < 0.01
+                        ? "text-green-400/60" : "text-yellow-400/60"
+                    }`}>
+                      Total: {splits.reduce((acc, s) => acc + Number(s.percentage || 0), 0).toFixed(1)}%
+                      {Math.abs(splits.reduce((acc, s) => acc + Number(s.percentage || 0), 0) - 100) >= 0.01 && " (should equal 100%)"}
+                    </p>
+                  )}
+
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => { setSplits([...splits, { name: "", role: "", percentage: "" }]); setSplitsSaved(false); }}
+                      onClick={() => { setSplits([...splits, { role: "", email: "", percentage: "" }]); setSplitsSaved(false); }}
                       className="text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 px-3 py-2 rounded-lg transition-colors border border-white/[0.06]"
                     >
                       + Add Collaborator

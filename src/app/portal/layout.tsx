@@ -132,8 +132,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               { href: "/portal/pitch",          label: "Pitch",     exact: false },
               { href: "/portal/assets",         label: "Assets",    exact: false },
               { href: "/portal/messages",       label: "Messages",  exact: false },
-              { href: "/portal/support",        label: "Support",   exact: false },
-              { href: "/portal/profile",        label: "Profile",   exact: false },
+              { href: "/portal/support",        label: "Support",       exact: false },
+              { href: "/portal/profile",        label: "Profile",       exact: false },
+              { href: "/portal/notifications",  label: "Notifications", exact: false },
             ].map(({ href, label, exact }) => {
               const active     = exact ? pathname === href : pathname.startsWith(href);
               const isMessages = href === "/portal/messages";
@@ -167,7 +168,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <button onClick={signOut}
               className="flex items-center gap-1.5 text-white/40 hover:text-white text-xs transition-colors">
               <LogOut size={13} />
-              <span className="hidden sm:block">Sign out</span>
+              <span>Sign out</span>
             </button>
           </div>
         </div>

@@ -224,9 +224,9 @@ export default function SubmitPage() {
             Submit Your Application.
           </h1>
           <p className="text-white/60 leading-relaxed max-w-lg mx-auto">
-            Every submission is reviewed by our team — no algorithms, no
-            auto-approvals. We select based on sound quality, artistic vision,
-            and cultural authenticity.
+            Submit your release below and our team will personally review it.
+            We respond within 3–5 business days. Selected artists receive
+            global distribution to 150+ platforms.
           </p>
         </div>
       </section>

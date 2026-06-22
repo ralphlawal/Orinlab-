@@ -81,15 +81,15 @@ export default function PricingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
           <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-            Invitation-Based · Curated from Africa
+            How It Works · Distribution for African Artists
           </p>
           <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6">
-            No Algorithms.<br />No Auto-Approvals.<br />Just Selection.
+            Simple Process.<br />Global Reach.<br />Full Ownership.
           </h1>
           <p className="text-white/60 text-lg leading-relaxed">
-            Orinlabí is an invitation-based distribution platform. Every application
-            is reviewed by our team — we select based on sound quality, artistic
-            vision, and cultural authenticity.
+            Apply, get reviewed by our team, and release your music to 150+ platforms
+            worldwide. We handle everything from delivery to royalty collection — you
+            keep 100% of your rights.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link

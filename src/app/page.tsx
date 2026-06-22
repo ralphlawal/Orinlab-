@@ -101,15 +101,16 @@ function BrandStatement() {
         </h2>
         <div className="max-w-2xl mx-auto space-y-5 text-white/50 text-lg leading-relaxed">
           <p>
-            Invitation-based distribution is not a growth hack. It is a brand statement.
+            Orinlabí is a global music distribution platform built specifically for
+            African artists. Apply today and our team personally reviews your music.
           </p>
           <p>
-            We are not for everyone. We are for the ones who believe they matter —
-            artists whose sound carries genuine craft, vision, and cultural truth.
+            We distribute to 150+ platforms including Spotify, Apple Music, Boomplay,
+            Audiomack, YouTube Music, Deezer, and more — with full royalty tracking
+            and 100% ownership of your masters.
           </p>
           <p>
-            Every submission is heard by a real person. Every selection is intentional.
-            Being on Orinlabí means something.
+            No hidden fees. No complicated contracts. Just your music, reaching the world.
           </p>
         </div>
         <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -117,13 +118,13 @@ function BrandStatement() {
             href="/submit"
             className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-4 rounded-full text-base transition-all duration-200 hover:shadow-[0_0_30px_rgba(0,123,255,0.4)]"
           >
-            Apply for Selection
+            Apply for Distribution
           </Link>
           <Link
-            href="/about#standards"
+            href="/about"
             className="text-white/50 hover:text-white font-medium transition-colors text-base"
           >
-            What we look for →
+            Learn more →
           </Link>
         </div>
       </div>

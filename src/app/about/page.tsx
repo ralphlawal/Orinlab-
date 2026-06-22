@@ -16,16 +16,14 @@ function Hero() {
         <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
           Our Story
         </p>
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-4">
-          Selected Worldwide.
-        </h1>
-        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-[#007bff] mb-8">
-          Curated from Africa.
+        <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6">
+          Built For African Artists.
         </h1>
         <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-          Orinlabí is not for every artist — it is for the right ones. We built
-          invitation-based global distribution for African creators who have
-          something genuine to say and the craft to say it.
+          Orinlabí is a global music distribution platform dedicated to
+          independent African creators. We help artists release worldwide,
+          earn fairly, and own their legacy — with a team that is personally
+          invested in every artist we work with.
         </p>
       </div>
     </section>
@@ -159,17 +157,17 @@ function Standards() {
     {
       number: "01",
       title: "Sound Quality",
-      desc: "Your production does not need to be expensive — but it needs to be intentional. Clean mix, clear vision, audible craft. We can hear the difference between rushed and ready.",
+      desc: "We care about your sound, not your budget. Every genre and production style is welcome — we review with open ears and look for music that is crafted with intention.",
     },
     {
       number: "02",
       title: "Artistic Vision",
-      desc: "We look for artists who know what they are building. A coherent identity, a point of view, a direction. Not perfection — just clarity about who you are and where you are going.",
+      desc: "We love working with artists who have a clear sense of who they are. Whether you are just starting out or already established, a clear direction helps us support you better.",
     },
     {
       number: "03",
-      title: "Cultural Authenticity",
-      desc: "Your music should feel rooted — in a place, a community, a lived experience. Africa has too many distinct voices to celebrate for us to distribute anything generic.",
+      title: "Cultural Roots",
+      desc: "African music is incredibly diverse. We celebrate every sub-genre, language, and regional sound — from Afrobeats to Amapiano, Highlife to Afro-soul and everything in between.",
     },
   ];
 
@@ -178,15 +176,15 @@ function Standards() {
       <div className="max-w-7xl mx-auto">
         <div className="max-w-2xl mb-16">
           <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-            Selection Criteria
+            How We Work
           </p>
           <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">
             What We Look For.
           </h2>
           <p className="text-white/50 leading-relaxed">
-            Our selection is not based on follower counts or streaming numbers.
-            We review every application ourselves and select based on three things.
-            If your music does all three, you belong here.
+            Our team personally reviews every application. We are not driven by
+            follower counts or streaming numbers — we listen to your music and
+            assess it on its own merit. Here is what matters most to us.
           </p>
         </div>
 
@@ -207,10 +205,9 @@ function Standards() {
 
         <div className="mt-12 bg-[#007bff]/5 border border-[#007bff]/15 rounded-2xl p-8 max-w-2xl">
           <p className="text-white/70 text-sm leading-relaxed">
-            <span className="text-white font-semibold">Not selected?</span> We
-            review every submission and if we pass, we will tell you why. A
-            rejection is not a door closed — it is feedback. Many of our current
-            artists reapplied after their first submission.
+            <span className="text-white font-semibold">Our team responds within 3–5 business days.</span>{" "}
+            We provide feedback with every review and our door is always open.
+            Many of our artists applied multiple times as their music evolved — we welcome that.
           </p>
         </div>
       </div>

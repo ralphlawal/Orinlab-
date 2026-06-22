@@ -59,11 +59,11 @@ export type FaqItem = {
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 export const DEFAULT_HERO: HeroSettings = {
-  badge: "Selected Worldwide. Curated from Africa.",
-  headline: "Not Everyone Gets",
-  highlight: "Selected.",
+  badge: "African Music Distribution · 150+ Platforms",
+  headline: "Release Your Music",
+  highlight: "Worldwide.",
   subheadline:
-    "Orinlabí is invitation-based distribution for African artists who believe their music matters. Every application is reviewed by our team — no algorithms, no auto-approvals.",
+    "Get your music on Spotify, Apple Music, Boomplay, and 150+ platforms globally. Apply today — our team personally reviews every submission.",
   stats: [
     { value: "150+", label: "Platforms" },
     { value: "50+", label: "Countries" },
