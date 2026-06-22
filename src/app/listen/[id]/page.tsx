@@ -2,18 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Music2, ExternalLink } from "lucide-react";
-
-const PLATFORM_META: Record<string, { label: string; color: string; bg: string }> = {
-  spotify:       { label: "Spotify",       color: "#1db954", bg: "#1db95415" },
-  apple_music:   { label: "Apple Music",   color: "#fc3c44", bg: "#fc3c4415" },
-  boomplay:      { label: "Boomplay",      color: "#f5a623", bg: "#f5a62315" },
-  audiomack:     { label: "Audiomack",     color: "#ffa500", bg: "#ffa50015" },
-  youtube_music: { label: "YouTube Music", color: "#ff0000", bg: "#ff000015" },
-  deezer:        { label: "Deezer",        color: "#a238ff", bg: "#a238ff15" },
-  tidal:         { label: "TIDAL",         color: "#00ffff", bg: "#00ffff12" },
-  amazon_music:  { label: "Amazon Music",  color: "#00a8e1", bg: "#00a8e115" },
-};
+import { Music2 } from "lucide-react";
+import { getPlatform } from "@/lib/platforms";
 
 type Release = {
   id: string;
@@ -24,12 +14,13 @@ type Release = {
   cover_art_url: string | null;
   store_links: Record<string, string> | null;
   status: string;
+  featured_artists: string | null;
 };
 
 async function getRelease(id: string): Promise<Release | null> {
   const { data } = await supabase
     .from("releases")
-    .select("id, artist_name, song_title, release_type, genre, cover_art_url, store_links, status")
+    .select("id, artist_name, song_title, release_type, genre, cover_art_url, store_links, status, featured_artists")
     .eq("id", id)
     .eq("status", "approved")
     .maybeSingle();
@@ -71,111 +62,131 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
     ? Object.entries(release.store_links).filter(([, url]) => url?.trim())
     : [];
 
+  // Parse featured artists
+  let featuredNames = "";
+  if (release.featured_artists) {
+    try {
+      const parsed = JSON.parse(release.featured_artists) as { name: string }[];
+      if (parsed.length > 0) featuredNames = ` (feat. ${parsed.map(f => f.name).join(", ")})`;
+    } catch {
+      featuredNames = release.featured_artists ? ` (feat. ${release.featured_artists})` : "";
+    }
+  }
+
+  const artistLine = release.artist_name + featuredNames;
+
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-[#111] relative overflow-hidden">
 
-      {/* Glow */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background: release.cover_art_url
-            ? "radial-gradient(ellipse 60% 50% at 50% 0%, #007bff18 0%, transparent 70%)"
-            : "radial-gradient(ellipse 60% 50% at 50% 0%, #007bff10 0%, transparent 70%)",
-        }}
-      />
+      {/* Blurred background from cover art */}
+      {release.cover_art_url && (
+        <div
+          className="fixed inset-0 scale-110"
+          style={{
+            backgroundImage: `url(${release.cover_art_url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(60px) brightness(0.25) saturate(1.4)",
+          }}
+        />
+      )}
+      <div className="fixed inset-0 bg-black/60" />
 
-      <div className="relative z-10 w-full max-w-sm">
+      {/* Content — mobile-first card */}
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pt-0 pb-16">
 
-        {/* Cover art */}
-        <div className="mx-auto w-56 h-56 rounded-3xl overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black mb-7 shadow-2xl shadow-black/60 flex items-center justify-center flex-shrink-0">
-          {release.cover_art_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={release.cover_art_url}
-              alt={release.song_title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <Music2 size={48} className="text-[#007bff]/30" />
-          )}
-        </div>
-
-        {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-white font-bold text-2xl leading-tight mb-1">
-            {release.song_title}
-          </h1>
-          <p className="text-white/50 text-sm">{release.artist_name}</p>
-          <p className="text-white/25 text-xs mt-1 uppercase tracking-widest">
-            {release.release_type} · {release.genre}
-          </p>
-        </div>
-
-        {/* Platform links */}
-        {links.length > 0 ? (
-          <div className="space-y-3">
-            {links.map(([key, url]) => {
-              const meta = PLATFORM_META[key] ?? { label: key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()), color: "#007bff", bg: "#007bff15" };
-              return (
-                <a
-                  key={key}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full px-5 py-4 rounded-2xl border transition-all duration-200 group hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: meta.bg,
-                    borderColor: `${meta.color}30`,
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                      style={{ background: meta.color }}
-                    />
-                    <span className="text-white font-semibold text-sm">{meta.label}</span>
-                  </div>
-                  <ExternalLink size={14} className="text-white/30 group-hover:text-white/60 transition-colors" />
-                </a>
-              );
-            })}
+        {/* Cover art — full width on mobile, capped on desktop */}
+        <div className="w-full max-w-md">
+          <div className="w-full aspect-square overflow-hidden relative">
+            {release.cover_art_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={release.cover_art_url}
+                alt={release.song_title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[#007bff]/30 to-black flex items-center justify-center">
+                <Music2 size={72} className="text-[#007bff]/40" />
+              </div>
+            )}
+            {/* Gradient fade into card below */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#111] to-transparent" />
           </div>
-        ) : (
-          <div className="text-center py-8 text-white/30 text-sm">
-            Store links coming soon — check back shortly.
+
+          {/* Info + links card */}
+          <div className="bg-[#111] px-6 pt-2 pb-8 w-full">
+
+            {/* Orinlabí branding */}
+            <div className="flex items-center justify-center gap-2 mb-5">
+              <span className="text-white/25 text-[10px] uppercase tracking-[0.2em]">Distributed by</span>
+              <Link href="/" className="text-white/50 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-colors">
+                ORINLABÍ
+              </Link>
+            </div>
+
+            {/* Song title + artist */}
+            <div className="text-center mb-6">
+              <h1 className="text-white font-bold text-2xl leading-tight mb-1.5">{release.song_title}</h1>
+              <p className="text-white/60 text-sm">{artistLine}</p>
+              <p className="text-white/25 text-[10px] mt-1.5 uppercase tracking-widest">
+                {release.release_type} · {release.genre}
+              </p>
+            </div>
+
+            {/* Choose platform */}
+            {links.length > 0 ? (
+              <>
+                <p className="text-white/35 text-xs text-center mb-4 uppercase tracking-widest">Choose your preferred music service</p>
+                <div className="space-y-2.5">
+                  {links.map(([key, url]) => {
+                    const platform = getPlatform(key);
+                    return (
+                      <a
+                        key={key}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150 group"
+                      >
+                        {/* Platform icon — colored circle with initial */}
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
+                          style={{ background: `${platform.color}25`, color: platform.color }}
+                        >
+                          {platform.label.charAt(0)}
+                        </div>
+                        <span className="text-white font-semibold text-sm flex-1">{platform.label}</span>
+                        <span
+                          className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0"
+                          style={{ background: `${platform.color}20`, color: platform.color }}
+                        >
+                          Listen
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-10 text-white/30 text-sm">
+                Store links coming soon — check back shortly.
+              </div>
+            )}
+
+            {/* QR code */}
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <p className="text-white/20 text-[10px] uppercase tracking-widest">Scan to listen</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`https://orinlabi.com/listen/${release.id}`)}&bgcolor=111111&color=ffffff&margin=6`}
+                alt="QR code"
+                width={100}
+                height={100}
+                className="rounded-xl opacity-40"
+              />
+            </div>
           </div>
-        )}
-
-        {/* QR Code */}
-        <div className="mt-10 flex flex-col items-center gap-3">
-          <p className="text-white/20 text-xs uppercase tracking-widest">Scan to listen</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://orinlabi.com/listen/${release.id}`)}&bgcolor=000000&color=ffffff&margin=6`}
-            alt="QR code"
-            width={110}
-            height={110}
-            className="rounded-xl opacity-60"
-          />
-        </div>
-
-        {/* Orinlabí footer */}
-        <div className="mt-6 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-white/20 hover:text-white/40 text-xs transition-colors"
-          >
-            Distributed by{" "}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
-              alt="Orinlabí"
-              width={16}
-              height={16}
-              className="opacity-30 hover:opacity-50 transition-opacity"
-            />
-            <span className="font-semibold">Orinlabí</span>
-          </Link>
         </div>
       </div>
     </div>

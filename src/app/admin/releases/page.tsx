@@ -4,31 +4,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2 } from "lucide-react";
+import { ALL_PLATFORMS } from "@/lib/platforms";
 
-const PLATFORMS = [
-  { key: "spotify",       label: "Spotify" },
-  { key: "apple_music",   label: "Apple Music" },
-  { key: "youtube_music", label: "YouTube Music" },
-  { key: "amazon_music",  label: "Amazon Music" },
-  { key: "deezer",        label: "Deezer" },
-  { key: "tidal",         label: "TIDAL" },
-  { key: "pandora",       label: "Pandora" },
-  { key: "audiomack",     label: "Audiomack" },
-  { key: "boomplay",      label: "Boomplay" },
-  { key: "soundcloud",    label: "SoundCloud" },
-  { key: "anghami",       label: "Anghami" },
-  { key: "napster",       label: "Napster" },
-  { key: "iheartradio",   label: "iHeartRadio" },
-  { key: "tiktok",        label: "TikTok" },
-  { key: "shazam",        label: "Shazam" },
-  { key: "beatport",      label: "Beatport" },
-  { key: "jio_saavn",     label: "JioSaavn" },
-  { key: "gaana",         label: "Gaana" },
-  { key: "wynk",          label: "Wynk Music" },
-  { key: "kkbox",         label: "KKBOX" },
-  { key: "claro_musica",  label: "Claro Música" },
-  { key: "7digital",      label: "7digital" },
-];
+const PLATFORMS = ALL_PLATFORMS;
 
 type Release = {
   id: string;

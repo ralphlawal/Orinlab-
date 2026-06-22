@@ -10,6 +10,7 @@ import {
   BarChart2, DollarSign, PenLine, Share2, Copy, Star, Send,
   ShieldCheck, Radio,
 } from "lucide-react";
+import { ALL_PLATFORMS } from "@/lib/platforms";
 
 type Release = {
   id: string;
@@ -43,30 +44,7 @@ type Release = {
   presave_url: string | null;
 };
 
-const DITTO_PLATFORMS = [
-  { key: "spotify",       label: "Spotify",        color: "#1DB954" },
-  { key: "apple_music",   label: "Apple Music",    color: "#FC3C44" },
-  { key: "youtube_music", label: "YouTube Music",  color: "#FF0000" },
-  { key: "amazon_music",  label: "Amazon Music",   color: "#00A8E1" },
-  { key: "deezer",        label: "Deezer",         color: "#A238FF" },
-  { key: "tidal",         label: "TIDAL",          color: "#FFFFFF" },
-  { key: "pandora",       label: "Pandora",        color: "#3668FF" },
-  { key: "audiomack",     label: "Audiomack",      color: "#FFA500" },
-  { key: "boomplay",      label: "Boomplay",       color: "#FF6B35" },
-  { key: "soundcloud",    label: "SoundCloud",     color: "#FF5500" },
-  { key: "anghami",       label: "Anghami",        color: "#9B59B6" },
-  { key: "napster",       label: "Napster",        color: "#009ACD" },
-  { key: "iheartradio",   label: "iHeartRadio",    color: "#C6002B" },
-  { key: "tiktok",        label: "TikTok",         color: "#69C9D0" },
-  { key: "shazam",        label: "Shazam",         color: "#0088FF" },
-  { key: "beatport",      label: "Beatport",       color: "#00FF95" },
-  { key: "jio_saavn",     label: "JioSaavn",       color: "#2BC5B4" },
-  { key: "gaana",         label: "Gaana",          color: "#E72429" },
-  { key: "wynk",          label: "Wynk Music",     color: "#00B3E3" },
-  { key: "kkbox",         label: "KKBOX",          color: "#00C4CC" },
-  { key: "claro_musica",  label: "Claro Música",   color: "#FF6600" },
-  { key: "7digital",      label: "7digital",       color: "#EA002A" },
-];
+const DITTO_PLATFORMS = ALL_PLATFORMS;
 
 const statusConfig = {
   pending: {
