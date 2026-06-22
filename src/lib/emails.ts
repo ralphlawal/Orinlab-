@@ -280,7 +280,35 @@ export function stageUpdateEmail(data: {
   `);
 }
 
-/* ── 9. Rejection ── */
+/* ── 9. Smart link ready (artist) ── */
+export function smartlinkReadyEmail(data: {
+  artistName: string;
+  songTitle: string;
+  releaseId: string;
+}) {
+  const smartLink = `https://orinlabi.com/listen/${data.releaseId}`;
+  return base(`
+    ${badge("Smart Link Ready", "#007bff", "#eff6ff")}
+    ${h1(`Your smart link is live, ${data.artistName}!`)}
+    ${p(`<strong style="color:#111111;">${data.songTitle}</strong> now has a shareable streaming link. Send it to your fans and they can listen on their preferred platform.`)}
+    ${divider()}
+    <p style="margin:0 0 8px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">YOUR SMART LINK</p>
+    <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px;">
+      <tr>
+        <td style="background:#f5f9ff;border:1px solid #d0e4ff;border-radius:10px;padding:14px 18px;">
+          <a href="${smartLink}" style="color:#007bff;font-size:14px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif;">${smartLink}</a>
+        </td>
+      </tr>
+    </table>
+    ${p("Share this link anywhere — social media, WhatsApp, bio links. Fans choose their own streaming app.")}
+    ${btn("Share Your Smart Link", smartLink)}
+    <p style="margin:16px 0 0;font-size:13px;color:#999999;font-family:Arial,sans-serif;">
+      View your full release in <a href="https://orinlabi.com/portal" style="color:#007bff;">your portal</a>.
+    </p>
+  `);
+}
+
+/* ── 10. Rejection ── */
 export function rejectionEmail(data: {
   artistName: string;
   songTitle: string;

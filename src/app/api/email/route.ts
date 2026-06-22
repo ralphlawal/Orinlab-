@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import {
   submissionEmail, approvalEmail, rejectionEmail, liveEmail,
   takedownConfirmEmail, payoutConfirmEmail, supportConfirmEmail,
-  pitchConfirmEmail, stageUpdateEmail,
+  pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
 } from "@/lib/emails";
 
 const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
@@ -72,6 +72,13 @@ export async function POST(req: NextRequest) {
     } else if (type === "pitch-confirmation") {
       subject = `Your playlist pitch was submitted — ${data.song_title}`;
       html = pitchConfirmEmail({ artistName: data.artist_name, songTitle: data.song_title });
+    } else if (type === "smartlink-ready") {
+      subject = `Your smart link is ready — ${data.song_title}`;
+      html = smartlinkReadyEmail({
+        artistName: data.artist_name,
+        songTitle:  data.song_title,
+        releaseId:  data.release_id,
+      });
     } else if (type === "stage-update") {
       const stage = data.stage as "in_distribution" | "live";
       subject = stage === "live"

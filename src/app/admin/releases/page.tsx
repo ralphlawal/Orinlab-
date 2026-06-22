@@ -80,6 +80,7 @@ export default function ReleasesPage() {
   const [dittoLink, setDittoLink] = useState("");
   const [savingDitto, setSavingDitto] = useState(false);
   const [dittoSaved, setDittoSaved] = useState(false);
+  const [smartLinkCopied, setSmartLinkCopied] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [artistProfile, setArtistProfile] = useState<ArtistProfile | null | undefined>(undefined);
   const [streams, setStreams] = useState<Record<string, number>>({});
@@ -196,6 +197,31 @@ export default function ReleasesPage() {
     const val = dittoLink.trim() || null;
     await supabase.from("releases").update({ ditto_smart_link: val }).eq("id", selected.id);
     setSelected((s) => s ? { ...s, ditto_smart_link: val } : s);
+
+    // Notify artist when a link is being set (not cleared)
+    if (val) {
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "smartlink-ready",
+          data: {
+            email:       selected.email,
+            artist_name: selected.artist_name,
+            song_title:  selected.song_title,
+            release_id:  selected.id,
+          },
+        }),
+      }).catch(() => {});
+      supabase.from("notifications").insert({
+        email: selected.email,
+        type:  "smartlink",
+        title: `Your smart link is ready — ${selected.song_title}`,
+        body:  "Your Orinlabí smart link is live. Share it with your fans and they can listen on their favourite platform.",
+        link:  `/portal/releases/${selected.id}`,
+      }).then(() => {}).then(undefined, () => {});
+    }
+
     setSavingDitto(false);
     setDittoSaved(true);
     setTimeout(() => setDittoSaved(false), 3000);
@@ -799,20 +825,24 @@ export default function ReleasesPage() {
                       {liveNotified ? "Artist Notified ✓" : "Email Artist: Music is Live"}
                     </button>
                   </div>
-                  {/* Smart link — always visible for approved releases */}
+                  {/* Orinlabí smart link */}
                   <div className="mt-4 pt-4 border-t border-white/[0.06]">
                     <p className="text-white/30 text-xs mb-2 flex items-center gap-1.5">
-                      <Share2 size={11} /> Fan smart link
+                      <Share2 size={11} /> Orinlabí Smart Link
                     </p>
-                    <div className="flex items-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2">
-                      <span className="text-white/50 text-xs font-mono flex-1 truncate">
+                    <div className="flex items-center gap-2 bg-[#007bff]/[0.06] border border-[#007bff]/20 rounded-xl px-3 py-2.5">
+                      <span className="text-[#007bff]/80 text-xs font-mono flex-1 truncate">
                         orinlabi.com/listen/{selected.id}
                       </span>
                       <button
-                        onClick={() => { navigator.clipboard.writeText(`https://orinlabi.com/listen/${selected.id}`); }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(`https://orinlabi.com/listen/${selected.id}`);
+                          setSmartLinkCopied(true);
+                          setTimeout(() => setSmartLinkCopied(false), 2000);
+                        }}
                         className="text-[#007bff] hover:text-white text-xs font-semibold flex-shrink-0 transition-colors"
                       >
-                        Copy
+                        {smartLinkCopied ? "Copied ✓" : "Copy"}
                       </button>
                       <a
                         href={`https://orinlabi.com/listen/${selected.id}`}
@@ -823,6 +853,7 @@ export default function ReleasesPage() {
                         <ExternalLink size={12} />
                       </a>
                     </div>
+                    <p className="text-white/20 text-[10px] mt-1.5">This is the artist's shareable fan link. It activates as soon as a platform router link is saved above.</p>
                   </div>
 
                 </Section>
