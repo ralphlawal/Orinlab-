@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, Send, MessageSquare, Mail, CheckCheck, ArrowLeft,
+  Paperclip, Mic, MicOff, X, FileText,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -17,6 +18,9 @@ type ChatMsg = {
   content: string;
   created_at: string;
   read_at: string | null;
+  attachment_url: string | null;
+  attachment_type: "file" | "audio" | null;
+  attachment_name: string | null;
 };
 
 type ArtistThread = {
@@ -37,7 +41,40 @@ type ContactMsg = {
   created_at: string;
 };
 
+type PendingAttachment = {
+  file: File;
+  type: "file" | "audio";
+  previewUrl?: string;
+};
+
 const READ_KEY = "orinlabi_read_contacts";
+const MAX_FILE_MB = 20;
+
+function formatSecs(s: number) {
+  const m = Math.floor(s / 60);
+  return `${m}:${(s % 60).toString().padStart(2, "0")}`;
+}
+
+function AttachmentBubble({ url, type, name, isAdmin }: { url: string; type: string; name: string | null; isAdmin: boolean }) {
+  if (type === "audio") {
+    return (
+      <div className="mt-2">
+        <audio controls src={url} style={{ height: 36, maxWidth: 240 }} className="max-w-full" />
+      </div>
+    );
+  }
+  return (
+    <a
+      href={url} target="_blank" rel="noopener noreferrer"
+      className={`mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-xs transition-colors ${
+        isAdmin ? "bg-white/20 hover:bg-white/30 text-white" : "bg-white/[0.07] hover:bg-white/[0.12] text-white/80"
+      }`}
+    >
+      <FileText size={13} className="flex-shrink-0" />
+      <span className="truncate max-w-[180px]">{name ?? "Download file"}</span>
+    </a>
+  );
+}
 
 // ── Admin Messages Page ────────────────────────────────────────────────────────
 
@@ -46,23 +83,19 @@ export default function AdminMessagesPage() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Tabs */}
       <div className="flex gap-1 mb-5 flex-shrink-0 border-b border-white/[0.06] pb-4">
         {(["chats", "contact"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              tab === t
-                ? "bg-[#007bff]/15 text-[#007bff]"
-                : "text-white/40 hover:text-white"
+              tab === t ? "bg-[#007bff]/15 text-[#007bff]" : "text-white/40 hover:text-white"
             }`}
           >
             {t === "chats" ? "Artist Chats" : "Contact Forms"}
           </button>
         ))}
       </div>
-
       <div className="flex-1 min-h-0 overflow-hidden">
         {tab === "chats" ? <ArtistChats /> : <ContactForms />}
       </div>
@@ -82,11 +115,23 @@ function ArtistChats() {
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
+  const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [recordingSecs, setRecordingSecs] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     loadThreads();
+    return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadThreads() {
@@ -96,25 +141,24 @@ function ArtistChats() {
     ]);
 
     const chatMsgs = (allMsgs ?? []) as ChatMsg[];
-
-    // Build map from releases
     const seen = new Map<string, string>();
     for (const r of releases ?? []) {
       if (!seen.has(r.email)) seen.set(r.email, r.artist_name ?? r.email);
     }
-
-    // Also add any emails from messages not already in releases
     for (const m of chatMsgs) {
-      if (!seen.has(m.artist_email)) {
-        seen.set(m.artist_email, m.artist_name || m.artist_email);
-      }
+      if (!seen.has(m.artist_email)) seen.set(m.artist_email, m.artist_name || m.artist_email);
     }
 
     const artistList: ArtistThread[] = Array.from(seen.entries()).map(([email, name]) => {
       const mine = chatMsgs.filter(m => m.artist_email === email);
       const unread = mine.filter(m => m.sender === "artist" && !m.read_at).length;
       const last = mine[mine.length - 1];
-      return { email, name, unread, lastContent: last?.content ?? "", lastAt: last?.created_at ?? "" };
+      const lastContent = last?.attachment_type === "audio"
+        ? "🎤 Voice message"
+        : last?.attachment_type === "file"
+        ? `📎 ${last.attachment_name ?? "File"}`
+        : (last?.content ?? "");
+      return { email, name, unread, lastContent, lastAt: last?.created_at ?? "" };
     });
 
     artistList.sort((a, b) => {
@@ -128,13 +172,9 @@ function ArtistChats() {
     setLoadingThreads(false);
   }
 
-  // Poll every 3 s — full refresh of threads + open thread
   useEffect(() => {
     const poll = async () => {
-      // Reload thread list
       loadThreads();
-
-      // Reload open thread messages (full replace)
       setSelected(sel => {
         if (!sel) return sel;
         supabase.from("messages").select("*")
@@ -146,11 +186,9 @@ function ArtistChats() {
             setMsgs(prev => {
               const dbIds = new Set(dbMsgs.map(m => m.id));
               const pending = prev.filter(m => m.id.startsWith("temp-") && !dbIds.has(m.id));
-              // Mark new artist messages as read
               const prevIds = new Set(prev.map(m => m.id));
               dbMsgs.filter(m => m.sender === "artist" && !m.read_at && !prevIds.has(m.id)).forEach(m => {
-                supabase.from("messages").update({ read_at: new Date().toISOString() })
-                  .eq("id", m.id).then(() => {});
+                supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", m.id).then(() => {});
               });
               return [...dbMsgs, ...pending];
             });
@@ -158,7 +196,6 @@ function ArtistChats() {
         return sel;
       });
     };
-
     const id = setInterval(poll, 3000);
     return () => clearInterval(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -173,93 +210,149 @@ function ArtistChats() {
     setMobileView("chat");
     setLoadingMsgs(true);
     setText("");
+    clearAttachment();
 
-    const { data } = await supabase
-      .from("messages")
-      .select("*")
-      .eq("artist_email", thread.email)
-      .order("created_at", { ascending: true });
+    const { data } = await supabase.from("messages").select("*")
+      .eq("artist_email", thread.email).order("created_at", { ascending: true });
 
     setMsgs((data ?? []) as ChatMsg[]);
     setLoadingMsgs(false);
 
-    // Mark all unread as read
     await supabase.from("messages")
       .update({ read_at: new Date().toISOString() })
       .eq("artist_email", thread.email).eq("sender", "artist").is("read_at", null);
 
-    setThreads(prev => prev.map(t =>
-      t.email === thread.email ? { ...t, unread: 0 } : t
-    ));
+    setThreads(prev => prev.map(t => t.email === thread.email ? { ...t, unread: 0 } : t));
+  }
+
+  function pickFile() { fileInputRef.current?.click(); }
+
+  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      setSendError(`File must be under ${MAX_FILE_MB} MB.`);
+      return;
+    }
+    setAttachment({ file, type: "file" });
+    e.target.value = "";
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mr.onstop = () => {
+        const mimeType = mr.mimeType || "audio/webm";
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        const ext = mimeType.includes("mp4") ? "m4a" : mimeType.includes("ogg") ? "ogg" : "webm";
+        const file = new File([blob], `voice-${Date.now()}.${ext}`, { type: mimeType });
+        const previewUrl = URL.createObjectURL(blob);
+        setAttachment({ file, type: "audio", previewUrl });
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mr.start();
+      mediaRecorderRef.current = mr;
+      setRecording(true);
+      setRecordingSecs(0);
+      recordingTimerRef.current = setInterval(() => setRecordingSecs(s => s + 1), 1000);
+    } catch {
+      setSendError("Microphone access denied.");
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+  }
+
+  function clearAttachment() {
+    if (attachment?.previewUrl) URL.revokeObjectURL(attachment.previewUrl);
+    setAttachment(null);
+  }
+
+  async function uploadAttachment(file: File, artistEmail: string): Promise<{ url: string } | null> {
+    const ext = file.name.split(".").pop() ?? "bin";
+    const folder = `admin/${artistEmail.replace(/[@.]/g, "_")}`;
+    const path = `${folder}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("chat-attachments").upload(path, file, { contentType: file.type });
+    if (error) { setSendError("Upload failed: " + error.message); return null; }
+    const { data } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+    return { url: data.publicUrl };
   }
 
   async function sendMsg() {
     const content = text.trim();
-    if (!content || !selected || sending) return;
-    setSending(true);
-    setSendError("");
-    setText("");
+    if ((!content && !attachment) || !selected || sending || recording) return;
 
-    // Optimistic update
-    const tempId = `temp-${Date.now()}`;
-    const tempMsg: ChatMsg = {
-      id: tempId,
-      artist_email: selected.email,
-      artist_name: selected.name,
-      sender: "admin",
-      content,
-      created_at: new Date().toISOString(),
-      read_at: null,
-    };
-    setMsgs((prev) => [...prev, tempMsg]);
+    requestUnlock(async () => {
+      setSending(true);
+      setSendError("");
+      setText("");
 
-    const { data: inserted, error } = await supabase
-      .from("messages")
-      .insert({ artist_email: selected.email, artist_name: selected.name, sender: "admin", content })
-      .select()
-      .single();
+      let attachmentUrl: string | null = null;
+      let attachmentType: "file" | "audio" | null = null;
+      let attachmentName: string | null = null;
 
-    if (error) {
-      setMsgs((prev) => prev.filter((m) => m.id !== tempId));
-      setSendError(error.message || "Failed to send. Please try again.");
-      setText(content);
-    } else if (inserted) {
-      setMsgs((prev) => prev.map((m) => m.id === tempId ? (inserted as ChatMsg) : m));
-      fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "admin-message",
-          data: { artist_name: selected.name, email: selected.email, content },
-        }),
-      }).catch(() => {});
-    }
-    setSending(false);
+      if (attachment) {
+        const up = await uploadAttachment(attachment.file, selected.email);
+        if (up) {
+          attachmentUrl = up.url;
+          attachmentType = attachment.type;
+          attachmentName = attachment.file.name;
+        }
+        clearAttachment();
+      }
+
+      const tempId = `temp-${Date.now()}`;
+      const tempMsg: ChatMsg = {
+        id: tempId, artist_email: selected.email, artist_name: selected.name,
+        sender: "admin", content: content || "",
+        created_at: new Date().toISOString(), read_at: null,
+        attachment_url: attachmentUrl, attachment_type: attachmentType, attachment_name: attachmentName,
+      };
+      setMsgs(prev => [...prev, tempMsg]);
+
+      const { data: inserted, error } = await supabase.from("messages")
+        .insert({ artist_email: selected.email, artist_name: selected.name, sender: "admin",
+          content: content || "", attachment_url: attachmentUrl, attachment_type: attachmentType, attachment_name: attachmentName })
+        .select().single();
+
+      if (error) {
+        setMsgs(prev => prev.filter(m => m.id !== tempId));
+        setSendError(error.message || "Failed to send. Please try again.");
+        setText(content);
+      } else if (inserted) {
+        setMsgs(prev => prev.map(m => m.id === tempId ? (inserted as ChatMsg) : m));
+        const preview = content || (attachmentType === "audio" ? "🎤 Voice message" : "📎 File attachment");
+        fetch("/api/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "admin-message", data: { artist_name: selected.name, email: selected.email, content: preview } }),
+        }).catch(() => {});
+      }
+      setSending(false);
+    });
   }
 
   if (loadingThreads) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <Loader2 size={28} className="text-[#007bff] animate-spin" />
-      </div>
-    );
+    return <div className="flex items-center justify-center h-48"><Loader2 size={28} className="text-[#007bff] animate-spin" /></div>;
   }
 
   return (
     <div className="flex h-full gap-0 border border-white/[0.06] rounded-2xl overflow-hidden">
 
-      {/* Artist list — hidden on mobile when chat is open */}
-      <div className={`flex-shrink-0 w-72 border-r border-white/[0.06] flex flex-col bg-black/30
-        ${mobileView === "chat" ? "hidden lg:flex" : "flex"}
-      `}>
+      {/* Artist list */}
+      <div className={`flex-shrink-0 w-72 border-r border-white/[0.06] flex flex-col bg-black/30 ${mobileView === "chat" ? "hidden lg:flex" : "flex"}`}>
         <div className="px-4 py-3 border-b border-white/[0.06]">
           <p className="text-white/60 text-xs font-semibold uppercase tracking-widest">Artists</p>
         </div>
         <div className="flex-1 overflow-y-auto">
           {threads.length === 0 && (
-            <div className="text-center py-12 text-white/30 text-sm px-4">
-              No artists yet.
-            </div>
+            <div className="text-center py-12 text-white/30 text-sm px-4">No artists yet.</div>
           )}
           {threads.map((t) => (
             <button
@@ -299,14 +392,12 @@ function ArtistChats() {
             <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06] flex-shrink-0">
               <button
                 className="lg:hidden text-white/40 hover:text-white mr-1"
-                onClick={() => { setMobileView("list"); setSelected(null); }}
+                onClick={() => { setMobileView("list"); setSelected(null); clearAttachment(); }}
               >
                 <ArrowLeft size={18} />
               </button>
               <div className="w-8 h-8 rounded-full bg-[#007bff]/15 flex items-center justify-center flex-shrink-0">
-                <span className="text-[#007bff] text-xs font-bold">
-                  {selected.name.charAt(0).toUpperCase()}
-                </span>
+                <span className="text-[#007bff] text-xs font-bold">{selected.name.charAt(0).toUpperCase()}</span>
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">{selected.name}</p>
@@ -321,9 +412,7 @@ function ArtistChats() {
                   <Loader2 size={24} className="text-[#007bff] animate-spin" />
                 </div>
               ) : msgs.length === 0 ? (
-                <div className="text-center py-12 text-white/30 text-sm">
-                  No messages yet. Start the conversation.
-                </div>
+                <div className="text-center py-12 text-white/30 text-sm">No messages yet. Start the conversation.</div>
               ) : (
                 msgs.map((m) => (
                   <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
@@ -337,7 +426,15 @@ function ArtistChats() {
                           {m.artist_name || selected.name}
                         </p>
                       )}
-                      <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                      {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
+                      {m.attachment_url && m.attachment_type && (
+                        <AttachmentBubble
+                          url={m.attachment_url}
+                          type={m.attachment_type}
+                          name={m.attachment_name}
+                          isAdmin={m.sender === "admin"}
+                        />
+                      )}
                       <p className={`text-[10px] mt-1.5 ${m.sender === "admin" ? "text-white/50" : "text-white/30"}`}>
                         {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                         {" · "}
@@ -352,20 +449,71 @@ function ArtistChats() {
 
             {/* Input */}
             <div className="px-5 py-4 border-t border-white/[0.06] flex-shrink-0">
-              {sendError && (
-                <p className="text-red-400 text-xs mb-2">{sendError}</p>
+              {sendError && <p className="text-red-400 text-xs mb-2">{sendError}</p>}
+
+              {recording && (
+                <div className="mb-2 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                  <span className="text-red-400 text-xs font-medium flex-1">Recording… {formatSecs(recordingSecs)}</span>
+                  <button onClick={stopRecording} className="text-red-400 hover:text-red-300 text-xs font-semibold">Stop</button>
+                </div>
               )}
-              <div className="flex gap-3">
+
+              {attachment && (
+                <div className="mb-2 flex items-center gap-2 bg-white/[0.05] border border-white/[0.1] rounded-xl px-3 py-2">
+                  {attachment.type === "audio" ? (
+                    <>
+                      <Mic size={13} className="text-[#007bff] flex-shrink-0" />
+                      <audio controls src={attachment.previewUrl} className="flex-1 min-w-0" style={{ height: 32 }} />
+                    </>
+                  ) : (
+                    <>
+                      <FileText size={13} className="text-[#007bff] flex-shrink-0" />
+                      <span className="text-white/70 text-xs truncate flex-1">{attachment.file.name}</span>
+                    </>
+                  )}
+                  <button onClick={clearAttachment} className="text-white/30 hover:text-white flex-shrink-0 ml-1">
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+
+              <div className="flex gap-2 items-center">
+                <input type="file" ref={fileInputRef} onChange={onFileChange} className="hidden" />
+
+                <button
+                  onClick={pickFile}
+                  disabled={recording || !!attachment}
+                  title="Attach file"
+                  className="text-white/40 hover:text-white disabled:opacity-30 p-2.5 rounded-xl hover:bg-white/[0.05] transition-colors flex-shrink-0"
+                >
+                  <Paperclip size={18} />
+                </button>
+
+                <button
+                  onClick={recording ? stopRecording : startRecording}
+                  disabled={!!attachment && !recording}
+                  title={recording ? "Stop recording" : "Voice message"}
+                  className={`p-2.5 rounded-xl transition-colors flex-shrink-0 disabled:opacity-30 ${
+                    recording
+                      ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
+                      : "text-white/40 hover:text-white hover:bg-white/[0.05]"
+                  }`}
+                >
+                  {recording ? <MicOff size={18} /> : <Mic size={18} />}
+                </button>
+
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } }}
-                  placeholder={`Message ${selected.name}…`}
+                  placeholder={attachment ? `Caption for ${selected.name}… (optional)` : `Message ${selected.name}…`}
                   className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
                 />
+
                 <button
-                  onClick={() => requestUnlock(sendMsg)}
-                  disabled={!text.trim() || sending}
+                  onClick={sendMsg}
+                  disabled={(!text.trim() && !attachment) || sending || recording}
                   className="bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white p-3 rounded-xl transition-colors flex-shrink-0"
                 >
                   {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
@@ -410,11 +558,7 @@ function ContactForms() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <Loader2 size={28} className="text-[#007bff] animate-spin" />
-      </div>
-    );
+    return <div className="flex items-center justify-center h-48"><Loader2 size={28} className="text-[#007bff] animate-spin" /></div>;
   }
 
   return (
@@ -429,9 +573,7 @@ function ContactForms() {
             key={m.id}
             onClick={() => { setSelected(m); markRead(m.id); }}
             className={`w-full text-left hover:bg-white/[0.06] border rounded-2xl p-5 transition-all ${
-              isRead
-                ? "bg-white/[0.02] border-white/[0.04]"
-                : "bg-white/[0.05] border-white/[0.1]"
+              isRead ? "bg-white/[0.02] border-white/[0.04]" : "bg-white/[0.05] border-white/[0.1]"
             }`}
           >
             <div className="flex items-start justify-between gap-4">
@@ -444,9 +586,7 @@ function ContactForms() {
                   <div className="flex items-center gap-3 flex-wrap">
                     <p className="text-white font-semibold text-sm">{m.name}</p>
                     {m.inquiry_type && (
-                      <span className="text-xs bg-[#007bff]/10 text-[#007bff] px-2 py-0.5 rounded-full">
-                        {m.inquiry_type}
-                      </span>
+                      <span className="text-xs bg-[#007bff]/10 text-[#007bff] px-2 py-0.5 rounded-full">{m.inquiry_type}</span>
                     )}
                   </div>
                   <p className="text-white/40 text-xs mt-0.5">{m.email}</p>
@@ -472,14 +612,10 @@ function ContactForms() {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-white font-bold text-lg">{selected.name}</h3>
-                  <a href={`mailto:${selected.email}`} className="text-[#007bff] text-sm hover:underline mt-0.5 block">
-                    {selected.email}
-                  </a>
+                  <a href={`mailto:${selected.email}`} className="text-[#007bff] text-sm hover:underline mt-0.5 block">{selected.email}</a>
                 </div>
                 {selected.inquiry_type && (
-                  <span className="text-xs bg-[#007bff]/10 text-[#007bff] px-3 py-1 rounded-full">
-                    {selected.inquiry_type}
-                  </span>
+                  <span className="text-xs bg-[#007bff]/10 text-[#007bff] px-3 py-1 rounded-full">{selected.inquiry_type}</span>
                 )}
               </div>
               {selected.subject && <p className="text-white/70 font-medium mt-4">{selected.subject}</p>}
