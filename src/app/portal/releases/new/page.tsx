@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
-  Music2, Plus, Trash2,
+  Music2, Plus, Trash2, Save,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -35,24 +35,71 @@ type Track = { title: string; file: File | null; version: string; explicit: bool
 
 type FormState = "idle" | "uploading" | "saving" | "success" | "error";
 
+const DRAFT_KEY = "orinlabi_release_draft";
+
+function readDraft(): Record<string, string> | null {
+  if (typeof window === "undefined") return null;
+  try { const s = localStorage.getItem(DRAFT_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
+}
+
+function clearDraftStorage() {
+  try { localStorage.removeItem(DRAFT_KEY); } catch {}
+}
+
 export default function NewReleasePage() {
   const router = useRouter();
+  // Read draft once on mount (lazy init — runs before any render)
+  const [draft] = useState<Record<string, string> | null>(() => readDraft());
+  const draftWasRestored = !!(draft && (draft.songTitle || draft.genre || draft.songwriters));
+  const formRef = useRef<HTMLFormElement>(null);
+  const draftStateRef = useRef<{ samplesUsed: boolean; coverSong: boolean; featuredArtists: { name: string; spotify_id: string; apple_id: string }[]; tracks: Track[] }>({
+    samplesUsed: draft?._samplesUsed === "true",
+    coverSong: draft?._coverSong === "true",
+    featuredArtists: (() => { try { return draft?._featuredArtists ? JSON.parse(draft._featuredArtists) : []; } catch { return []; } })(),
+    tracks: (() => { try { const t = draft?._tracks ? JSON.parse(draft._tracks) : null; return t?.length ? t.map((tr: { title: string; version: string; explicit: boolean; instrumental: boolean }) => ({ title: tr.title ?? "", file: null, version: tr.version ?? "Original", explicit: tr.explicit ?? false, instrumental: tr.instrumental ?? false })) : null; } catch { return null; } })() ?? [{ title: "", file: null, version: "Original", explicit: false, instrumental: false }],
+  });
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [releaseType, setReleaseType] = useState("Single");
+  const [releaseType, setReleaseType] = useState(draft?.releaseType ?? "Single");
+  const [genre, setGenre] = useState(draft?.genre ?? "");
+  const [language, setLanguage] = useState(draft?.language ?? "");
+  const [explicitContent, setExplicitContent] = useState(draft?.explicit ?? "Clean");
+  const [trackVersion, setTrackVersion] = useState(draft?.trackVersion ?? "Original");
   // Single mode: one file
   const [audioFile, setAudioFile] = useState<File | null>(null);
   // Album/EP mode: multiple tracks
-  const [tracks, setTracks] = useState<Track[]>([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
+  const [tracks, setTracks] = useState<Track[]>(draftStateRef.current.tracks);
   const [uploadProgress, setUploadProgress] = useState("");
-  const [samplesUsed, setSamplesUsed] = useState(false);
-  const [coverSong, setCoverSong] = useState(false);
-  const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>([]);
+  const [samplesUsed, setSamplesUsed] = useState(draftStateRef.current.samplesUsed);
+  const [coverSong, setCoverSong] = useState(draftStateRef.current.coverSong);
+  const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>(draftStateRef.current.featuredArtists);
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
 
   const isMultiTrack = releaseType === "Album" || releaseType === "EP";
+
+  function saveDraft() {
+    const fd = formRef.current ? new FormData(formRef.current) : null;
+    const snapshot: Record<string, string> = {};
+    if (fd) {
+      for (const [k, v] of fd.entries()) {
+        if (typeof v === "string") snapshot[k] = v;
+      }
+    }
+    snapshot._samplesUsed = String(samplesUsed);
+    snapshot._coverSong = String(coverSong);
+    snapshot._featuredArtists = JSON.stringify(featuredArtists);
+    snapshot._tracks = JSON.stringify(tracks.map((t) => ({ title: t.title, version: t.version, explicit: t.explicit, instrumental: t.instrumental })));
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot)); setDraftSavedAt(new Date()); } catch {}
+  }
+
+  // Save draft whenever the state-controlled fields change
+  useEffect(() => {
+    if (!profile) return;
+    saveDraft();
+  }, [samplesUsed, coverSong, featuredArtists, tracks, releaseType, genre, language, explicitContent, trackVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     async function load() {
@@ -263,6 +310,7 @@ export default function NewReleasePage() {
         }),
       }).catch(() => {});
 
+      clearDraftStorage();
       setState("success");
     } catch (err: unknown) {
       const msg = err && typeof err === "object" && "message" in err
@@ -358,6 +406,22 @@ export default function NewReleasePage() {
         </div>
       )}
 
+      {draftWasRestored && (
+        <div className="mb-6 flex items-center justify-between gap-3 bg-[#007bff]/8 border border-[#007bff]/20 px-4 py-3 rounded-xl">
+          <div className="flex items-center gap-2 text-[#007bff] text-xs">
+            <Save size={13} className="flex-shrink-0" />
+            Draft restored from your last session. Files will need to be re-uploaded.
+          </div>
+          <button
+            type="button"
+            onClick={() => { clearDraftStorage(); window.location.reload(); }}
+            className="text-white/30 hover:text-white text-xs underline transition-colors flex-shrink-0"
+          >
+            Start fresh
+          </button>
+        </div>
+      )}
+
       {state === "error" && (
         <div className="mb-6 flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-5 py-4 rounded-xl">
           <AlertCircle size={18} className="flex-shrink-0" />
@@ -372,7 +436,7 @@ export default function NewReleasePage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-10">
+      <form ref={formRef} onSubmit={handleSubmit} onChange={saveDraft} className="space-y-10">
 
         {/* Release Info */}
         <div>
@@ -394,17 +458,17 @@ export default function NewReleasePage() {
               }}
             />
             {!isMultiTrack && (
-              <Field label="Song Title" name="songTitle" required />
+              <Field label="Song Title" name="songTitle" required defaultValue={draft?.songTitle} />
             )}
             {isMultiTrack && (
-              <Field label={`${releaseType} Title`} name="albumTitle" placeholder="Full project title" required />
+              <Field label={`${releaseType} Title`} name="albumTitle" placeholder="Full project title" required defaultValue={draft?.albumTitle} />
             )}
-            <Select label="Genre" name="genre" options={genres} required />
-            <Select label="Language" name="language" options={languages} required />
-            <Field label="Desired Release Date" name="releaseDate" type="date" required />
-            <Select label="Explicit Content" name="explicit" options={["Clean", "Explicit"]} required />
+            <Select label="Genre" name="genre" options={genres} required value={genre} onChange={(v) => setGenre(v)} />
+            <Select label="Language" name="language" options={languages} required value={language} onChange={(v) => setLanguage(v)} />
+            <Field label="Desired Release Date" name="releaseDate" type="date" required defaultValue={draft?.releaseDate} />
+            <Select label="Explicit Content" name="explicit" options={["Clean", "Explicit"]} required value={explicitContent} onChange={(v) => setExplicitContent(v)} />
             {!isMultiTrack && (
-              <Select label="Track Version" name="trackVersion" options={trackVersions} required />
+              <Select label="Track Version" name="trackVersion" options={trackVersions} required value={trackVersion} onChange={(v) => setTrackVersion(v)} />
             )}
           </div>
         </div>
@@ -547,8 +611,8 @@ export default function NewReleasePage() {
             Metadata & Credits
           </h2>
           <div className="grid sm:grid-cols-2 gap-5">
-            <Field label="Songwriters" name="songwriters" placeholder="Separate with commas" required />
-            <Field label="Producers" name="producers" placeholder="Separate with commas" required />
+            <Field label="Songwriters" name="songwriters" placeholder="Separate with commas" required defaultValue={draft?.songwriters} />
+            <Field label="Producers" name="producers" placeholder="Separate with commas" required defaultValue={draft?.producers} />
             {/* Featured Artists — dynamic */}
             <div className="sm:col-span-2">
               <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
@@ -614,8 +678,8 @@ export default function NewReleasePage() {
             {!isMultiTrack && (
               <Select label="Instrumental?" name="instrumental" options={["No", "Yes"]} required />
             )}
-            <Field label="ISRC Code" name="isrc" placeholder="Leave blank to auto-generate" />
-            <Field label="UPC / EAN Code" name="upc" placeholder="Optional — leave blank if unknown" />
+            <Field label="ISRC Code" name="isrc" placeholder="Leave blank to auto-generate" defaultValue={draft?.isrc} />
+            <Field label="UPC / EAN Code" name="upc" placeholder="Optional — leave blank if unknown" defaultValue={draft?.upc} />
           </div>
         </div>
 
@@ -625,10 +689,10 @@ export default function NewReleasePage() {
             Rights & Publishing
           </h2>
           <div className="grid sm:grid-cols-2 gap-5">
-            <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Your Name" required />
-            <Field label="Copyright Year" name="copyrightYear" placeholder="e.g. 2026" required />
+            <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Your Name" required defaultValue={draft?.copyrightOwner} />
+            <Field label="Copyright Year" name="copyrightYear" placeholder="e.g. 2026" required defaultValue={draft?.copyrightYear} />
             <div className="sm:col-span-2">
-              <Field label="Publishing Information" name="publishing" placeholder="Publisher name, PRO affiliation, etc." />
+              <Field label="Publishing Information" name="publishing" placeholder="Publisher name, PRO affiliation, etc." defaultValue={draft?.publishing} />
             </div>
           </div>
         </div>
@@ -663,6 +727,7 @@ export default function NewReleasePage() {
                     <p className="text-white/50 text-xs">You must have written clearance before distribution. Uncleared samples will be taken down.</p>
                   </div>
                   <textarea name="sampleDetails" rows={3} placeholder="Describe the sample(s): original song, artist, and confirm you have clearance"
+                    defaultValue={draft?.sampleDetails}
                     className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors" />
                 </div>
               )}
@@ -692,6 +757,7 @@ export default function NewReleasePage() {
                     <p className="text-white/50 text-xs">Orinlabí will obtain a mechanical licence on your behalf through Ditto.</p>
                   </div>
                   <textarea name="coverSongDetails" rows={2} placeholder="Original song title and original artist/writer name"
+                    defaultValue={draft?.coverSongDetails}
                     className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors" />
                 </div>
               )}
@@ -715,15 +781,22 @@ export default function NewReleasePage() {
               : "Submit Release for Distribution"
           )}
         </button>
+
+        {draftSavedAt && (
+          <p className="text-center text-white/20 text-xs flex items-center justify-center gap-1.5">
+            <Save size={10} />
+            Draft auto-saved · {draftSavedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </p>
+        )}
       </form>
     </section>
   );
 }
 
 function Field({
-  label, name, type = "text", placeholder, required,
+  label, name, type = "text", placeholder, required, defaultValue,
 }: {
-  label: string; name: string; type?: string; placeholder?: string; required?: boolean;
+  label: string; name: string; type?: string; placeholder?: string; required?: boolean; defaultValue?: string;
 }) {
   return (
     <div>
@@ -732,6 +805,7 @@ function Field({
       </label>
       <input
         type={type} name={name} placeholder={placeholder} required={required}
+        defaultValue={defaultValue}
         className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
       />
     </div>

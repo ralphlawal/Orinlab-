@@ -8,12 +8,26 @@ import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loa
 const PLATFORMS = [
   { key: "spotify",       label: "Spotify" },
   { key: "apple_music",   label: "Apple Music" },
-  { key: "boomplay",      label: "Boomplay" },
-  { key: "audiomack",     label: "Audiomack" },
   { key: "youtube_music", label: "YouTube Music" },
+  { key: "amazon_music",  label: "Amazon Music" },
   { key: "deezer",        label: "Deezer" },
   { key: "tidal",         label: "TIDAL" },
-  { key: "amazon_music",  label: "Amazon Music" },
+  { key: "pandora",       label: "Pandora" },
+  { key: "audiomack",     label: "Audiomack" },
+  { key: "boomplay",      label: "Boomplay" },
+  { key: "soundcloud",    label: "SoundCloud" },
+  { key: "anghami",       label: "Anghami" },
+  { key: "napster",       label: "Napster" },
+  { key: "iheartradio",   label: "iHeartRadio" },
+  { key: "tiktok",        label: "TikTok" },
+  { key: "shazam",        label: "Shazam" },
+  { key: "beatport",      label: "Beatport" },
+  { key: "jio_saavn",     label: "JioSaavn" },
+  { key: "gaana",         label: "Gaana" },
+  { key: "wynk",          label: "Wynk Music" },
+  { key: "kkbox",         label: "KKBOX" },
+  { key: "claro_musica",  label: "Claro Música" },
+  { key: "7digital",      label: "7digital" },
 ];
 
 type Release = {
@@ -94,6 +108,7 @@ export default function ReleasesPage() {
   const [royaltiesSaved, setRoyaltiesSaved] = useState(false);
   const [editIsrc, setEditIsrc] = useState("");
   const [editUpc, setEditUpc] = useState("");
+  const [editReleaseDate, setEditReleaseDate] = useState("");
   const [savingMeta, setSavingMeta] = useState(false);
   const [metaSaved, setMetaSaved] = useState(false);
 
@@ -155,6 +170,7 @@ export default function ReleasesPage() {
     setRoyalties(r.royalties_usd?.toString() ?? "");
     setEditIsrc(r.isrc ?? "");
     setEditUpc(r.upc ?? "");
+    setEditReleaseDate(r.release_date ?? "");
     setLinksSaved(false);
     setStreamsSaved(false);
     setRoyaltiesSaved(false);
@@ -220,8 +236,8 @@ export default function ReleasesPage() {
   async function saveMeta() {
     if (!selected) return;
     setSavingMeta(true);
-    await supabase.from("releases").update({ isrc: editIsrc || null, upc: editUpc || null }).eq("id", selected.id);
-    setSelected((s) => s ? { ...s, isrc: editIsrc, upc: editUpc || null } : s);
+    await supabase.from("releases").update({ isrc: editIsrc || null, upc: editUpc || null, release_date: editReleaseDate || null }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, isrc: editIsrc, upc: editUpc || null, release_date: editReleaseDate } : s);
     setSavingMeta(false);
     setMetaSaved(true);
   }
@@ -331,6 +347,7 @@ export default function ReleasesPage() {
     setRoyalties("");
     setEditIsrc("");
     setEditUpc("");
+    setEditReleaseDate("");
     setLinksSaved(false);
     setStreamsSaved(false);
     setRoyaltiesSaved(false);
@@ -543,14 +560,15 @@ export default function ReleasesPage() {
               <Section title="Metadata">
                 <p className="text-white/30 text-xs mb-3">ISRC and UPC can be assigned or corrected here after submission.</p>
                 <div className="space-y-2">
-                  {[
-                    { key: "isrc", label: "ISRC", value: editIsrc, set: setEditIsrc, placeholder: "e.g. USRC11700609" },
-                    { key: "upc", label: "UPC", value: editUpc, set: setEditUpc, placeholder: "12-digit barcode (albums)" },
-                  ].map(({ key, label, value, set, placeholder }) => (
+                  {([
+                    { key: "releaseDate", label: "Release Date", value: editReleaseDate, set: setEditReleaseDate, placeholder: "", type: "date" },
+                    { key: "isrc", label: "ISRC", value: editIsrc, set: setEditIsrc, placeholder: "e.g. USRC11700609", type: "text" },
+                    { key: "upc", label: "UPC", value: editUpc, set: setEditUpc, placeholder: "12-digit barcode (albums)", type: "text" },
+                  ] as { key: string; label: string; value: string; set: (v: string) => void; placeholder: string; type: string }[]).map(({ key, label, value, set, placeholder, type }) => (
                     <div key={key} className="flex items-center gap-3">
                       <span className="text-white/40 text-xs w-28 flex-shrink-0">{label}</span>
                       <input
-                        type="text"
+                        type={type}
                         placeholder={placeholder}
                         value={value}
                         onChange={(e) => { set(e.target.value); setMetaSaved(false); }}
@@ -1043,7 +1061,7 @@ export default function ReleasesPage() {
               </button>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setArtistProfile(undefined); }}
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setEditReleaseDate(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setArtistProfile(undefined); }}
                   className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
                   Cancel

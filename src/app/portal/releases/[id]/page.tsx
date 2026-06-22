@@ -41,6 +41,31 @@ type Release = {
   presave_url: string | null;
 };
 
+const DITTO_PLATFORMS = [
+  { key: "spotify",       label: "Spotify" },
+  { key: "apple_music",   label: "Apple Music" },
+  { key: "youtube_music", label: "YouTube Music" },
+  { key: "amazon_music",  label: "Amazon Music" },
+  { key: "deezer",        label: "Deezer" },
+  { key: "tidal",         label: "TIDAL" },
+  { key: "pandora",       label: "Pandora" },
+  { key: "audiomack",     label: "Audiomack" },
+  { key: "boomplay",      label: "Boomplay" },
+  { key: "soundcloud",    label: "SoundCloud" },
+  { key: "anghami",       label: "Anghami" },
+  { key: "napster",       label: "Napster" },
+  { key: "iheartradio",   label: "iHeartRadio" },
+  { key: "tiktok",        label: "TikTok" },
+  { key: "shazam",        label: "Shazam" },
+  { key: "beatport",      label: "Beatport" },
+  { key: "jio_saavn",     label: "JioSaavn" },
+  { key: "gaana",         label: "Gaana" },
+  { key: "wynk",          label: "Wynk Music" },
+  { key: "kkbox",         label: "KKBOX" },
+  { key: "claro_musica",  label: "Claro Música" },
+  { key: "7digital",      label: "7digital" },
+];
+
 const statusConfig = {
   pending: {
     icon: Clock,
@@ -88,6 +113,10 @@ export default function ReleaseDetailPage() {
   const [editingSplits, setEditingSplits] = useState(false);
   const [savingSplits, setSavingSplits] = useState(false);
   const [splitsSaved, setSplitsSaved] = useState(false);
+  const [editingLinks, setEditingLinks] = useState(false);
+  const [localLinks, setLocalLinks] = useState<Record<string, string>>({});
+  const [savingLinks, setSavingLinks] = useState(false);
+  const [linksSaved, setLinksSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -124,6 +153,7 @@ export default function ReleaseDetailPage() {
       if (!data) setNotFound(true);
       else {
         setRelease(data as Release);
+        setLocalLinks((data as Release).store_links ?? {});
         // Parse featured artists — handles both JSON (new) and plain text (old)
         const raw = (data as Release).featured_artists;
         if (raw) {
@@ -197,6 +227,18 @@ export default function ReleaseDetailPage() {
     setTimeout(() => setFeaturedSaved(false), 3000);
   }
 
+  async function saveStoreLinks() {
+    if (!release) return;
+    setSavingLinks(true);
+    const filtered = Object.fromEntries(Object.entries(localLinks).filter(([, v]) => v.trim() !== ""));
+    await supabase.from("releases").update({ store_links: filtered }).eq("id", release.id);
+    setRelease((r) => r ? { ...r, store_links: filtered } : r);
+    setSavingLinks(false);
+    setLinksSaved(true);
+    setEditingLinks(false);
+    setTimeout(() => setLinksSaved(false), 3000);
+  }
+
   async function handlePayoutRequest() {
     if (!release) return;
     setPayoutLoading(true);
@@ -254,7 +296,28 @@ export default function ReleaseDetailPage() {
     }
   }
 
-  const cfg = statusConfig[release.status] ?? statusConfig.pending;
+  const cfg = (() => {
+    if (release.status === "approved") {
+      const stage = release.distribution_stage ?? "submitted";
+      if (stage === "live") return {
+        icon: CheckCircle2,
+        label: "Live",
+        color: "text-green-400",
+        bg: "bg-green-400/10 border-green-400/20",
+        heading: "Your music is live worldwide!",
+        body: "Your release is now available on streaming platforms globally. Add your links below and share them with your fans.",
+      };
+      if (stage === "in_distribution") return {
+        icon: Clock,
+        label: "Processing",
+        color: "text-blue-400",
+        bg: "bg-blue-400/10 border-blue-400/20",
+        heading: "Your release is being distributed.",
+        body: "We have submitted your music to streaming platforms. It typically goes live within 24–72 hours. You will receive an email as soon as it is available.",
+      };
+    }
+    return statusConfig[release.status] ?? statusConfig.pending;
+  })();
   const Icon = cfg.icon;
 
   return (
@@ -464,15 +527,66 @@ export default function ReleaseDetailPage() {
       {/* Approved — store links */}
       {release.status === "approved" && (
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Globe size={18} className="text-[#007bff]" />
-            <p className="text-white font-semibold">Store Links</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Globe size={18} className="text-[#007bff]" />
+              <p className="text-white font-semibold">Store Links</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {linksSaved && <span className="text-green-400 text-xs">Saved ✓</span>}
+              {!editingLinks && (
+                <button
+                  onClick={() => setEditingLinks(true)}
+                  className="flex items-center gap-1.5 text-[#007bff] hover:text-white text-xs font-medium transition-colors"
+                >
+                  <PenLine size={12} />
+                  {Object.keys(release.store_links ?? {}).length > 0 ? "Edit Links" : "Add Links"}
+                </button>
+              )}
+            </div>
           </div>
 
-          {release.store_links && Object.keys(release.store_links).length > 0 ? (
+          {editingLinks ? (
+            <div>
+              <p className="text-white/40 text-xs mb-4">
+                Paste your streaming URLs below. Leave any platform blank if your music isn&apos;t there yet.
+              </p>
+              <div className="space-y-2 mb-5">
+                {DITTO_PLATFORMS.map((p) => (
+                  <div key={p.key} className="flex items-center gap-3">
+                    <span className="text-white/40 text-xs w-28 flex-shrink-0">{p.label}</span>
+                    <input
+                      type="url"
+                      placeholder="https://…"
+                      value={localLinks[p.key] ?? ""}
+                      onChange={(e) => { setLocalLinks((prev) => ({ ...prev, [p.key]: e.target.value })); setLinksSaved(false); }}
+                      className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={saveStoreLinks}
+                  disabled={savingLinks}
+                  className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+                >
+                  {savingLinks ? <Loader2 size={14} className="animate-spin" /> : null}
+                  Save Links
+                </button>
+                <button
+                  onClick={() => { setEditingLinks(false); setLocalLinks(release.store_links ?? {}); }}
+                  className="text-sm text-white/30 hover:text-white transition-colors px-3 py-2"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : Object.keys(release.store_links ?? {}).length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {Object.entries(release.store_links).map(([key, url]) => {
-                const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+              {Object.entries(release.store_links!).map(([key, url]) => {
+                const label = DITTO_PLATFORMS.find((p) => p.key === key)?.label
+                  ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                 return (
                   <a
                     key={key}
@@ -492,16 +606,14 @@ export default function ReleaseDetailPage() {
             </div>
           ) : (
             <>
-              <p className="text-white/40 text-sm leading-relaxed">
-                Your store links will appear here once your release is live on
-                streaming platforms. Our team will notify you by email when
-                everything is live.
+              <p className="text-white/40 text-sm leading-relaxed mb-4">
+                Your music will be distributed to 150+ platforms. Tap <strong className="text-white/60">Add Links</strong> once your release goes live to add your streaming URLs, or our team will add them automatically.
               </p>
-              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {["Spotify", "Apple Music", "Boomplay", "Audiomack", "YouTube Music", "Deezer"].map((p) => (
-                  <div key={p} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-center">
-                    <p className="text-white/30 text-xs">{p}</p>
-                    <p className="text-white/20 text-xs mt-1">Coming soon</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {DITTO_PLATFORMS.slice(0, 6).map((p) => (
+                  <div key={p.key} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-center">
+                    <p className="text-white/30 text-xs">{p.label}</p>
+                    <p className="text-white/20 text-xs mt-1">Pending</p>
                   </div>
                 ))}
               </div>
