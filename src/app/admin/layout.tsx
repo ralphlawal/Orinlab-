@@ -20,11 +20,11 @@ const BASE_NAV = [
   { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={18} />,           superOnly: false },
   { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={18} />,      superOnly: false },
   { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={18} />,        superOnly: false },
-  { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={18} />,       superOnly: true  },
-  { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={18} />,       superOnly: true  },
-  { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={18} />,        superOnly: true  },
-  { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={18} />,            superOnly: true  },
-  { label: "Settings",      href: "/admin/settings",      icon: <Settings size={18} />,        superOnly: true  },
+  { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={18} />,       superOnly: false  },
+  { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={18} />,       superOnly: false  },
+  { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={18} />,        superOnly: false  },
+  { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={18} />,            superOnly: false  },
+  { label: "Settings",      href: "/admin/settings",      icon: <Settings size={18} />,        superOnly: false  },
 ];
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")

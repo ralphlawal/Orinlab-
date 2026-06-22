@@ -37,6 +37,8 @@ type Release = {
   copyright_year: string;
   submitted_at: string;
   distribution_stage: "submitted" | "in_distribution" | "live" | null;
+  presave_enabled: boolean | null;
+  presave_url: string | null;
 };
 
 const statusConfig = {
@@ -74,6 +76,7 @@ export default function ReleaseDetailPage() {
   const [takedownState, setTakedownState] = useState<"idle" | "confirm" | "sent">("idle");
   const [sendingTakedown, setSendingTakedown] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [presaveCopied, setPresaveCopied] = useState(false);
   const [payoutState, setPayoutState] = useState<"idle" | "confirm" | "sent">("idle");
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [hasPayoutDetails, setHasPayoutDetails] = useState(false);
@@ -470,6 +473,44 @@ export default function ReleaseDetailPage() {
             className="mt-3 inline-flex items-center gap-2 text-white/30 hover:text-white/60 text-xs transition-colors"
           >
             <ExternalLink size={12} /> Preview link
+          </a>
+        </div>
+      )}
+
+      {/* Pre-save link — shown when admin has enabled presave */}
+      {release.presave_enabled && release.presave_url && (
+        <div className="bg-[#1db954]/5 border border-[#1db954]/20 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Star size={18} className="text-[#1db954]" />
+            <p className="text-white font-semibold">Pre-save Link</p>
+            <span className="text-[10px] font-bold bg-[#1db954]/20 text-[#1db954] px-2 py-0.5 rounded-full uppercase tracking-widest">Live</span>
+          </div>
+          <p className="text-white/40 text-sm mb-4">
+            Share this link so fans can pre-save your release before it drops. When they click it, they will be taken to Spotify to pre-save.
+          </p>
+          <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 mb-3">
+            <span className="text-white/60 text-xs flex-1 truncate font-mono">
+              https://orinlabi.com/presave/{release.id}
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`https://orinlabi.com/presave/${release.id}`);
+                setPresaveCopied(true);
+                setTimeout(() => setPresaveCopied(false), 2000);
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#1db954] hover:text-white transition-colors flex-shrink-0"
+            >
+              {presaveCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+              {presaveCopied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          <a
+            href={`/presave/${release.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-white/30 hover:text-white/60 text-xs transition-colors"
+          >
+            <ExternalLink size={12} /> Preview pre-save page
           </a>
         </div>
       )}
