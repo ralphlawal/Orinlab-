@@ -845,11 +845,6 @@ export default function ReleasesPage() {
                     {artistProfile?.spotify_artist_id && <PackRow label="Artist Spotify ID" value={artistProfile.spotify_artist_id} />}
                     {artistProfile?.apple_music_artist_id && <PackRow label="Artist Apple ID" value={artistProfile.apple_music_artist_id} />}
                   </div>
-                  {!selected.language && (
-                    <div className="mb-3 px-3 py-2 bg-yellow-400/[0.06] border border-yellow-400/20 rounded-xl">
-                      <p className="text-yellow-400/80 text-[10px]">⚠ Language not collected on this submission — confirm with the artist before uploading to Ditto.</p>
-                    </div>
-                  )}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {selected.audio_file_url && (
                       <a href={selected.audio_file_url} target="_blank" rel="noopener noreferrer"

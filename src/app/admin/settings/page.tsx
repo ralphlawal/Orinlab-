@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical } from "lucide-react";
+import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical, Mail, RefreshCw } from "lucide-react";
 
 const SUPER_ADMIN = (
   process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
@@ -30,7 +30,7 @@ import {
   type FaqItem,
 } from "@/lib/siteSettings";
 
-type Tab = "homepage" | "spotlight" | "features" | "why" | "faq" | "artists" | "contact";
+type Tab = "homepage" | "spotlight" | "features" | "why" | "faq" | "artists" | "contact" | "system";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -731,6 +731,140 @@ function ContactTab() {
   );
 }
 
+// ─── System Tools Tab ─────────────────────────────────────────────────────────
+
+function SystemTab() {
+  const [pin, setPin]                 = useState("");
+  const [migStatus, setMigStatus]     = useState<"idle"|"running"|"done"|"error">("idle");
+  const [migResult, setMigResult]     = useState<{ sent: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
+  const [remStatus, setRemStatus]     = useState<"idle"|"running"|"done"|"error">("idle");
+  const [remResult, setRemResult]     = useState<{ sent: number; skipped: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
+
+  async function sendMigration() {
+    setMigStatus("running");
+    setMigResult(null);
+    try {
+      const res = await fetch("/api/admin/migrate-passwords", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      setMigResult(data);
+      setMigStatus("done");
+    } catch {
+      setMigStatus("error");
+    }
+  }
+
+  async function sendReminders() {
+    setRemStatus("running");
+    setRemResult(null);
+    try {
+      const res = await fetch("/api/admin/profile-reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      setRemResult(data);
+      setRemStatus("done");
+    } catch {
+      setRemStatus("error");
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Auth */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+        <label className="block text-white/60 text-xs font-medium mb-2">Admin PIN (required to run tools)</label>
+        <input
+          type="password"
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          placeholder="Enter your admin PIN"
+          className="w-full max-w-xs bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-2.5 rounded-xl transition-colors"
+        />
+      </div>
+
+      {/* Password Migration */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 bg-[#007bff]/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <RefreshCw size={18} className="text-[#007bff]" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-semibold mb-1">Password Migration</h3>
+            <p className="text-white/40 text-sm leading-relaxed mb-4">
+              Send password-setup emails to all artists and labels. Anyone who signed up via magic link will receive a link to set a permanent password. Safe to run multiple times.
+            </p>
+            <button
+              onClick={sendMigration}
+              disabled={migStatus === "running"}
+              className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+            >
+              {migStatus === "running" && <Loader2 size={15} className="animate-spin" />}
+              {migStatus === "running" ? "Sending…" : "Send Password Setup Emails"}
+            </button>
+            {migStatus === "done" && migResult && (
+              <div className="mt-3 p-3 bg-green-400/5 border border-green-400/20 rounded-xl">
+                <p className="text-green-400 text-sm font-semibold">
+                  Done — {migResult.sent} email{migResult.sent !== 1 ? "s" : ""} sent out of {migResult.total}
+                </p>
+                {migResult.failed.length > 0 && (
+                  <p className="text-red-400/80 text-xs mt-1">{migResult.failed.length} failed: {migResult.failed.map(f => f.email).join(", ")}</p>
+                )}
+              </div>
+            )}
+            {migStatus === "error" && (
+              <p className="mt-2 text-red-400 text-sm">Request failed — check the PIN and try again.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Completion Reminders */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 bg-amber-400/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Mail size={18} className="text-amber-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-white font-semibold mb-1">Profile Completion Reminders</h3>
+            <p className="text-white/40 text-sm leading-relaxed mb-4">
+              Send reminder emails to approved artists and labels who have incomplete profiles (missing bio, photo, socials, etc.). Only incomplete profiles are emailed.
+            </p>
+            <button
+              onClick={sendReminders}
+              disabled={remStatus === "running"}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+            >
+              {remStatus === "running" && <Loader2 size={15} className="animate-spin" />}
+              {remStatus === "running" ? "Sending…" : "Send Profile Reminders"}
+            </button>
+            {remStatus === "done" && remResult && (
+              <div className="mt-3 p-3 bg-green-400/5 border border-green-400/20 rounded-xl">
+                <p className="text-green-400 text-sm font-semibold">
+                  Done — {remResult.sent} reminder{remResult.sent !== 1 ? "s" : ""} sent, {remResult.skipped} already complete
+                </p>
+                {remResult.failed.length > 0 && (
+                  <p className="text-red-400/80 text-xs mt-1">{remResult.failed.length} failed: {remResult.failed.map(f => f.email).join(", ")}</p>
+                )}
+              </div>
+            )}
+            {remStatus === "error" && (
+              <p className="mt-2 text-red-400 text-sm">Request failed — check the PIN and try again.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const TABS: [Tab, string][] = [
@@ -741,6 +875,7 @@ const TABS: [Tab, string][] = [
   ["faq", "FAQ"],
   ["artists", "Artists Page"],
   ["contact", "Contact Info"],
+  ["system", "System Tools"],
 ];
 
 export default function SettingsPage() {
@@ -812,6 +947,7 @@ export default function SettingsPage() {
       {tab === "faq" && <FaqTab />}
       {tab === "artists" && <ArtistsTab />}
       {tab === "contact" && <ContactTab />}
+      {tab === "system" && <SystemTab />}
     </div>
   );
 }

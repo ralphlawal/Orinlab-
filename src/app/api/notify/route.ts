@@ -59,14 +59,11 @@ function wrap(accentColor: string, badge: string, heading: string, subheading: s
       <td align="center" style="padding:32px 16px;">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
 
-          <!-- Logo header — always dark, always visible -->
+          <!-- Logo header -->
           <tr>
-            <td bgcolor="#050505" style="background:#050505 !important;padding:28px 32px;border-radius:14px 14px 0 0;" align="left">
-              <!-- Image logo — shows when external images load -->
-              <img src="${LOGO}" alt="Orinlabí" width="130" height="35"
-                style="display:block;border:0;outline:none;text-decoration:none;max-width:130px;" />
-              <!-- Text fallback — always visible in white on dark bg -->
-              <p style="margin:8px 0 0;color:#ffffff;font-size:16px;font-weight:800;letter-spacing:1.5px;font-family:Arial,sans-serif;line-height:1;">ORINLAB&Iacute;</p>
+            <td bgcolor="#050505" style="background:#050505 !important;padding:24px 32px;border-radius:14px 14px 0 0;" align="left">
+              <img src="${LOGO}" alt="Orinlabí" width="120" height="32"
+                style="display:block;border:0;outline:none;text-decoration:none;max-width:120px;height:auto;" />
             </td>
           </tr>
 
