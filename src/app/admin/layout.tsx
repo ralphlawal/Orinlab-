@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
-  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare,
 } from "lucide-react";
 
 type Counts = {
@@ -119,6 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={17} />,   badge: counts.messages, superOnly: false },
         { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={17} />,        badge: counts.support,  superOnly: false },
+        { label: "Team Chat",     href: "/admin/chat",          icon: <MessagesSquare size={17} />,  badge: 0,               superOnly: false },
         { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={17} />,       badge: 0,               superOnly: false },
         { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={17} />,            badge: 0,               superOnly: true  },
       ],
