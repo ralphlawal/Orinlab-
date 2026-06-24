@@ -429,6 +429,7 @@ export default function AdminArtistsPage() {
             const cfg = statusCfg[artist.latest_status] ?? statusCfg.pending;
             const StatusIcon = cfg.icon;
             const isOpen = expanded === artist.email;
+            const avatarSrc = artist.photo || artist.releases.find((r) => r.cover_art_url)?.cover_art_url || null;
 
             return (
               <div
@@ -436,13 +437,15 @@ export default function AdminArtistsPage() {
                 className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5"
               >
                 <div className="flex items-start gap-4">
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center">
-                    {artist.photo ? (
+                  {/* Avatar — profile photo first, cover art fallback */}
+                  <div className="relative w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black">
+                    {avatarSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={artist.photo} alt="" className="w-full h-full object-cover" />
+                      <img src={avatarSrc} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
                     ) : (
-                      <Music2 size={20} className="text-[#007bff]/40" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Music2 size={20} className="text-[#007bff]/40" />
+                      </div>
                     )}
                   </div>
 

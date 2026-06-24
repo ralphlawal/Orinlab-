@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2 } from "lucide-react";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download } from "lucide-react";
 import { ALL_PLATFORMS } from "@/lib/platforms";
 
 const PLATFORMS = ALL_PLATFORMS;
@@ -45,6 +45,11 @@ type Release = {
   contract_signature: string | null;
   presave_enabled: boolean | null;
   presave_url: string | null;
+  uploaded_to_ditto: boolean | null;
+  language: string | null;
+  store_platforms: string | null;
+  youtube_content_id: boolean | null;
+  distribution_stage: string | null;
 };
 
 type Filter = "all" | "pending" | "approved" | "rejected";
@@ -114,6 +119,10 @@ export default function ReleasesPage() {
   const [savingPresave, setSavingPresave] = useState(false);
   const [presaveSaved, setPresaveSaved] = useState(false);
 
+  // Ditto Upload Pack
+  const [dittoUploaded, setDittoUploaded] = useState(false);
+  const [dittoPackCopied, setDittoPackCopied] = useState(false);
+
   async function load() {
     setLoading(true);
     let query = supabase.from("releases").select("*").order("submitted_at", { ascending: false });
@@ -177,11 +186,13 @@ export default function ReleasesPage() {
         if (data?.length) setSplits(data.map((s: { name: string; email: string | null; percentage: number }) =>
           ({ role: s.name, email: s.email ?? "", percentage: String(s.percentage) })));
       });
-    setDistStage((r as Release & { distribution_stage?: string }).distribution_stage as "submitted" | "in_distribution" | "live" ?? "submitted");
+    setDistStage((r.distribution_stage as "submitted" | "in_distribution" | "live") ?? "submitted");
     setStageSaved(false);
     setPresaveEnabled(r.presave_enabled ?? false);
     setPresaveUrl(r.presave_url ?? "");
     setPresaveSaved(false);
+    setDittoUploaded(r.uploaded_to_ditto ?? false);
+    setDittoPackCopied(false);
     setArtistProfile(undefined);
     supabase
       .from("artist_profiles")
@@ -332,6 +343,54 @@ export default function ReleasesPage() {
     }).eq("id", selected.id);
     setSavingPresave(false);
     setPresaveSaved(true);
+  }
+
+  async function toggleDittoUploaded() {
+    if (!selected) return;
+    const next = !dittoUploaded;
+    setDittoUploaded(next);
+    await supabase.from("releases").update({ uploaded_to_ditto: next }).eq("id", selected.id);
+  }
+
+  function copyAllDittoPack() {
+    if (!selected) return;
+    const fa = (() => {
+      if (!selected.featured_artists) return "";
+      try {
+        const arr = JSON.parse(selected.featured_artists) as { name: string; spotify_id?: string; apple_id?: string }[];
+        return arr.map((a) => `${a.name}${a.spotify_id ? ` [Spotify: ${a.spotify_id}]` : ""}${a.apple_id ? ` [Apple: ${a.apple_id}]` : ""}`).join(", ");
+      } catch { return selected.featured_artists; }
+    })();
+    const lines = [
+      `ARTIST NAME: ${selected.artist_name}`,
+      `LEGAL NAME: ${selected.legal_name}`,
+      `SONG TITLE: ${selected.song_title}`,
+      selected.album_title ? `ALBUM/PROJECT: ${selected.album_title}` : null,
+      `RELEASE TYPE: ${selected.release_type}`,
+      `GENRE: ${selected.genre}`,
+      `RELEASE DATE: ${editReleaseDate || selected.release_date || "—"}`,
+      `EXPLICIT: ${selected.explicit ? "Yes" : "No"}`,
+      `ISRC: ${editIsrc || selected.isrc || "— generate on Ditto"}`,
+      editUpc || selected.upc ? `UPC: ${editUpc || selected.upc}` : null,
+      `COPYRIGHT OWNER: ${selected.copyright_owner}`,
+      `COPYRIGHT YEAR: ${selected.copyright_year}`,
+      selected.publishing_info ? `PUBLISHING/PRO: ${selected.publishing_info}` : null,
+      `SONGWRITERS: ${selected.songwriters}`,
+      `PRODUCERS: ${selected.producers}`,
+      fa ? `FEATURED ARTISTS: ${fa}` : null,
+      selected.language ? `LANGUAGE: ${selected.language}` : `LANGUAGE: — confirm with artist`,
+      `COUNTRY: ${selected.country}`,
+      `STORE SELECTION: ${selected.store_platforms || "All stores"}`,
+      `YOUTUBE CONTENT ID: ${selected.youtube_content_id ? "Yes" : "No"}`,
+      artistProfile?.spotify_artist_id ? `SPOTIFY ARTIST ID: ${artistProfile.spotify_artist_id}` : null,
+      artistProfile?.apple_music_artist_id ? `APPLE MUSIC ARTIST ID: ${artistProfile.apple_music_artist_id}` : null,
+      `\nFILES`,
+      `Cover Art: ${selected.cover_art_url || "—"}`,
+      `Audio: ${selected.audio_file_url || "—"}`,
+    ].filter(Boolean).join("\n");
+    navigator.clipboard.writeText(lines);
+    setDittoPackCopied(true);
+    setTimeout(() => setDittoPackCopied(false), 2000);
   }
 
   async function saveNotes() {
@@ -653,10 +712,10 @@ export default function ReleasesPage() {
                 <Row label="Copyright Owner" value={selected.copyright_owner} />
                 <Row label="Year" value={selected.copyright_year} />
                 <Row label="Publishing" value={selected.publishing_info} />
-                {(selected as Release & { store_platforms?: string }).store_platforms && (
-                  <Row label="Requested Stores" value={(selected as Release & { store_platforms?: string }).store_platforms ?? ""} />
+                {selected.store_platforms && (
+                  <Row label="Requested Stores" value={selected.store_platforms} />
                 )}
-                {(selected as Release & { youtube_content_id?: boolean }).youtube_content_id && (
+                {selected.youtube_content_id && (
                   <Row label="YouTube Content ID" value="Requested ✓" />
                 )}
               </Section>
@@ -750,6 +809,82 @@ export default function ReleasesPage() {
                   </p>
                 )}
               </Section>
+
+              {/* Ditto Upload Pack — approved releases only */}
+              {selected.status === "approved" && (
+                <Section title="Ditto Upload Pack">
+                  <p className="text-white/25 text-[10px] mb-3 leading-relaxed">
+                    All fields needed to upload this release to Ditto — compiled in one place. Use the copy buttons or "Copy All" to paste into Ditto.
+                  </p>
+                  <div className="space-y-0.5 mb-3">
+                    <PackRow label="Artist Name" value={selected.artist_name} />
+                    <PackRow label="Legal Name" value={selected.legal_name} />
+                    <PackRow label="Song Title" value={selected.song_title} />
+                    {selected.album_title && <PackRow label="Album / Project" value={selected.album_title} />}
+                    <PackRow label="Release Type" value={selected.release_type} />
+                    <PackRow label="Genre" value={selected.genre} />
+                    <PackRow label="Release Date" value={editReleaseDate || selected.release_date} />
+                    <PackRow label="Explicit" value={selected.explicit ? "Yes" : "No"} />
+                    <PackRow label="ISRC" value={editIsrc || selected.isrc || "— generate on Ditto"} />
+                    {(editUpc || selected.upc) && <PackRow label="UPC" value={editUpc || selected.upc} />}
+                    <PackRow label="Copyright Owner" value={selected.copyright_owner} />
+                    <PackRow label="Copyright Year" value={selected.copyright_year} />
+                    {selected.publishing_info && <PackRow label="Publishing / PRO" value={selected.publishing_info} />}
+                    <PackRow label="Songwriters" value={selected.songwriters} />
+                    <PackRow label="Producers" value={selected.producers} />
+                    {selected.featured_artists && (() => {
+                      try {
+                        const fa = JSON.parse(selected.featured_artists) as { name: string; spotify_id?: string; apple_id?: string }[];
+                        return <PackRow label="Featured Artists" value={fa.map((a) => `${a.name}${a.spotify_id ? ` [Spotify: ${a.spotify_id}]` : ""}${a.apple_id ? ` [Apple: ${a.apple_id}]` : ""}`).join(", ")} />;
+                      } catch { return <PackRow label="Featured Artists" value={selected.featured_artists} />; }
+                    })()}
+                    <PackRow label="Language" value={selected.language} />
+                    <PackRow label="Country" value={selected.country} />
+                    <PackRow label="Store Selection" value={selected.store_platforms || "All stores"} />
+                    <PackRow label="YouTube Content ID" value={selected.youtube_content_id ? "Yes — requested" : "No"} />
+                    {artistProfile?.spotify_artist_id && <PackRow label="Artist Spotify ID" value={artistProfile.spotify_artist_id} />}
+                    {artistProfile?.apple_music_artist_id && <PackRow label="Artist Apple ID" value={artistProfile.apple_music_artist_id} />}
+                  </div>
+                  {!selected.language && (
+                    <div className="mb-3 px-3 py-2 bg-yellow-400/[0.06] border border-yellow-400/20 rounded-xl">
+                      <p className="text-yellow-400/80 text-[10px]">⚠ Language not collected on this submission — confirm with the artist before uploading to Ditto.</p>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {selected.audio_file_url && (
+                      <a href={selected.audio_file_url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white border border-white/[0.06] px-3 py-2 rounded-lg transition-colors">
+                        <Download size={12} /> Audio File
+                      </a>
+                    )}
+                    {selected.cover_art_url && (
+                      <a href={selected.cover_art_url} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-xs bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white border border-white/[0.06] px-3 py-2 rounded-lg transition-colors">
+                        <Download size={12} /> Cover Art
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-white/[0.06]">
+                    <button
+                      onClick={copyAllDittoPack}
+                      className="flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors border border-white/[0.06]"
+                    >
+                      <Copy size={12} />
+                      {dittoPackCopied ? "Copied ✓" : "Copy All"}
+                    </button>
+                    <button
+                      onClick={() => requestUnlock(toggleDittoUploaded)}
+                      className={`flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg transition-colors border ${
+                        dittoUploaded
+                          ? "bg-green-500/10 text-green-400 border-green-500/20"
+                          : "bg-white/[0.04] text-white/40 hover:text-white border-white/[0.06]"
+                      }`}
+                    >
+                      {dittoUploaded ? "✓ Uploaded to Ditto" : "Mark as Uploaded to Ditto"}
+                    </button>
+                  </div>
+                </Section>
+              )}
 
               {/* Store links — only for approved releases */}
               {selected.status === "approved" && (
@@ -1233,6 +1368,27 @@ function Row({ label, value }: { label: string; value?: string | null }) {
     <div className="flex gap-3">
       <span className="text-white/40 text-xs w-28 flex-shrink-0 pt-0.5">{label}</span>
       <span className="text-white/80 text-xs">{value}</span>
+    </div>
+  );
+}
+
+function PackRow({ label, value }: { label: string; value?: string | null }) {
+  const [copied, setCopied] = useState(false);
+  if (!value) return null;
+  return (
+    <div className="flex items-center gap-2 py-0.5 group">
+      <span className="text-white/30 text-[10px] w-36 flex-shrink-0">{label}</span>
+      <span className="text-white/70 text-[10px] flex-1 font-mono break-all leading-relaxed">{value}</span>
+      <button
+        onClick={() => {
+          navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        className="text-white/0 group-hover:text-white/30 hover:!text-[#007bff] text-[9px] flex-shrink-0 transition-colors"
+      >
+        {copied ? "✓" : "copy"}
+      </button>
     </div>
   );
 }

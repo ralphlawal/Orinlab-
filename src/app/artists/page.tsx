@@ -24,13 +24,20 @@ async function getApprovedArtists() {
 
   if (!data) return [];
 
-  // Deduplicate by artist_name — keep the most recent entry per artist
-  const seen = new Set<string>();
-  const artists = data.filter((r) => {
+  // Group all releases per artist, then pick best metadata per artist.
+  // Most recent release wins for text fields, but cover_art_url is taken
+  // from ANY release that has one (newest first) so a recent re-release
+  // without artwork doesn't hide an older cover.
+  const byArtist = new Map<string, typeof data>();
+  for (const r of data) {
     const key = r.artist_name.toLowerCase().trim();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
+    if (!byArtist.has(key)) byArtist.set(key, []);
+    byArtist.get(key)!.push(r);
+  }
+  const artists = [...byArtist.values()].map((rows) => {
+    const latest = rows[0];
+    const cover = rows.find((r) => r.cover_art_url)?.cover_art_url ?? null;
+    return { ...latest, cover_art_url: cover };
   });
 
   // Fetch artist profiles for photo, bio, and country (prefer profile data over application data)
@@ -127,16 +134,18 @@ export default async function ArtistsPage() {
                   className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-3xl overflow-hidden transition-all duration-300 block"
                 >
                   {/* Cover / avatar area */}
-                  <div className="relative aspect-[4/3] bg-gradient-to-br from-[#007bff]/20 via-[#007bff]/5 to-black overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-[4/3] bg-gradient-to-br from-[#007bff]/20 via-[#007bff]/5 to-black overflow-hidden">
                     {heroImg ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={heroImg}
                         alt={`${a.artist_name}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <Music size={48} className="text-[#007bff]/30" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Music size={48} className="text-[#007bff]/30" />
+                      </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
 

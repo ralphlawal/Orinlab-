@@ -76,12 +76,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           <div className="flex flex-col md:flex-row items-start gap-8 pb-16">
             {/* Photo */}
             <div className="w-full md:w-72 flex-shrink-0">
-              <div className="aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center">
+              <div className="relative aspect-square rounded-3xl overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black">
                 {heroImg ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={heroImg} alt={artistName} className="w-full h-full object-cover" />
+                  <img src={heroImg} alt={artistName} className="absolute inset-0 w-full h-full object-cover object-center" />
                 ) : (
-                  <Music size={56} className="text-[#007bff]/30" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Music size={56} className="text-[#007bff]/30" />
+                  </div>
                 )}
               </div>
             </div>
@@ -155,12 +157,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
             const spotifyLink = r.store_links?.spotify;
             return (
               <div key={r.id} className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-white/[0.12] transition-all">
-                <div className="relative aspect-square bg-gradient-to-br from-[#007bff]/10 to-black overflow-hidden flex items-center justify-center">
+                <div className="relative aspect-square bg-gradient-to-br from-[#007bff]/10 to-black overflow-hidden">
                   {r.cover_art_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.cover_art_url} alt={r.song_title} className="w-full h-full object-cover" />
+                    <img src={r.cover_art_url} alt={r.song_title} className="absolute inset-0 w-full h-full object-cover object-center" />
                   ) : (
-                    <Music size={36} className="text-[#007bff]/20" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Music size={36} className="text-[#007bff]/20" />
+                    </div>
                   )}
                 </div>
                 <div className="p-4">
