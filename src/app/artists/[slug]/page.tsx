@@ -7,7 +7,7 @@ export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const name = decodeURIComponent(slug);
+  const name = decodeURIComponent(slug).trim();
   return {
     title: `${name} – Orinlabí`,
     description: `${name} is an African artist distributed globally by Orinlabí.`,
@@ -17,34 +17,52 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 async function getArtist(slug: string) {
   const artistName = decodeURIComponent(slug).trim();
 
-  // Fetch all releases for this artist regardless of status so we can still
-  // show the page (with only approved releases displayed) even if a cached
-  // list link points to an artist whose latest release is no longer approved.
-  const { data: allReleases } = await supabase
+  // --- 1. Try to find releases (anon RLS may only return approved rows) ---
+  const { data: approvedReleases } = await supabase
     .from("releases")
     .select("id,artist_name,genre,country,artist_bio,song_title,release_type,release_date,cover_art_url,store_links,submitted_at,email,status")
     .ilike("artist_name", artistName)
+    .eq("status", "approved")
     .order("submitted_at", { ascending: false });
 
-  if (!allReleases?.length) return null;
-
-  // Only surface approved releases to visitors
-  const releases = allReleases.filter((r) => r.status === "approved");
-  // Still need at least something to work with for display
-  const anyRelease = releases[0] ?? allReleases[0];
-
-  const email = anyRelease.email;
+  // --- 2. Always look up artist_profiles (readable by anon if policy allows) ---
+  // Try to find the profile by matching artist_name field (or fall back to email match via releases).
   let profile = null;
-  if (email) {
+  let profileEmail: string | null = null;
+
+  if (approvedReleases?.length) {
+    profileEmail = approvedReleases[0].email;
+  }
+
+  // Also try artist_profiles directly by artist_name if no releases yet
+  if (profileEmail) {
     const { data } = await supabase
       .from("artist_profiles")
-      .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id,bio,country")
-      .eq("email", email)
+      .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id,bio,country,artist_name,status")
+      .eq("email", profileEmail)
+      .maybeSingle();
+    profile = data;
+  } else {
+    // No approved releases — try to find the artist profile by name
+    const { data } = await supabase
+      .from("artist_profiles")
+      .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id,bio,country,artist_name,status")
+      .ilike("artist_name", artistName)
       .maybeSingle();
     profile = data;
   }
 
-  return { releases, allReleases, profile, artistName: anyRelease.artist_name };
+  // If we found neither approved releases nor a profile, hard 404
+  if (!approvedReleases?.length && !profile) return null;
+
+  const displayName = approvedReleases?.[0]?.artist_name ?? profile?.artist_name ?? artistName;
+
+  return {
+    releases: approvedReleases ?? [],
+    profile,
+    artistName: displayName,
+    hasPendingOnly: !approvedReleases?.length && !!profile,
+  };
 }
 
 export default async function ArtistPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -52,15 +70,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const data = await getArtist(slug);
   if (!data) notFound();
 
-  const { releases, allReleases, profile, artistName } = data;
-  // Use any release (including non-approved) to get cover art / bio metadata
-  const anyRelease = releases[0] ?? allReleases[0];
-  // Scan all releases for a cover art — most recent release may not have one
-  const coverArt = allReleases.find((r) => r.cover_art_url)?.cover_art_url ?? null;
+  const { releases, profile, artistName, hasPendingOnly } = data;
+  const anyRelease = releases[0] ?? null;
+  const coverArt = releases.find((r) => r.cover_art_url)?.cover_art_url ?? null;
   const heroImg = profile?.artist_image_url ?? coverArt;
-  // Prefer up-to-date profile data over original application data
-  const displayBio = (profile as { bio?: string | null } | null)?.bio || anyRelease.artist_bio;
-  const displayCountry = (profile as { country?: string | null } | null)?.country || anyRelease.country;
+  const displayBio = (profile as { bio?: string | null } | null)?.bio || anyRelease?.artist_bio;
+  const displayCountry = (profile as { country?: string | null } | null)?.country || anyRelease?.country;
 
   const socials = [
     profile?.instagram_handle && { label: "Instagram", href: `https://instagram.com/${profile.instagram_handle}`, handle: `@${profile.instagram_handle}` },
@@ -106,7 +121,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               <h1 className="text-white font-black text-4xl sm:text-5xl md:text-6xl leading-none mb-4">{artistName}</h1>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                {anyRelease.genre && (
+                {anyRelease?.genre && (
                   <span className="bg-[#007bff]/10 border border-[#007bff]/20 text-[#007bff] text-xs font-semibold px-3 py-1.5 rounded-full">
                     {anyRelease.genre}
                   </span>
@@ -139,7 +154,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 </div>
               )}
 
-              {/* Spotify embed — only render if ID looks like a real Spotify artist ID */}
+              {/* Spotify embed */}
               {spotifyId && /^[0-9A-Za-z]{22}$/.test(spotifyId) && (
                 <div className="mt-6">
                   <iframe
@@ -160,50 +175,64 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
       {/* Releases */}
       <section className="max-w-6xl mx-auto px-4 pb-20">
-        <h2 className="text-white font-bold text-xl mb-6">Releases</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {releases.map((r) => {
-            const hasLinks = r.store_links && Object.keys(r.store_links).length > 0;
-            const spotifyLink = r.store_links?.spotify;
-            return (
-              <div key={r.id} className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-white/[0.12] transition-all">
-                <div className="relative aspect-square bg-gradient-to-br from-[#007bff]/10 to-black overflow-hidden">
-                  {r.cover_art_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.cover_art_url} alt={r.song_title} className="absolute inset-0 w-full h-full object-cover object-center" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Music size={36} className="text-[#007bff]/20" />
+        {hasPendingOnly ? (
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-10 text-center">
+            <div className="w-14 h-14 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-5">
+              <Music size={24} className="text-[#007bff]/60" />
+            </div>
+            <h2 className="text-white font-bold text-xl mb-2">Music coming soon</h2>
+            <p className="text-white/40 text-sm max-w-xs mx-auto">
+              {artistName}&apos;s releases are being reviewed and will appear here shortly.
+            </p>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-white font-bold text-xl mb-6">Releases</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {releases.map((r) => {
+                const hasLinks = r.store_links && Object.keys(r.store_links).length > 0;
+                const spotifyLink = r.store_links?.spotify;
+                return (
+                  <div key={r.id} className="group bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden hover:border-white/[0.12] transition-all">
+                    <div className="relative aspect-square bg-gradient-to-br from-[#007bff]/10 to-black overflow-hidden">
+                      {r.cover_art_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.cover_art_url} alt={r.song_title} className="absolute inset-0 w-full h-full object-cover object-center" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Music size={36} className="text-[#007bff]/20" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <p className="text-white font-semibold text-sm truncate">{r.song_title}</p>
-                  <p className="text-white/40 text-xs mt-0.5">{r.release_type} · {r.genre}</p>
-                  {r.release_date && (
-                    <p className="text-white/25 text-xs mt-1">
-                      {new Date(r.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </p>
-                  )}
-                  {hasLinks && (
-                    <div className="flex gap-2 mt-3">
-                      {spotifyLink ? (
-                        <a href={spotifyLink} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 bg-[#1DB954]/10 hover:bg-[#1DB954]/20 text-[#1DB954] text-xs font-semibold px-3 py-1.5 rounded-full transition-colors">
-                          <Play size={11} /> Spotify
-                        </a>
-                      ) : null}
-                      <a href={String(Object.values(r.store_links!)[0] ?? "")} target="_blank" rel="noopener noreferrer"
-                        className="text-white/40 hover:text-white text-xs transition-colors">
-                        More links →
-                      </a>
+                    <div className="p-4">
+                      <p className="text-white font-semibold text-sm truncate">{r.song_title}</p>
+                      <p className="text-white/40 text-xs mt-0.5">{r.release_type} · {r.genre}</p>
+                      {r.release_date && (
+                        <p className="text-white/25 text-xs mt-1">
+                          {new Date(r.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      )}
+                      {hasLinks && (
+                        <div className="flex gap-2 mt-3">
+                          {spotifyLink ? (
+                            <a href={spotifyLink} target="_blank" rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 bg-[#1DB954]/10 hover:bg-[#1DB954]/20 text-[#1DB954] text-xs font-semibold px-3 py-1.5 rounded-full transition-colors">
+                              <Play size={11} /> Spotify
+                            </a>
+                          ) : null}
+                          <a href={String(Object.values(r.store_links!)[0] ?? "")} target="_blank" rel="noopener noreferrer"
+                            className="text-white/40 hover:text-white text-xs transition-colors">
+                            More links →
+                          </a>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </section>
 
       {/* CTA */}
