@@ -17,24 +17,24 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 async function getArtist(slug: string) {
   const artistName = decodeURIComponent(slug).trim();
 
-  // --- 1. Try to find releases (anon RLS may only return approved rows) ---
-  const { data: approvedReleases } = await supabase
+  // Fetch ALL releases for this artist — let RLS + JS handle status filtering.
+  // Do NOT add .eq("status","approved") here: it interacts poorly with some
+  // RLS configurations and would cause a hard 404 even for artists who exist
+  // but whose releases are currently pending.
+  const { data: allReleases } = await supabase
     .from("releases")
     .select("id,artist_name,genre,country,artist_bio,song_title,release_type,release_date,cover_art_url,store_links,submitted_at,email,status")
     .ilike("artist_name", artistName)
-    .eq("status", "approved")
     .order("submitted_at", { ascending: false });
 
-  // --- 2. Always look up artist_profiles (readable by anon if policy allows) ---
-  // Try to find the profile by matching artist_name field (or fall back to email match via releases).
+  // Approved releases are the only ones shown to visitors
+  const approvedReleases = (allReleases ?? []).filter((r) => r.status === "approved");
+
+  // Look up artist profile — first try by email (more accurate), then by name
   let profile = null;
-  let profileEmail: string | null = null;
+  const anyRelease = (allReleases ?? [])[0] ?? null;
+  const profileEmail = anyRelease?.email ?? null;
 
-  if (approvedReleases?.length) {
-    profileEmail = approvedReleases[0].email;
-  }
-
-  // Also try artist_profiles directly by artist_name if no releases yet
   if (profileEmail) {
     const { data } = await supabase
       .from("artist_profiles")
@@ -42,8 +42,10 @@ async function getArtist(slug: string) {
       .eq("email", profileEmail)
       .maybeSingle();
     profile = data;
-  } else {
-    // No approved releases — try to find the artist profile by name
+  }
+
+  if (!profile) {
+    // Fallback: search by name (covers artists with profile but no releases yet)
     const { data } = await supabase
       .from("artist_profiles")
       .select("artist_image_url,artist_type,instagram_handle,x_handle,tiktok_username,youtube_channel,website_url,spotify_artist_id,bio,country,artist_name,status")
@@ -52,16 +54,16 @@ async function getArtist(slug: string) {
     profile = data;
   }
 
-  // If we found neither approved releases nor a profile, hard 404
-  if (!approvedReleases?.length && !profile) return null;
+  // Hard 404 only when neither releases nor a profile exist for this slug
+  if (!allReleases?.length && !profile) return null;
 
-  const displayName = approvedReleases?.[0]?.artist_name ?? profile?.artist_name ?? artistName;
+  const displayName = anyRelease?.artist_name ?? (profile as { artist_name?: string | null } | null)?.artist_name ?? artistName;
 
   return {
-    releases: approvedReleases ?? [],
+    releases: approvedReleases,
     profile,
     artistName: displayName,
-    hasPendingOnly: !approvedReleases?.length && !!profile,
+    hasPendingOnly: approvedReleases.length === 0,
   };
 }
 
