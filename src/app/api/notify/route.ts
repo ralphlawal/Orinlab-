@@ -578,6 +578,63 @@ export async function POST(req: NextRequest) {
         ${btn("View Release", "https://orinlabi.com/admin/releases", "#16a34a")}`
       );
 
+    } else if (type === "label-application") {
+      subject = `New label application: ${esc(data.name)}`;
+      html = wrap(
+        "#007bff",
+        "New Application",
+        `Label Application: ${esc(data.name)}`,
+        "A record label has applied to distribute through Orinlabí.",
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+          ${row("Label Name",   data.name)}
+          ${row("Email",        data.email)}
+          ${row("Country",      data.country)}
+          ${row("Genre Focus",  data.genre_focus)}
+          ${row("Roster Size",  data.roster_size)}
+        </table>
+        ${data.bio ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">About</p>${quote(data.bio)}` : ""}
+        ${data.website_url ? `<p style="margin:16px 0 4px;color:#666;font-size:13px;font-family:Arial,sans-serif;">Website: <a href="${esc(data.website_url)}" style="color:#007bff;">${esc(data.website_url)}</a></p>` : ""}
+        ${btn("Review in Admin Panel", "https://orinlabi.com/admin/labels")}`
+      );
+
+    } else if (type === "label-approved") {
+      // Notify the label — send to label email, not admin
+      subject = `Your label has been approved — ${esc(data.name)}`;
+      html = wrap(
+        "#16a34a",
+        "Approved",
+        `Welcome to Orinlabí, ${esc(data.name)}!`,
+        "Your label application has been approved. Log in to your Label Portal to manage your profile and view your roster.",
+        `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+          ${row("Label", data.name)}
+          ${row("Portal URL", "orinlabi.com/labels/portal")}
+        </table>
+        ${btn("Log In to Label Portal", "https://orinlabi.com/labels/portal/login", "#16a34a")}`
+      );
+      await resend.emails.send({ from: FROM, to: [data.email], subject, html });
+      // Also notify admin
+      await resend.emails.send({
+        from: FROM, to: ADMIN,
+        subject: `Label approved: ${esc(data.name)}`,
+        html: wrap("#16a34a", "Approved", `Label Approved: ${esc(data.name)}`, `You approved ${esc(data.name)} · ${esc(data.email)}`,
+          `${btn("View in Admin", "https://orinlabi.com/admin/labels", "#16a34a")}`),
+      });
+      return NextResponse.json({ success: true });
+
+    } else if (type === "label-rejected") {
+      // Notify the label
+      subject = `Update on your Orinlabí label application`;
+      html = wrap(
+        "#dc2626",
+        "Application Update",
+        `Regarding Your Label Application`,
+        `Thank you for applying to distribute through Orinlabí. After reviewing your application, we&apos;re unable to move forward at this time.`,
+        `${data.reason ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Feedback</p>${quote(data.reason)}` : ""}
+        <p style="margin:20px 0 0;color:#666666;font-size:13px;font-family:Arial,sans-serif;">Questions? Reply to this email or contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>.</p>`
+      );
+      await resend.emails.send({ from: FROM, to: [data.email], subject, html });
+      return NextResponse.json({ success: true });
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }
