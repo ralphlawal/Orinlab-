@@ -65,7 +65,7 @@ export default async function LabelsPage() {
         </div>
       </section>
 
-      {/* Stats */}
+      {/* Stats — only when there are labels to show */}
       {labels.length > 0 && (
         <section className="py-16 px-4 border-y border-white/10">
           <div className="max-w-3xl mx-auto grid grid-cols-2 gap-8 text-center">
@@ -87,20 +87,48 @@ export default async function LabelsPage() {
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           {labels.length === 0 ? (
-            <div className="text-center py-24">
-              <div className="w-20 h-20 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Music size={36} className="text-[#007bff]/50" />
+            <div className="max-w-4xl mx-auto">
+              {/* Pitch to labels */}
+              <div className="text-center mb-16">
+                <h2 className="text-white font-bold text-3xl sm:text-4xl mb-4">
+                  Distribute Your Entire Roster
+                </h2>
+                <p className="text-white/50 text-lg max-w-2xl mx-auto leading-relaxed">
+                  Orinlabí works with record labels to get every artist on their roster onto 150+ streaming platforms worldwide — from Spotify and Apple Music to Boomplay and Audiomack.
+                </p>
               </div>
-              <h3 className="text-white font-bold text-2xl mb-3">Labels Coming Soon</h3>
-              <p className="text-white/40 max-w-sm mx-auto leading-relaxed">
-                We&apos;re onboarding our first label partners. Check back soon.
-              </p>
-              <Link
-                href="/contact"
-                className="mt-8 inline-block bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3.5 rounded-full transition-colors"
-              >
-                Get In Touch
-              </Link>
+
+              {/* Value props */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-16">
+                {[
+                  { title: "Single Point of Contact", body: "One partnership handles distribution for your entire artist roster. No chasing individual deals." },
+                  { title: "150+ Platforms", body: "Spotify, Apple Music, Tidal, Boomplay, Audiomack, Deezer, Amazon Music and more — all covered." },
+                  { title: "Dedicated Label Portal", body: "Manage your label profile, track your roster, and monitor releases from one dashboard." },
+                ].map((v) => (
+                  <div key={v.title} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+                    <div className="w-8 h-8 bg-[#007bff]/10 rounded-lg flex items-center justify-center mb-4">
+                      <div className="w-2 h-2 bg-[#007bff] rounded-full" />
+                    </div>
+                    <h3 className="text-white font-semibold mb-2">{v.title}</h3>
+                    <p className="text-white/40 text-sm leading-relaxed">{v.body}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <Link
+                  href="/labels/apply"
+                  className="inline-block bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-10 py-4 rounded-full transition-colors text-base"
+                >
+                  Register Your Label
+                </Link>
+                <p className="text-white/25 text-xs mt-4">
+                  Already registered?{" "}
+                  <Link href="/labels/portal/login" className="text-[#007bff] hover:underline">
+                    Log in to your Label Portal
+                  </Link>
+                </p>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
