@@ -117,7 +117,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         setEmail(userEmail);
         setChecking(false);
         if (userEmail) loadCounts(userEmail);
-      } else if (pathname.startsWith("/portal/login") || pathname.startsWith("/portal/set-password")) {
+      } else if (pathname.startsWith("/portal/login")) {
         setChecking(false);
       } else {
         const hasToken = typeof window !== "undefined" &&
@@ -172,7 +172,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     router.push("/portal/login");
   }
 
-  if (pathname.startsWith("/portal/login") || pathname.startsWith("/portal/set-password")) {
+  if (pathname.startsWith("/portal/login")) {
     return <div className="fixed inset-0 z-[60] bg-black">{children}</div>;
   }
 

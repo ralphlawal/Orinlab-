@@ -47,7 +47,7 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
       if (data.session) {
         setEmail(data.session.user.email ?? null);
         setChecking(false);
-      } else if (!pathname.startsWith("/labels/portal/login") && !pathname.startsWith("/labels/portal/set-password")) {
+      } else if (!pathname.startsWith("/labels/portal/login")) {
         const hasToken =
           typeof window !== "undefined" &&
           (window.location.hash.includes("access_token") ||
@@ -86,7 +86,7 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
     router.push("/labels/portal/login");
   }
 
-  if (pathname.startsWith("/labels/portal/login") || pathname.startsWith("/labels/portal/set-password")) {
+  if (pathname.startsWith("/labels/portal/login")) {
     return <div className="fixed inset-0 z-[60] bg-black">{children}</div>;
   }
 

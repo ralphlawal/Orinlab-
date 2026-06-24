@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical, Mail, RefreshCw, Send, Download, Users, BarChart2 } from "lucide-react";
+import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical, Mail, Send, Download, BarChart2 } from "lucide-react";
 
 const SUPER_ADMIN = (
   process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
@@ -775,10 +775,6 @@ function RunBtn({ status, label, runLabel, onClick, color = "bg-[#007bff] hover:
 function SystemTab() {
   const [pin, setPin] = useState("");
 
-  // Password migration
-  const [migStatus, setMigStatus] = useState<ToolStatus>("idle");
-  const [migResult, setMigResult] = useState<{ sent: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
-
   // Profile reminders
   const [remStatus, setRemStatus] = useState<ToolStatus>("idle");
   const [remResult, setRemResult] = useState<{ sent: number; skipped: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
@@ -792,16 +788,6 @@ function SystemTab() {
 
   // Export
   const [exportStatus, setExportStatus] = useState<ToolStatus>("idle");
-
-  async function sendMigration() {
-    setMigStatus("running"); setMigResult(null);
-    try {
-      const res = await fetch("/api/admin/migrate-passwords", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setMigResult(data); setMigStatus("done");
-    } catch { setMigStatus("error"); }
-  }
 
   async function sendReminders() {
     setRemStatus("running"); setRemResult(null);
@@ -899,21 +885,6 @@ function SystemTab() {
           <p className="text-green-400 text-sm font-semibold">
             {remResult.sent} reminder{remResult.sent !== 1 ? "s" : ""} sent · {remResult.skipped} already complete
             {remResult.failed.length > 0 && <span className="text-red-400/80 text-xs ml-2">{remResult.failed.length} failed</span>}
-          </p>
-        )} />
-      </ToolCard>
-
-      {/* ── Account Management ──────────────────────────────────────── */}
-      <p className="text-white/25 text-[11px] uppercase tracking-widest font-semibold px-1 pt-2">Account Management</p>
-
-      <ToolCard icon={<RefreshCw size={18} className="text-[#007bff]" />} color="bg-[#007bff]/10"
-        title="Password Migration"
-        desc="Send password-setup emails to ALL artists and labels. Anyone who joined via magic link can set a permanent password. Safe to run multiple times.">
-        <RunBtn status={migStatus} label="Send Password Setup Emails" runLabel="Sending…" onClick={sendMigration} />
-        <StatusBanner status={migStatus} result={migResult && (
-          <p className="text-green-400 text-sm font-semibold">
-            Done — {migResult.sent} email{migResult.sent !== 1 ? "s" : ""} sent of {migResult.total}
-            {migResult.failed.length > 0 && <span className="text-red-400/80 text-xs ml-2">{migResult.failed.length} failed</span>}
           </p>
         )} />
       </ToolCard>
