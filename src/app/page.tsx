@@ -335,9 +335,10 @@ function ArtistSpotlight({ items }: { items: SpotlightArtist[] }) {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
           {items.map((a, i) => (
-            <div
+            <Link
               key={i}
-              className="group bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl overflow-hidden transition-all duration-300"
+              href={`/artists/${encodeURIComponent(a.name.trim())}`}
+              className="group bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-[#007bff]/30 rounded-2xl overflow-hidden transition-all duration-300 block"
             >
               <div className="aspect-square bg-gradient-to-br from-[#007bff]/20 to-black/80 flex items-center justify-center overflow-hidden">
                 {a.image_url ? (
@@ -360,7 +361,7 @@ function ArtistSpotlight({ items }: { items: SpotlightArtist[] }) {
                   {a.streams}
                 </p>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
