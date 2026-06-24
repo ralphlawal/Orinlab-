@@ -15,18 +15,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 async function getArtist(slug: string) {
-  const artistName = decodeURIComponent(slug);
+  const artistName = decodeURIComponent(slug).trim();
 
-  const { data: releases } = await supabase
+  // Fetch all releases for this artist regardless of status so we can still
+  // show the page (with only approved releases displayed) even if a cached
+  // list link points to an artist whose latest release is no longer approved.
+  const { data: allReleases } = await supabase
     .from("releases")
-    .select("id,artist_name,genre,country,artist_bio,song_title,release_type,release_date,cover_art_url,store_links,submitted_at,email")
+    .select("id,artist_name,genre,country,artist_bio,song_title,release_type,release_date,cover_art_url,store_links,submitted_at,email,status")
     .ilike("artist_name", artistName)
-    .eq("status", "approved")
     .order("submitted_at", { ascending: false });
 
-  if (!releases?.length) return null;
+  if (!allReleases?.length) return null;
 
-  const email = releases[0].email;
+  // Only surface approved releases to visitors
+  const releases = allReleases.filter((r) => r.status === "approved");
+  // Still need at least something to work with for display
+  const anyRelease = releases[0] ?? allReleases[0];
+
+  const email = anyRelease.email;
   let profile = null;
   if (email) {
     const { data } = await supabase
@@ -37,7 +44,7 @@ async function getArtist(slug: string) {
     profile = data;
   }
 
-  return { releases, profile, artistName: releases[0].artist_name };
+  return { releases, allReleases, profile, artistName: anyRelease.artist_name };
 }
 
 export default async function ArtistPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -45,12 +52,15 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const data = await getArtist(slug);
   if (!data) notFound();
 
-  const { releases, profile, artistName } = data;
-  const latest = releases[0];
-  const heroImg = profile?.artist_image_url ?? latest.cover_art_url;
+  const { releases, allReleases, profile, artistName } = data;
+  // Use any release (including non-approved) to get cover art / bio metadata
+  const anyRelease = releases[0] ?? allReleases[0];
+  // Scan all releases for a cover art — most recent release may not have one
+  const coverArt = allReleases.find((r) => r.cover_art_url)?.cover_art_url ?? null;
+  const heroImg = profile?.artist_image_url ?? coverArt;
   // Prefer up-to-date profile data over original application data
-  const displayBio = (profile as { bio?: string | null } | null)?.bio || latest.artist_bio;
-  const displayCountry = (profile as { country?: string | null } | null)?.country || latest.country;
+  const displayBio = (profile as { bio?: string | null } | null)?.bio || anyRelease.artist_bio;
+  const displayCountry = (profile as { country?: string | null } | null)?.country || anyRelease.country;
 
   const socials = [
     profile?.instagram_handle && { label: "Instagram", href: `https://instagram.com/${profile.instagram_handle}`, handle: `@${profile.instagram_handle}` },
@@ -96,9 +106,9 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
               <h1 className="text-white font-black text-4xl sm:text-5xl md:text-6xl leading-none mb-4">{artistName}</h1>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                {latest.genre && (
+                {anyRelease.genre && (
                   <span className="bg-[#007bff]/10 border border-[#007bff]/20 text-[#007bff] text-xs font-semibold px-3 py-1.5 rounded-full">
-                    {latest.genre}
+                    {anyRelease.genre}
                   </span>
                 )}
                 {displayCountry && (
