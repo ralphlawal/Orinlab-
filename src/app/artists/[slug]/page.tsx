@@ -139,8 +139,8 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                 </div>
               )}
 
-              {/* Spotify embed */}
-              {spotifyId && (
+              {/* Spotify embed — only render if ID looks like a real Spotify artist ID */}
+              {spotifyId && /^[0-9A-Za-z]{22}$/.test(spotifyId) && (
                 <div className="mt-6">
                   <iframe
                     src={`https://open.spotify.com/embed/artist/${spotifyId}?utm_source=generator&theme=0`}
