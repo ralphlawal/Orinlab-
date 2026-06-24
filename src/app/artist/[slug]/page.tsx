@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Music2, ExternalLink, Globe, ArrowLeft } from "lucide-react";
+import { SocialIcons } from "@/components/PlatformIcon";
 
 type Profile = {
   email: string;
@@ -156,7 +157,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-white/40 hover:text-white text-xs transition-colors"
                 >
-                  <span className="text-[10px] font-bold">IG</span>
+                  {SocialIcons.instagram(14, "")}
                   @{profile.instagram_handle.replace(/^@/, "")}
                 </a>
               )}

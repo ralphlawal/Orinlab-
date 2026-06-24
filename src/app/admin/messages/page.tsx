@@ -172,32 +172,47 @@ function ArtistChats() {
     setLoadingThreads(false);
   }
 
+  // Thread list refresh every 30s (Realtime handles active chat)
   useEffect(() => {
-    const poll = async () => {
-      loadThreads();
-      setSelected(sel => {
-        if (!sel) return sel;
-        supabase.from("messages").select("*")
-          .eq("artist_email", sel.email)
-          .order("created_at", { ascending: true })
-          .then(({ data }) => {
-            if (!data) return;
-            const dbMsgs = data as ChatMsg[];
-            setMsgs(prev => {
-              const dbIds = new Set(dbMsgs.map(m => m.id));
-              const pending = prev.filter(m => m.id.startsWith("temp-") && !dbIds.has(m.id));
-              const prevIds = new Set(prev.map(m => m.id));
-              dbMsgs.filter(m => m.sender === "artist" && !m.read_at && !prevIds.has(m.id)).forEach(m => {
-                supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", m.id).then(() => {});
-              });
-              return [...dbMsgs, ...pending];
-            });
-          });
-        return sel;
-      });
-    };
-    const id = setInterval(poll, 3000);
+    const id = setInterval(loadThreads, 30_000);
     return () => clearInterval(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Real-time subscription for all message inserts — update active thread instantly
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-messages-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const incoming = payload.new as ChatMsg;
+          // Update active thread if it matches
+          setSelected((sel) => {
+            if (sel && incoming.artist_email === sel.email) {
+              setMsgs((prev) => {
+                if (prev.some((m) => m.id === incoming.id)) return prev;
+                if (incoming.sender === "artist") {
+                  supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", incoming.id).then(() => {});
+                }
+                return [...prev.filter((m) => !m.id.startsWith("temp-")), incoming];
+              });
+            }
+            return sel;
+          });
+          // Bump unread count in thread list
+          setThreads((prev) =>
+            prev.map((t) =>
+              t.email === incoming.artist_email && incoming.sender === "artist"
+                ? { ...t, unread: t.unread + 1, lastContent: incoming.content || (incoming.attachment_type === "audio" ? "🎤 Voice message" : `📎 ${incoming.attachment_name ?? "File"}`), lastAt: incoming.created_at }
+                : t
+            )
+          );
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -503,12 +518,14 @@ function ArtistChats() {
                   {recording ? <MicOff size={18} /> : <Mic size={18} />}
                 </button>
 
-                <input
+                <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } }}
                   placeholder={attachment ? `Caption for ${selected.name}… (optional)` : `Message ${selected.name}…`}
-                  className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+                  rows={1}
+                  style={{ resize: "none", maxHeight: "120px" }}
+                  className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors overflow-y-auto"
                 />
 
                 <button

@@ -69,6 +69,15 @@ export const ALL_PLATFORMS: Platform[] = [
   { key: "keefe",                label: "Keefe",                color: "#10B981" },
 ];
 
+export const LISTENING_PLATFORMS: Platform[] = ALL_PLATFORMS.filter((p) =>
+  [
+    "spotify", "apple_music", "itunes", "youtube_music", "amazon_music",
+    "deezer", "tidal", "audiomack", "boomplay", "soundcloud",
+    "anghami", "pandora", "tiktok", "napster", "iheartradio",
+    "shazam", "beatport", "youtube",
+  ].includes(p.key)
+);
+
 export function getPlatform(key: string): Platform {
   return (
     ALL_PLATFORMS.find((p) => p.key === key) ?? {

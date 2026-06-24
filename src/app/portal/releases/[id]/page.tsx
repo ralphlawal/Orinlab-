@@ -10,7 +10,8 @@ import {
   BarChart2, DollarSign, PenLine, Share2, Copy, Star, Send,
   ShieldCheck, Radio,
 } from "lucide-react";
-import { ALL_PLATFORMS } from "@/lib/platforms";
+import { LISTENING_PLATFORMS } from "@/lib/platforms";
+import { PlatformIcon } from "@/components/PlatformIcon";
 
 type Release = {
   id: string;
@@ -47,7 +48,7 @@ type Release = {
   artist_bio: string | null;
 };
 
-const DITTO_PLATFORMS = ALL_PLATFORMS;
+const DITTO_PLATFORMS = LISTENING_PLATFORMS;
 
 const statusConfig = {
   pending: {
@@ -714,7 +715,9 @@ export default function ReleaseDetailPage() {
               <div className="space-y-2 mb-5">
                 {DITTO_PLATFORMS.map((p) => (
                   <div key={p.key} className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.color }} />
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${p.color}20`, color: p.color }}>
+                      {PlatformIcon({ platformKey: p.key, size: 13 }) ?? <span className="text-[9px] font-bold">{p.label.charAt(0)}</span>}
+                    </div>
                     <span className="text-white/50 text-xs w-28 flex-shrink-0">{p.label}</span>
                     <input type="url" placeholder="https://…" value={localLinks[p.key] ?? ""} onChange={(e) => { setLocalLinks(prev => ({ ...prev, [p.key]: e.target.value })); setLinksSaved(false); }}
                       className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
@@ -743,8 +746,8 @@ export default function ReleaseDetailPage() {
               return (
                 <div key={p.key} className="bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] rounded-2xl p-4 transition-colors flex flex-col gap-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs flex-shrink-0" style={{ background: `${p.color}20` }}>
-                      <span style={{ color: p.color }}>{p.label.charAt(0)}</span>
+                    <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${p.color}20`, color: p.color }}>
+                      {PlatformIcon({ platformKey: p.key, size: 16 }) ?? <span className="text-[11px] font-bold">{p.label.charAt(0)}</span>}
                     </div>
                     <span className="text-white/80 text-sm font-medium leading-tight">{p.label}</span>
                   </div>

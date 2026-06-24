@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download } from "lucide-react";
-import { ALL_PLATFORMS } from "@/lib/platforms";
+import { LISTENING_PLATFORMS } from "@/lib/platforms";
+import { PlatformIcon } from "@/components/PlatformIcon";
 
-const PLATFORMS = ALL_PLATFORMS;
+const PLATFORMS = LISTENING_PLATFORMS;
 
 type Release = {
   id: string;
@@ -993,7 +994,12 @@ export default function ReleasesPage() {
                   <div className="space-y-2">
                     {PLATFORMS.map((p) => (
                       <div key={p.key} className="flex items-center gap-3">
-                        <span className="text-white/40 text-xs w-28 flex-shrink-0">{p.label}</span>
+                        <div className="flex items-center gap-1.5 w-28 flex-shrink-0">
+                          <div className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${p.color}20`, color: p.color }}>
+                            {PlatformIcon({ platformKey: p.key, size: 11 }) ?? <span className="text-[8px] font-bold">{p.label.charAt(0)}</span>}
+                          </div>
+                          <span className="text-white/40 text-xs truncate">{p.label}</span>
+                        </div>
                         <input
                           type="url"
                           placeholder="https://…"

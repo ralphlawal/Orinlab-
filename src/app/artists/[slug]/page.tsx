@@ -228,10 +228,10 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                               <Play size={11} /> Spotify
                             </a>
                           ) : null}
-                          <a href={String(Object.values(r.store_links!)[0] ?? "")} target="_blank" rel="noopener noreferrer"
+                          <Link href={`/listen/${r.id}`}
                             className="text-white/40 hover:text-white text-xs transition-colors">
-                            More links →
-                          </a>
+                            All platforms →
+                          </Link>
                         </div>
                       )}
                     </div>

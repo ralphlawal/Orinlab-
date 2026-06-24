@@ -97,23 +97,24 @@ export default function PortalMessagesPage() {
 
   useEffect(() => {
     if (!email) return;
-    const poll = async () => {
-      const { data } = await supabase.from("messages").select("*")
-        .eq("artist_email", email).order("created_at", { ascending: true });
-      if (!data) return;
-      const dbMsgs = data as Msg[];
-      setMsgs(prev => {
-        const dbIds = new Set(dbMsgs.map(m => m.id));
-        const pending = prev.filter(m => m.id.startsWith("temp-") && !dbIds.has(m.id));
-        const prevIds = new Set(prev.map(m => m.id));
-        dbMsgs.filter(m => m.sender === "admin" && !prevIds.has(m.id)).forEach(m => {
-          supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", m.id).then(() => {});
-        });
-        return [...dbMsgs, ...pending];
-      });
-    };
-    const id = setInterval(poll, 3000);
-    return () => clearInterval(id);
+    const channel = supabase
+      .channel(`portal-messages-${email}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `artist_email=eq.${email}` },
+        (payload) => {
+          const incoming = payload.new as Msg;
+          setMsgs((prev) => {
+            if (prev.some((m) => m.id === incoming.id)) return prev;
+            if (incoming.sender === "admin") {
+              supabase.from("messages").update({ read_at: new Date().toISOString() }).eq("id", incoming.id).then(() => {});
+            }
+            return [...prev.filter((m) => !m.id.startsWith("temp-")), incoming];
+          });
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
   }, [email]);
 
   useEffect(() => {
@@ -342,12 +343,14 @@ export default function PortalMessagesPage() {
             {recording ? <MicOff size={18} /> : <Mic size={18} />}
           </button>
 
-          <input
+          <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
             placeholder={attachment ? "Add a caption… (optional)" : "Type a message…"}
-            className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+            rows={1}
+            style={{ resize: "none", maxHeight: "120px" }}
+            className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors overflow-y-auto"
           />
 
           <button

@@ -632,6 +632,24 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({ from: FROM, to: [data.email], subject, html });
       return NextResponse.json({ success: true });
 
+    } else if (type === "team-chat") {
+      const allAdmins = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+        .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+      const recipients = allAdmins.filter((e) => e !== (data.sender_email ?? "").toLowerCase());
+      if (recipients.length === 0) return NextResponse.json({ success: true });
+
+      subject = `Team Chat: ${esc(data.sender_name || data.sender_email)}`;
+      html = wrap(
+        "#007bff",
+        "Team Chat",
+        `New message from ${esc(data.sender_name || data.sender_email)}`,
+        "A team member sent a message in the admin chat.",
+        `${quote(data.message)}
+        ${btn("Open Team Chat", "https://orinlabi.com/admin/chat")}`
+      );
+      await resend.emails.send({ from: FROM, to: recipients, subject, html });
+      return NextResponse.json({ success: true });
+
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });
     }

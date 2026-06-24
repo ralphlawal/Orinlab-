@@ -140,6 +140,12 @@ export default function AdminChatPage() {
     } else {
       // Replace optimistic with real row
       setMessages((prev) => prev.map((m) => (m.id === optimisticId ? (data as Message) : m)));
+      // Notify other admins by email
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "team-chat", data: { sender_email: myEmail, sender_name: myName, message: text } }),
+      }).catch(() => {});
     }
 
     setSending(false);
