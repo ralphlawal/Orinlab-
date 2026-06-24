@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical, Mail, RefreshCw } from "lucide-react";
+import { Loader2, Save, CheckCircle2, Plus, Trash2, ShieldOff, GripVertical, Mail, RefreshCw, Send, Download, Users, BarChart2 } from "lucide-react";
 
 const SUPER_ADMIN = (
   process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
@@ -733,135 +733,286 @@ function ContactTab() {
 
 // ─── System Tools Tab ─────────────────────────────────────────────────────────
 
-function SystemTab() {
-  const [pin, setPin]                 = useState("");
-  const [migStatus, setMigStatus]     = useState<"idle"|"running"|"done"|"error">("idle");
-  const [migResult, setMigResult]     = useState<{ sent: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
-  const [remStatus, setRemStatus]     = useState<"idle"|"running"|"done"|"error">("idle");
-  const [remResult, setRemResult]     = useState<{ sent: number; skipped: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
+type ToolStatus = "idle" | "running" | "done" | "error";
 
-  async function sendMigration() {
-    setMigStatus("running");
-    setMigResult(null);
-    try {
-      const res = await fetch("/api/admin/migrate-passwords", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
-      setMigResult(data);
-      setMigStatus("done");
-    } catch {
-      setMigStatus("error");
-    }
-  }
-
-  async function sendReminders() {
-    setRemStatus("running");
-    setRemResult(null);
-    try {
-      const res = await fetch("/api/admin/profile-reminders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Request failed");
-      setRemResult(data);
-      setRemStatus("done");
-    } catch {
-      setRemStatus("error");
-    }
-  }
-
+function ToolCard({
+  icon, color, title, desc, children,
+}: { icon: React.ReactNode; color: string; title: string; desc: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-6">
-      {/* Auth */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-        <label className="block text-white/60 text-xs font-medium mb-2">Admin PIN (required to run tools)</label>
-        <input
-          type="password"
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
-          placeholder="Enter your admin PIN"
-          className="w-full max-w-xs bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-2.5 rounded-xl transition-colors"
-        />
-      </div>
-
-      {/* Password Migration */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-[#007bff]/10 rounded-xl flex items-center justify-center flex-shrink-0">
-            <RefreshCw size={18} className="text-[#007bff]" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold mb-1">Password Migration</h3>
-            <p className="text-white/40 text-sm leading-relaxed mb-4">
-              Send password-setup emails to all artists and labels. Anyone who signed up via magic link will receive a link to set a permanent password. Safe to run multiple times.
-            </p>
-            <button
-              onClick={sendMigration}
-              disabled={migStatus === "running"}
-              className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
-            >
-              {migStatus === "running" && <Loader2 size={15} className="animate-spin" />}
-              {migStatus === "running" ? "Sending…" : "Send Password Setup Emails"}
-            </button>
-            {migStatus === "done" && migResult && (
-              <div className="mt-3 p-3 bg-green-400/5 border border-green-400/20 rounded-xl">
-                <p className="text-green-400 text-sm font-semibold">
-                  Done — {migResult.sent} email{migResult.sent !== 1 ? "s" : ""} sent out of {migResult.total}
-                </p>
-                {migResult.failed.length > 0 && (
-                  <p className="text-red-400/80 text-xs mt-1">{migResult.failed.length} failed: {migResult.failed.map(f => f.email).join(", ")}</p>
-                )}
-              </div>
-            )}
-            {migStatus === "error" && (
-              <p className="mt-2 text-red-400 text-sm">Request failed — check the PIN and try again.</p>
-            )}
-          </div>
+    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
+      <div className="flex items-start gap-4">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+          {icon}
         </div>
-      </div>
-
-      {/* Profile Completion Reminders */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-amber-400/10 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Mail size={18} className="text-amber-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-white font-semibold mb-1">Profile Completion Reminders</h3>
-            <p className="text-white/40 text-sm leading-relaxed mb-4">
-              Send reminder emails to approved artists and labels who have incomplete profiles (missing bio, photo, socials, etc.). Only incomplete profiles are emailed.
-            </p>
-            <button
-              onClick={sendReminders}
-              disabled={remStatus === "running"}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
-            >
-              {remStatus === "running" && <Loader2 size={15} className="animate-spin" />}
-              {remStatus === "running" ? "Sending…" : "Send Profile Reminders"}
-            </button>
-            {remStatus === "done" && remResult && (
-              <div className="mt-3 p-3 bg-green-400/5 border border-green-400/20 rounded-xl">
-                <p className="text-green-400 text-sm font-semibold">
-                  Done — {remResult.sent} reminder{remResult.sent !== 1 ? "s" : ""} sent, {remResult.skipped} already complete
-                </p>
-                {remResult.failed.length > 0 && (
-                  <p className="text-red-400/80 text-xs mt-1">{remResult.failed.length} failed: {remResult.failed.map(f => f.email).join(", ")}</p>
-                )}
-              </div>
-            )}
-            {remStatus === "error" && (
-              <p className="mt-2 text-red-400 text-sm">Request failed — check the PIN and try again.</p>
-            )}
-          </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-white font-semibold mb-1">{title}</h3>
+          <p className="text-white/40 text-sm leading-relaxed mb-4">{desc}</p>
+          {children}
         </div>
       </div>
     </div>
+  );
+}
+
+function StatusBanner({ status, result }: { status: ToolStatus; result?: React.ReactNode }) {
+  if (status === "done" && result) return <div className="mt-3 p-3 bg-green-400/5 border border-green-400/20 rounded-xl">{result}</div>;
+  if (status === "error") return <p className="mt-2 text-red-400 text-sm">Request failed — check the PIN and try again.</p>;
+  return null;
+}
+
+function RunBtn({ status, label, runLabel, onClick, color = "bg-[#007bff] hover:bg-[#0069d9]" }: {
+  status: ToolStatus; label: string; runLabel?: string; onClick: () => void; color?: string;
+}) {
+  return (
+    <button onClick={onClick} disabled={status === "running"}
+      className={`flex items-center gap-2 ${color} disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors`}>
+      {status === "running" && <Loader2 size={15} className="animate-spin" />}
+      {status === "running" ? (runLabel ?? "Working…") : label}
+    </button>
+  );
+}
+
+function SystemTab() {
+  const [pin, setPin] = useState("");
+
+  // Password migration
+  const [migStatus, setMigStatus] = useState<ToolStatus>("idle");
+  const [migResult, setMigResult] = useState<{ sent: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
+
+  // Profile reminders
+  const [remStatus, setRemStatus] = useState<ToolStatus>("idle");
+  const [remResult, setRemResult] = useState<{ sent: number; skipped: number; failed: { email: string; reason: string }[]; total: number } | null>(null);
+
+  // Bulk email
+  const [bulkStatus, setBulkStatus] = useState<ToolStatus>("idle");
+  const [bulkResult, setBulkResult] = useState<{ sent: number; total: number; failed: { email: string; reason: string }[] } | null>(null);
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [bulkBody, setBulkBody] = useState("");
+  const [bulkAudience, setBulkAudience] = useState<"artists" | "labels" | "all">("artists");
+
+  // Export
+  const [exportStatus, setExportStatus] = useState<ToolStatus>("idle");
+
+  async function sendMigration() {
+    setMigStatus("running"); setMigResult(null);
+    try {
+      const res = await fetch("/api/admin/migrate-passwords", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMigResult(data); setMigStatus("done");
+    } catch { setMigStatus("error"); }
+  }
+
+  async function sendReminders() {
+    setRemStatus("running"); setRemResult(null);
+    try {
+      const res = await fetch("/api/admin/profile-reminders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setRemResult(data); setRemStatus("done");
+    } catch { setRemStatus("error"); }
+  }
+
+  async function sendBulkEmail() {
+    setBulkStatus("running"); setBulkResult(null);
+    try {
+      const res = await fetch("/api/admin/bulk-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, subject: bulkSubject, body: bulkBody, audience: bulkAudience }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setBulkResult(data); setBulkStatus("done");
+    } catch { setBulkStatus("error"); }
+  }
+
+  async function exportData(type: "releases" | "artists" | "labels") {
+    setExportStatus("running");
+    try {
+      const res = await fetch("/api/admin/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin, type }),
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.headers.get("Content-Disposition")?.match(/filename="([^"]+)"/)?.[1] ?? `${type}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExportStatus("done");
+      setTimeout(() => setExportStatus("idle"), 3000);
+    } catch { setExportStatus("error"); setTimeout(() => setExportStatus("idle"), 3000); }
+  }
+
+  const inp = "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-2.5 rounded-xl transition-colors";
+
+  return (
+    <div className="space-y-5">
+      <h2 className="text-white font-bold text-lg">System Tools</h2>
+
+      {/* PIN */}
+      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+        <label className="block text-white/60 text-xs font-medium mb-2">Admin PIN — required for all tools below</label>
+        <input type="password" value={pin} onChange={(e) => setPin(e.target.value)}
+          placeholder="Enter your admin PIN" className={`${inp} max-w-xs`} />
+      </div>
+
+      {/* ── Communications ──────────────────────────────────────────── */}
+      <p className="text-white/25 text-[11px] uppercase tracking-widest font-semibold px-1">Communications</p>
+
+      <ToolCard icon={<Send size={18} className="text-violet-400" />} color="bg-violet-400/10"
+        title="Broadcast Email"
+        desc="Compose and send a custom email to all approved artists, all labels, or everyone. Write in plain text — line breaks are preserved.">
+        <div className="space-y-3 mb-4">
+          <select value={bulkAudience} onChange={(e) => setBulkAudience(e.target.value as typeof bulkAudience)}
+            className={inp}>
+            <option value="artists">Artists only</option>
+            <option value="labels">Labels only</option>
+            <option value="all">Everyone (artists + labels)</option>
+          </select>
+          <input value={bulkSubject} onChange={(e) => setBulkSubject(e.target.value)}
+            placeholder="Email subject…" className={inp} />
+          <textarea value={bulkBody} onChange={(e) => setBulkBody(e.target.value)}
+            placeholder="Email body… (plain text, line breaks preserved)"
+            rows={5} className={`${inp} resize-y`} />
+        </div>
+        <RunBtn status={bulkStatus} label="Send Broadcast" runLabel="Sending…"
+          color="bg-violet-600 hover:bg-violet-700" onClick={sendBulkEmail} />
+        <StatusBanner status={bulkStatus} result={bulkResult && (
+          <p className="text-green-400 text-sm font-semibold">
+            Sent to {bulkResult.sent} of {bulkResult.total} recipients
+            {bulkResult.failed.length > 0 && ` · ${bulkResult.failed.length} failed`}
+          </p>
+        )} />
+      </ToolCard>
+
+      <ToolCard icon={<Mail size={18} className="text-amber-400" />} color="bg-amber-400/10"
+        title="Profile Completion Reminders"
+        desc="Email approved artists and labels who have incomplete profiles (missing bio, photo, socials, etc.). Skips complete profiles automatically.">
+        <RunBtn status={remStatus} label="Send Reminders" runLabel="Sending…"
+          color="bg-amber-500 hover:bg-amber-600" onClick={sendReminders} />
+        <StatusBanner status={remStatus} result={remResult && (
+          <p className="text-green-400 text-sm font-semibold">
+            {remResult.sent} reminder{remResult.sent !== 1 ? "s" : ""} sent · {remResult.skipped} already complete
+            {remResult.failed.length > 0 && <span className="text-red-400/80 text-xs ml-2">{remResult.failed.length} failed</span>}
+          </p>
+        )} />
+      </ToolCard>
+
+      {/* ── Account Management ──────────────────────────────────────── */}
+      <p className="text-white/25 text-[11px] uppercase tracking-widest font-semibold px-1 pt-2">Account Management</p>
+
+      <ToolCard icon={<RefreshCw size={18} className="text-[#007bff]" />} color="bg-[#007bff]/10"
+        title="Password Migration"
+        desc="Send password-setup emails to ALL artists and labels. Anyone who joined via magic link can set a permanent password. Safe to run multiple times.">
+        <RunBtn status={migStatus} label="Send Password Setup Emails" runLabel="Sending…" onClick={sendMigration} />
+        <StatusBanner status={migStatus} result={migResult && (
+          <p className="text-green-400 text-sm font-semibold">
+            Done — {migResult.sent} email{migResult.sent !== 1 ? "s" : ""} sent of {migResult.total}
+            {migResult.failed.length > 0 && <span className="text-red-400/80 text-xs ml-2">{migResult.failed.length} failed</span>}
+          </p>
+        )} />
+      </ToolCard>
+
+      {/* ── Data Export ─────────────────────────────────────────────── */}
+      <p className="text-white/25 text-[11px] uppercase tracking-widest font-semibold px-1 pt-2">Data Export</p>
+
+      <ToolCard icon={<Download size={18} className="text-emerald-400" />} color="bg-emerald-400/10"
+        title="Export Data as CSV"
+        desc="Download a full CSV snapshot of releases, artist profiles, or label profiles. Includes all fields including status, emails, and metadata.">
+        <div className="flex flex-wrap gap-2">
+          {(["releases", "artists", "labels"] as const).map((type) => (
+            <button key={type} onClick={() => exportData(type)} disabled={exportStatus === "running"}
+              className="flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-600/30 text-emerald-400 text-sm font-semibold px-4 py-2 rounded-xl transition-colors disabled:opacity-50 capitalize">
+              {exportStatus === "running" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              {type}
+            </button>
+          ))}
+        </div>
+        <StatusBanner status={exportStatus} result={<p className="text-green-400 text-sm font-semibold">Download started</p>} />
+      </ToolCard>
+
+      {/* ── Platform Stats ──────────────────────────────────────────── */}
+      <p className="text-white/25 text-[11px] uppercase tracking-widest font-semibold px-1 pt-2">Platform Stats</p>
+
+      <PlatformStatsCard pin={pin} />
+    </div>
+  );
+}
+
+function PlatformStatsCard({ pin }: { pin: string }) {
+  const [stats, setStats] = useState<Record<string, number> | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    if (!pin) return;
+    setLoading(true);
+    const { supabase: db } = await import("@/lib/supabase");
+    const [
+      { count: totalArtists },
+      { count: approvedArtists },
+      { count: totalLabels },
+      { count: approvedLabels },
+      { count: totalReleases },
+      { count: approvedReleases },
+      { count: pendingReleases },
+      { count: openTickets },
+      { count: pendingPayouts },
+    ] = await Promise.all([
+      db.from("artist_profiles").select("*", { count: "exact", head: true }),
+      db.from("artist_profiles").select("*", { count: "exact", head: true }).eq("status", "approved"),
+      db.from("label_profiles").select("*", { count: "exact", head: true }),
+      db.from("label_profiles").select("*", { count: "exact", head: true }).eq("status", "approved"),
+      db.from("releases").select("*", { count: "exact", head: true }),
+      db.from("releases").select("*", { count: "exact", head: true }).eq("status", "approved"),
+      db.from("releases").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      db.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
+      db.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    ]);
+    setStats({
+      totalArtists: totalArtists ?? 0, approvedArtists: approvedArtists ?? 0,
+      totalLabels: totalLabels ?? 0, approvedLabels: approvedLabels ?? 0,
+      totalReleases: totalReleases ?? 0, approvedReleases: approvedReleases ?? 0,
+      pendingReleases: pendingReleases ?? 0,
+      openTickets: openTickets ?? 0, pendingPayouts: pendingPayouts ?? 0,
+    });
+    setLoading(false);
+  }
+
+  return (
+    <ToolCard icon={<BarChart2 size={18} className="text-sky-400" />} color="bg-sky-400/10"
+      title="Platform Statistics"
+      desc="A real-time snapshot of your platform's key numbers.">
+      <button onClick={load} disabled={loading}
+        className="flex items-center gap-2 bg-sky-600/20 hover:bg-sky-600/30 border border-sky-600/30 text-sky-400 text-sm font-semibold px-4 py-2 rounded-xl transition-colors mb-4 disabled:opacity-50">
+        {loading ? <Loader2 size={14} className="animate-spin" /> : <BarChart2 size={14} />}
+        Load Stats
+      </button>
+      {stats && (
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "Total Artists",    value: stats.totalArtists },
+            { label: "Active Artists",   value: stats.approvedArtists },
+            { label: "Total Labels",     value: stats.totalLabels },
+            { label: "Active Labels",    value: stats.approvedLabels },
+            { label: "Total Releases",   value: stats.totalReleases },
+            { label: "Live Releases",    value: stats.approvedReleases },
+            { label: "Pending Review",   value: stats.pendingReleases },
+            { label: "Open Tickets",     value: stats.openTickets },
+            { label: "Pending Payouts",  value: stats.pendingPayouts },
+          ].map(({ label, value }) => (
+            <div key={label} className="bg-white/[0.04] rounded-xl p-3 text-center">
+              <p className="text-white font-bold text-xl">{value}</p>
+              <p className="text-white/40 text-[11px] mt-0.5">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </ToolCard>
   );
 }
 

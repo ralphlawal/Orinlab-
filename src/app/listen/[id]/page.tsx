@@ -4,6 +4,20 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Music2 } from "lucide-react";
 import { getPlatform } from "@/lib/platforms";
+import { PlatformIcon } from "@/components/PlatformIcon";
+import type { Platform } from "@/lib/platforms";
+
+function PlatformBadge({ platform }: { platform: Platform }) {
+  const icon = <PlatformIcon platformKey={platform.key} size={20} />;
+  return (
+    <div
+      className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+      style={{ background: `${platform.color}25`, color: platform.color }}
+    >
+      {icon ?? <span className="text-sm font-black">{platform.label.charAt(0)}</span>}
+    </div>
+  );
+}
 
 type Release = {
   id: string;
@@ -187,12 +201,7 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
                             rel="noopener noreferrer"
                             className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150"
                           >
-                            <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
-                              style={{ background: `${platform.color}25`, color: platform.color }}
-                            >
-                              {platform.label.charAt(0)}
-                            </div>
+                            <PlatformBadge platform={platform} />
                             <span className="text-white font-semibold text-sm flex-1">{platform.label}</span>
                             <span
                               className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0"
@@ -221,12 +230,7 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
                             href={`/api/go/${release.id}`}
                             className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150"
                           >
-                            <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
-                              style={{ background: `${platform.color}25`, color: platform.color }}
-                            >
-                              {platform.label.charAt(0)}
-                            </div>
+                            <PlatformBadge platform={platform} />
                             <span className="text-white font-semibold text-sm flex-1">{platform.label}</span>
                             <span
                               className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0"

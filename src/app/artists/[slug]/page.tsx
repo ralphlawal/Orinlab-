@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Globe, Music, ArrowLeft, Play } from "lucide-react";
+import { SocialIcons } from "@/components/PlatformIcon";
 
 export const revalidate = 60;
 
@@ -79,13 +80,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
   const displayBio = (profile as { bio?: string | null } | null)?.bio || anyRelease?.artist_bio;
   const displayCountry = (profile as { country?: string | null } | null)?.country || anyRelease?.country;
 
+  type SocialLink = { label: string; href: string; handle: string; iconKey: string };
   const socials = [
-    profile?.instagram_handle && { label: "Instagram", href: `https://instagram.com/${profile.instagram_handle}`, handle: `@${profile.instagram_handle}` },
-    profile?.x_handle && { label: "X", href: `https://x.com/${profile.x_handle}`, handle: `@${profile.x_handle}` },
-    profile?.tiktok_username && { label: "TikTok", href: `https://tiktok.com/@${profile.tiktok_username}`, handle: `@${profile.tiktok_username}` },
-    profile?.youtube_channel && { label: "YouTube", href: profile.youtube_channel, handle: "YouTube" },
-    profile?.website_url && { label: "Website", href: profile.website_url, handle: profile.website_url.replace(/^https?:\/\//, "") },
-  ].filter(Boolean) as { label: string; href: string; handle: string }[];
+    profile?.instagram_handle && { label: "Instagram", iconKey: "instagram", href: `https://instagram.com/${profile.instagram_handle}`, handle: `@${profile.instagram_handle}` },
+    profile?.x_handle         && { label: "X",         iconKey: "x",         href: `https://x.com/${profile.x_handle}`,                  handle: `@${profile.x_handle}` },
+    profile?.tiktok_username  && { label: "TikTok",    iconKey: "tiktok",    href: `https://tiktok.com/@${profile.tiktok_username}`,      handle: `@${profile.tiktok_username}` },
+    profile?.youtube_channel  && { label: "YouTube",   iconKey: "youtube",   href: profile.youtube_channel,                               handle: "YouTube" },
+    profile?.website_url      && { label: "Website",   iconKey: "globe",     href: profile.website_url,                                   handle: profile.website_url.replace(/^https?:\/\//, "") },
+  ].filter(Boolean) as SocialLink[];
 
   const spotifyId = profile?.spotify_artist_id;
 
@@ -141,18 +143,22 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
               {/* Socials */}
               {socials.length > 0 && (
-                <div className="flex flex-wrap gap-3">
-                  {socials.map((s) => (
-                    <a
-                      key={s.label}
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] hover:border-white/[0.2] text-white/60 hover:text-white text-xs font-medium px-4 py-2 rounded-full transition-all"
-                    >
-                      {s.handle}
-                    </a>
-                  ))}
+                <div className="flex flex-wrap gap-2">
+                  {socials.map((s) => {
+                    const Icon = SocialIcons[s.iconKey as keyof typeof SocialIcons];
+                    return (
+                      <a
+                        key={s.label}
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] hover:border-white/[0.2] text-white/60 hover:text-white text-xs font-medium px-3 py-2 rounded-full transition-all"
+                      >
+                        {Icon ? Icon(15, "") : <Globe size={14} />}
+                        <span>{s.handle}</span>
+                      </a>
+                    );
+                  })}
                 </div>
               )}
 
