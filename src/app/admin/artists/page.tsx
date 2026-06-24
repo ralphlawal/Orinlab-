@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, Music2, Globe, CheckCircle2, Clock, XCircle,
-  ChevronDown, ChevronUp, Save, User, BarChart3,
+  ChevronDown, ChevronUp, Save, User, BarChart3, Send,
 } from "lucide-react";
 
 const SUPER_ADMIN = (
@@ -74,7 +74,11 @@ const inputCls = "w-full bg-white/[0.05] border border-white/[0.08] focus:border
 
 function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Partial<Artist>) => void }) {
   const { requestUnlock } = usePinGate();
-  const [editTab, setEditTab] = useState<"profile" | "releases">("profile");
+  const [editTab, setEditTab] = useState<"profile" | "releases" | "message">("profile");
+  const [msgBody, setMsgBody]         = useState("");
+  const [msgTitle, setMsgTitle]       = useState("");
+  const [sendingMsg, setSendingMsg]   = useState(false);
+  const [msgSent, setMsgSent]         = useState(false);
 
   // Profile state
   const [name, setName]         = useState(artist.artist_name);
@@ -153,11 +157,38 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
     }));
   }
 
+  async function doSendMessage() {
+    if (!msgTitle.trim() || !msgBody.trim()) return;
+    setSendingMsg(true);
+    // In-app notification
+    await supabase.from("notifications").insert({
+      email: artist.email,
+      type: "info",
+      title: msgTitle.trim(),
+      body: msgBody.trim(),
+      link: "/portal",
+    });
+    // Email via notify API
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "admin-message",
+        data: { email: artist.email, content: `${msgTitle.trim()}\n\n${msgBody.trim()}` },
+      }),
+    }).catch(() => {});
+    setSendingMsg(false);
+    setMsgSent(true);
+    setMsgTitle("");
+    setMsgBody("");
+    setTimeout(() => setMsgSent(false), 3000);
+  }
+
   return (
     <div className="mt-4 border-t border-white/[0.06] pt-4">
       {/* Sub-tabs */}
       <div className="flex gap-1 mb-4">
-        {(["profile", "releases"] as const).map((t) => (
+        {(["profile", "releases", "message"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setEditTab(t)}
@@ -165,8 +196,8 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
               editTab === t ? "bg-[#007bff]/15 text-[#007bff]" : "text-white/40 hover:text-white"
             }`}
           >
-            {t === "profile" ? <User size={12} /> : <BarChart3 size={12} />}
-            {t === "profile" ? "Profile" : `Releases (${artist.releases.length})`}
+            {t === "profile" ? <User size={12} /> : t === "releases" ? <BarChart3 size={12} /> : <Send size={12} />}
+            {t === "profile" ? "Profile" : t === "releases" ? `Releases (${artist.releases.length})` : "Message"}
           </button>
         ))}
       </div>
@@ -303,6 +334,28 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* ── Message tab ── */}
+      {editTab === "message" && (
+        <div className="space-y-3">
+          <p className="text-white/30 text-xs">Send a direct message to <strong className="text-white/60">{artist.artist_name}</strong>. It will appear in their portal notifications and be emailed to <strong className="text-white/60">{artist.email}</strong>.</p>
+          <div>
+            <label className="block text-white/50 text-xs mb-1">Title / Subject</label>
+            <input className={inputCls} value={msgTitle} onChange={e => setMsgTitle(e.target.value)} placeholder="e.g. Your release is ready to go live" />
+          </div>
+          <div>
+            <label className="block text-white/50 text-xs mb-1">Message</label>
+            <textarea className={`${inputCls} resize-none`} rows={4} value={msgBody} onChange={e => setMsgBody(e.target.value)} placeholder="Write your message to the artist…" />
+          </div>
+          <button
+            onClick={() => requestUnlock(doSendMessage)}
+            disabled={sendingMsg || msgSent || !msgTitle.trim() || !msgBody.trim()}
+            className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            {sendingMsg ? <><Loader2 size={12} className="animate-spin" /> Sending…</> : msgSent ? <><CheckCircle2 size={12} /> Sent!</> : <><Send size={12} /> Send Message</>}
+          </button>
         </div>
       )}
     </div>

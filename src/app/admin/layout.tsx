@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,72 +11,117 @@ import {
   Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe,
 } from "lucide-react";
 
-const BASE_NAV = [
-  { label: "Dashboard",     href: "/admin",               icon: <LayoutDashboard size={18} />, superOnly: false },
-  { label: "Releases",      href: "/admin/releases",      icon: <Music size={18} />,           superOnly: false },
-  { label: "Assets",        href: "/admin/assets",        icon: <Palette size={18} />,         superOnly: false },
-  { label: "Artists",       href: "/admin/artists",       icon: <Users size={18} />,           superOnly: false },
-  { label: "Labels",        href: "/admin/labels",        icon: <Globe size={18} />,           superOnly: false },
-  { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={18} />,   superOnly: false },
-  { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={18} />,           superOnly: false },
-  { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={18} />,      superOnly: false },
-  { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={18} />,        superOnly: false },
-  { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={18} />,       superOnly: false  },
-  { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={18} />,       superOnly: false  },
-  { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={18} />,        superOnly: false  },
-  { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={18} />,            superOnly: false  },
-  { label: "Settings",      href: "/admin/settings",      icon: <Settings size={18} />,        superOnly: false  },
-];
+type Counts = {
+  releases: number;
+  labels: number;
+  support: number;
+  payouts: number;
+  messages: number;
+};
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
+  .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 
-// Falls back to the first email in NEXT_PUBLIC_ADMIN_EMAILS if the dedicated env var isn't set
 const SUPER_ADMIN = (
   process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
   (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",")[0]
 ).trim().toLowerCase();
 
+function Badge({ n }: { n: number }) {
+  if (!n) return null;
+  return (
+    <span className="ml-auto flex-shrink-0 min-w-[18px] h-[18px] bg-[#007bff] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+      {n > 99 ? "99+" : n}
+    </span>
+  );
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
-  const [checking, setChecking] = useState(true);
+  const [checking, setChecking]     = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0 });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (pathname === "/admin/login") {
-        setChecking(false);
-        return;
-      }
+      if (pathname === "/admin/login") { setChecking(false); return; }
       const email = (data.session?.user?.email ?? "").toLowerCase();
       const isAdmin = Boolean(email) && ADMIN_EMAILS.includes(email);
-      if (!isAdmin) {
-        router.replace("/admin/login");
-      } else {
-        setAdminEmail(email);
-        setChecking(false);
-      }
+      if (!isAdmin) { router.replace("/admin/login"); }
+      else { setAdminEmail(email); setChecking(false); }
     });
   }, [pathname, router]);
 
-  const navItems = BASE_NAV.filter((item) => !item.superOnly || adminEmail === SUPER_ADMIN);
+  const loadCounts = useCallback(async () => {
+    const [
+      { count: releases },
+      { count: labels },
+      { count: support },
+      { count: payouts },
+      { count: messages },
+    ] = await Promise.all([
+      supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("label_profiles").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
+      supabase.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist"),
+    ]);
+    setCounts({
+      releases: releases ?? 0,
+      labels: labels ?? 0,
+      support: support ?? 0,
+      payouts: payouts ?? 0,
+      messages: messages ?? 0,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!checking && pathname !== "/admin/login") {
+      loadCounts();
+      // Refresh counts every 60s
+      const id = setInterval(loadCounts, 60_000);
+      return () => clearInterval(id);
+    }
+  }, [checking, pathname, loadCounts]);
+
+  // Refresh counts whenever the path changes (user navigates between sections)
+  useEffect(() => {
+    if (!checking && pathname !== "/admin/login") loadCounts();
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isSuperAdmin = adminEmail === SUPER_ADMIN;
+
+  const NAV = [
+    { label: "Dashboard",     href: "/admin",               icon: <LayoutDashboard size={17} />, badge: 0 },
+    { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases },
+    { label: "Artists",       href: "/admin/artists",       icon: <Users size={17} />,           badge: 0 },
+    { label: "Labels",        href: "/admin/labels",        icon: <Globe size={17} />,           badge: counts.labels },
+    { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={17} />,   badge: counts.messages },
+    { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={17} />,        badge: counts.support },
+    { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={17} />,      badge: counts.payouts },
+    { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: 0 },
+    { label: "Assets",        href: "/admin/assets",        icon: <Palette size={17} />,         badge: 0 },
+    { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={17} />,       badge: 0 },
+    { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={17} />,            badge: 0, superOnly: true },
+    { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={17} />,       badge: 0 },
+    { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={17} />,        badge: 0 },
+    { label: "Settings",      href: "/admin/settings",      icon: <Settings size={17} />,        badge: 0, superOnly: true },
+  ];
+
+  const navItems = NAV.filter(item => !item.superOnly || isSuperAdmin);
+
+  // Total pending for the hamburger dot
+  const totalPending = counts.releases + counts.labels + counts.support + counts.payouts;
 
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push("/admin/login");
   }
 
-  // Login page — full-screen overlay, no chrome
   if (pathname === "/admin/login") {
-    return (
-      <div className="fixed inset-0 z-[60] bg-black">
-        {children}
-      </div>
-    );
+    return <div className="fixed inset-0 z-[60] bg-black">{children}</div>;
   }
 
   if (checking) {
@@ -90,49 +135,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 w-60 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
-      >
+      <aside className={`fixed inset-y-0 left-0 z-40 w-56 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         {/* Logo */}
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
           <Image
             src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-            alt="Orinlabí"
-            width={96}
-            height={26}
-            className="object-contain"
+            alt="Orinlabí" width={88} height={24} className="object-contain"
           />
-          <p className="text-white/30 text-xs mt-1.5">Admin Panel</p>
+          <p className="text-white/25 text-[11px] mt-1.5 font-medium tracking-wide uppercase">Admin Panel</p>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href))
-                  ? "bg-[#007bff]/10 text-[#007bff]"
-                  : "text-white/50 hover:text-white hover:bg-white/[0.05]"
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
+          {navItems.map((item) => {
+            const active = item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-[#007bff]/10 text-[#007bff]"
+                    : "text-white/45 hover:text-white hover:bg-white/[0.05]"
+                }`}
+              >
+                <span className="flex-shrink-0">{item.icon}</span>
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge > 0 && <Badge n={item.badge} />}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Logout */}
-        <div className="px-3 py-4 border-t border-white/[0.06]">
+        <div className="px-2.5 py-3 border-t border-white/[0.06]">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white hover:bg-white/[0.05] transition-colors w-full"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/35 hover:text-white hover:bg-white/[0.05] transition-colors w-full"
           >
-            <LogOut size={18} />
+            <LogOut size={17} />
             Sign Out
           </button>
         </div>
@@ -140,25 +184,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 z-30 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-60 flex flex-col overflow-hidden">
+      <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-6 py-4 flex items-center gap-4">
-          <button
-            className="lg:hidden text-white/60 hover:text-white"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
+        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-6 py-3.5 flex items-center gap-4">
+          <button className="lg:hidden relative text-white/60 hover:text-white" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {!sidebarOpen && totalPending > 0 && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full" />
+            )}
           </button>
           <h2 className="text-white font-semibold text-sm">
-            {navItems.find((n) => n.href === pathname)?.label ?? "Admin"}
+            {navItems.find(n => n.href === pathname || (n.href !== "/admin" && pathname.startsWith(n.href)))?.label ?? "Admin"}
           </h2>
+          {totalPending > 0 && (
+            <span className="ml-auto text-yellow-400/80 text-xs flex items-center gap-1.5 font-medium">
+              <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse inline-block" />
+              {totalPending} pending
+            </span>
+          )}
         </header>
 
         <main className="flex-1 overflow-y-auto p-6">
