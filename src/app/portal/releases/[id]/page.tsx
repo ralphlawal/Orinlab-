@@ -141,12 +141,14 @@ export default function ReleaseDetailPage() {
   async function saveSplits() {
     if (!release) return;
     setSavingSplits(true);
-    await supabase.from("royalty_splits").delete().eq("release_id", release.id);
+    const { error: delErr } = await supabase.from("royalty_splits").delete().eq("release_id", release.id);
+    if (delErr) { console.error("royalty_splits delete:", delErr); setSavingSplits(false); alert("Save failed — please try again."); return; }
     const valid = splits.filter((s) => s.role && Number(s.percentage) > 0);
     if (valid.length > 0) {
-      await supabase.from("royalty_splits").insert(valid.map((s) => ({
+      const { error: insErr } = await supabase.from("royalty_splits").insert(valid.map((s) => ({
         release_id: release.id, name: s.role, email: s.email.trim() || null, percentage: Number(s.percentage),
       })));
+      if (insErr) { console.error("royalty_splits insert:", insErr); setSavingSplits(false); alert("Save failed — please try again."); return; }
     }
     setSavingSplits(false); setSplitsSaved(true); setEditingSplits(false);
     setTimeout(() => setSplitsSaved(false), 3000);

@@ -281,15 +281,21 @@ export default function ReleasesPage() {
   async function saveSplits() {
     if (!selected) return;
     setSavingSplits(true);
-    await supabase.from("royalty_splits").delete().eq("release_id", selected.id);
+    const { error: delErr } = await supabase.from("royalty_splits").delete().eq("release_id", selected.id);
+    if (delErr) { console.error("royalty_splits delete:", delErr); setSavingSplits(false); alert("Save failed: " + delErr.message); return; }
     const valid = splits.filter((s) => s.role && Number(s.percentage) > 0);
     if (valid.length > 0) {
-      await supabase.from("royalty_splits").insert(
+      const { error: insErr } = await supabase.from("royalty_splits").insert(
         valid.map((s) => ({ release_id: selected.id, name: s.role, email: s.email.trim() || null, percentage: Number(s.percentage) }))
       );
+      if (insErr) { console.error("royalty_splits insert:", insErr); setSavingSplits(false); alert("Save failed: " + insErr.message); return; }
     }
+    // Reload from DB so the view stays in sync with what was actually saved
+    const { data: fresh } = await supabase.from("royalty_splits").select("name,email,percentage").eq("release_id", selected.id);
+    if (fresh) setSplits(fresh.map((s: { name: string; email: string | null; percentage: number }) => ({ role: s.name, email: s.email ?? "", percentage: String(s.percentage) })));
     setSavingSplits(false);
     setSplitsSaved(true);
+    setTimeout(() => setSplitsSaved(false), 3000);
   }
 
   async function saveStage() {
@@ -1001,9 +1007,22 @@ export default function ReleasesPage() {
               )}
 
               {/* Royalty Splits */}
-              {selected.status === "approved" && (
+              {true && (
                 <Section title="Royalty Splits">
-                  <p className="text-white/30 text-xs mb-4">Define how earnings are split between collaborators. Visible to the artist in their portal.</p>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-white/30 text-xs">Define how earnings are split. Visible to the artist in their portal.</p>
+                    <button
+                      onClick={() => {
+                        supabase.from("royalty_splits").select("name,email,percentage").eq("release_id", selected.id)
+                          .then(({ data }) => {
+                            setSplits((data ?? []).map((s: { name: string; email: string | null; percentage: number }) => ({ role: s.name, email: s.email ?? "", percentage: String(s.percentage) })));
+                          });
+                      }}
+                      className="text-white/30 hover:text-white text-[10px] uppercase tracking-widest flex items-center gap-1 transition-colors"
+                    >
+                      ↻ Refresh
+                    </button>
+                  </div>
 
                   {/* Column headers */}
                   {splits.length > 0 && (
