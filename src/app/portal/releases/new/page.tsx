@@ -75,10 +75,13 @@ export default function NewReleasePage() {
   const [uploadProgress, setUploadProgress] = useState("");
   const [samplesUsed, setSamplesUsed] = useState(draftStateRef.current.samplesUsed);
   const [coverSong, setCoverSong] = useState(draftStateRef.current.coverSong);
+  const [artworkError, setArtworkError] = useState("");
+  const [selectedStores, setSelectedStores] = useState<"all" | string[]>("all");
+  const [youtubeContentId, setYoutubeContentId] = useState(false);
   const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>(draftStateRef.current.featuredArtists);
   const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
 
-  const isMultiTrack = releaseType === "Album" || releaseType === "EP";
+  const isMultiTrack = releaseType === "Album" || releaseType === "EP" || releaseType === "Compilation";
 
   function saveDraft() {
     const fd = formRef.current ? new FormData(formRef.current) : null;
@@ -126,6 +129,21 @@ export default function NewReleasePage() {
     load();
   }, [router]);
 
+  function validateArtwork(file: File | null) {
+    setCoverFile(file);
+    if (!file) { setArtworkError(""); return; }
+    setArtworkError("");
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      if (img.naturalWidth < 3000 || img.naturalHeight < 3000) {
+        setArtworkError(`Image is ${img.naturalWidth}×${img.naturalHeight}px — minimum is 3000×3000px. Ditto will reject smaller artwork.`);
+      }
+    };
+    img.src = url;
+  }
+
   function addTrack() {
     setTracks(t => [...t, { title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
   }
@@ -149,6 +167,11 @@ export default function NewReleasePage() {
     // Validate
     if (!coverFile) {
       setErrorMsg("Please upload your cover artwork before submitting.");
+      setState("error");
+      return;
+    }
+    if (artworkError) {
+      setErrorMsg(artworkError);
       setState("error");
       return;
     }
@@ -251,9 +274,11 @@ export default function NewReleasePage() {
         instrumental:     data.get("instrumental") === "Yes",
         samples_used:     samplesUsed,
         sample_details:   samplesUsed ? (data.get("sampleDetails") as string | null) : null,
-        cover_song:       coverSong,
-        cover_song_details: coverSong ? (data.get("coverSongDetails") as string | null) : null,
-        status:           "pending",
+        cover_song:           coverSong,
+        cover_song_details:   coverSong ? (data.get("coverSongDetails") as string | null) : null,
+        store_platforms:      selectedStores === "all" ? "all" : selectedStores.join(","),
+        youtube_content_id:   youtubeContentId,
+        status:               "pending",
       };
 
       if (isMultiTrack && uploadedTracks.length > 0) {
@@ -447,12 +472,11 @@ export default function NewReleasePage() {
             <Select
               label="Release Type"
               name="releaseType"
-              options={["Single", "EP", "Album"]}
+              options={["Single", "EP", "Album", "Compilation"]}
               required
               value={releaseType}
               onChange={(v) => {
                 setReleaseType(v);
-                // Reset tracks when switching type
                 setTracks([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
                 setAudioFile(null);
               }}
@@ -483,11 +507,17 @@ export default function NewReleasePage() {
             label="Cover Artwork"
             name="coverFile"
             accept=".jpg,.jpeg,.png"
-            hint="JPG or PNG · Min. 3000×3000px"
+            hint="JPG or PNG · Minimum 3000×3000px · No URLs or handles"
             file={coverFile}
-            onChange={setCoverFile}
+            onChange={validateArtwork}
             required
           />
+          {artworkError && (
+            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 text-red-400 text-xs px-4 py-3 rounded-xl mt-2">
+              <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+              {artworkError}
+            </div>
+          )}
         </div>
 
         {/* Audio Files */}
@@ -765,9 +795,87 @@ export default function NewReleasePage() {
           </div>
         </div>
 
+        {/* Store Selection */}
+        <div>
+          <h2 className="text-white font-bold text-lg mb-6 pb-3 border-b border-white/10">
+            Store & Platform Selection
+          </h2>
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              {(["all", "select"] as const).map((v) => (
+                <button key={v} type="button"
+                  onClick={() => setSelectedStores(v === "all" ? "all" : [])}
+                  className={`px-5 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                    (v === "all" ? selectedStores === "all" : selectedStores !== "all")
+                      ? "bg-[#007bff]/15 border-[#007bff]/50 text-[#007bff]"
+                      : "border-white/[0.1] text-white/40 hover:text-white"
+                  }`}>
+                  {v === "all" ? "All Stores (Recommended)" : "Choose Specific Stores"}
+                </button>
+              ))}
+            </div>
+            {selectedStores !== "all" && (
+              <div className="flex flex-wrap gap-2">
+                {["Spotify", "Apple Music", "YouTube Music", "Amazon Music", "Deezer", "TIDAL", "TikTok", "Instagram", "Facebook", "Pandora", "Audiomack", "Boomplay", "Anghami", "Shazam", "SoundCloud", "iHeartRadio"].map((store) => (
+                  <button key={store} type="button"
+                    onClick={() => {
+                      const arr = selectedStores as string[];
+                      setSelectedStores(arr.includes(store) ? arr.filter(s => s !== store) : [...arr, store]);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      (selectedStores as string[]).includes(store)
+                        ? "bg-[#007bff]/20 border-[#007bff]/50 text-[#007bff]"
+                        : "border-white/10 text-white/40 hover:text-white hover:border-white/30"
+                    }`}>
+                    {store}
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* YouTube Content ID */}
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-white font-medium text-sm mb-1">YouTube Content ID</p>
+                  <p className="text-white/40 text-xs leading-relaxed">
+                    If someone uploads your music to YouTube, Ditto detects it, claims it, and collects the revenue for you. Recommended for all releases.
+                  </p>
+                </div>
+                <button type="button"
+                  onClick={() => setYoutubeContentId(!youtubeContentId)}
+                  className={`flex-shrink-0 w-12 h-6 rounded-full border transition-colors relative ${
+                    youtubeContentId ? "bg-[#007bff] border-[#007bff]" : "bg-white/[0.06] border-white/[0.12]"
+                  }`}>
+                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${youtubeContentId ? "left-6" : "left-0.5"}`} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pre-submission compliance reminder */}
+        <div className="bg-yellow-400/[0.05] border border-yellow-400/20 rounded-2xl p-5">
+          <p className="text-yellow-400 text-sm font-semibold mb-3">Before you submit — common reasons for rejection</p>
+          <ul className="space-y-1.5 text-white/50 text-xs">
+            {[
+              "Artwork must be exactly square, min. 3000×3000px, no social handles or URLs",
+              "Audio must be WAV or high-quality MP3 — no watermarks",
+              "Uncleared samples or unlicensed beats will be rejected",
+              "Artist name must match your Spotify/Apple Music profile exactly",
+              "Cover songs require a mechanical licence (we handle this)",
+              "Metadata (title, artist name) must match the audio file exactly",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2">
+                <span className="text-yellow-400/60 mt-0.5">·</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !!artworkError}
           className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-full text-base transition-all duration-200 flex items-center justify-center gap-3"
         >
           {isLoading ? (

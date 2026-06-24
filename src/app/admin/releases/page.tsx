@@ -653,6 +653,12 @@ export default function ReleasesPage() {
                 <Row label="Copyright Owner" value={selected.copyright_owner} />
                 <Row label="Year" value={selected.copyright_year} />
                 <Row label="Publishing" value={selected.publishing_info} />
+                {(selected as Release & { store_platforms?: string }).store_platforms && (
+                  <Row label="Requested Stores" value={(selected as Release & { store_platforms?: string }).store_platforms ?? ""} />
+                )}
+                {(selected as Release & { youtube_content_id?: boolean }).youtube_content_id && (
+                  <Row label="YouTube Content ID" value="Requested ✓" />
+                )}
               </Section>
 
               {/* Files */}
