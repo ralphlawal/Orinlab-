@@ -160,55 +160,94 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
             </div>
 
             {/* Choose platform */}
-            {links.length > 0 ? (
-              <>
-                <p className="text-white/35 text-xs text-center mb-4 uppercase tracking-widest">Choose your preferred music service</p>
-                <div className="space-y-2.5">
-                  {links.map(([key, url]) => {
-                    const platform = getPlatform(key);
-                    return (
-                      <a
-                        key={key}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150 group"
-                      >
-                        <div
-                          className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
-                          style={{ background: `${platform.color}25`, color: platform.color }}
-                        >
-                          {platform.label.charAt(0)}
-                        </div>
-                        <span className="text-white font-semibold text-sm flex-1">{platform.label}</span>
-                        <span
-                          className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0"
-                          style={{ background: `${platform.color}20`, color: platform.color }}
-                        >
-                          Listen
-                        </span>
-                      </a>
-                    );
-                  })}
+            {(() => {
+              // Determine which links to show
+              const individualLinks = links; // entries from store_links
+              const dittoFallback = release.ditto_smart_link;
+
+              // Platforms to show when using ditto fallback
+              const FALLBACK_PLATFORMS = [
+                "spotify", "apple_music", "youtube_music", "amazon_music",
+                "deezer", "tidal", "audiomack", "boomplay",
+                "tiktok", "soundcloud", "anghami", "pandora",
+              ];
+
+              if (individualLinks.length > 0) {
+                return (
+                  <>
+                    <p className="text-white/35 text-xs text-center mb-4 uppercase tracking-widest">Choose your preferred music service</p>
+                    <div className="space-y-2.5">
+                      {individualLinks.map(([key, url]) => {
+                        const platform = getPlatform(key);
+                        return (
+                          <a
+                            key={key}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150"
+                          >
+                            <div
+                              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
+                              style={{ background: `${platform.color}25`, color: platform.color }}
+                            >
+                              {platform.label.charAt(0)}
+                            </div>
+                            <span className="text-white font-semibold text-sm flex-1">{platform.label}</span>
+                            <span
+                              className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0"
+                              style={{ background: `${platform.color}20`, color: platform.color }}
+                            >
+                              Listen
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </>
+                );
+              }
+
+              if (dittoFallback) {
+                return (
+                  <>
+                    <p className="text-white/35 text-xs text-center mb-4 uppercase tracking-widest">Choose your preferred music service</p>
+                    <div className="space-y-2.5">
+                      {FALLBACK_PLATFORMS.map((key) => {
+                        const platform = getPlatform(key);
+                        return (
+                          <a
+                            key={key}
+                            href={`/api/go/${release.id}`}
+                            className="flex items-center gap-4 w-full bg-white/[0.06] hover:bg-white/[0.12] active:scale-[0.98] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-4 py-3.5 transition-all duration-150"
+                          >
+                            <div
+                              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-black"
+                              style={{ background: `${platform.color}25`, color: platform.color }}
+                            >
+                              {platform.label.charAt(0)}
+                            </div>
+                            <span className="text-white font-semibold text-sm flex-1">{platform.label}</span>
+                            <span
+                              className="text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0"
+                              style={{ background: `${platform.color}20`, color: platform.color }}
+                            >
+                              Listen
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </>
+                );
+              }
+
+              return (
+                <div className="text-center py-10 text-white/30 text-sm">
+                  Streaming links coming soon — check back shortly.
                 </div>
-              </>
-            ) : release.ditto_smart_link ? (
-              <div className="text-center">
-                <p className="text-white/35 text-xs mb-5 uppercase tracking-widest">Now streaming on all platforms</p>
-                <a
-                  href={`/api/go/${release.id}`}
-                  className="inline-flex items-center gap-3 bg-[#007bff] hover:bg-[#0063d1] active:scale-[0.98] text-white font-bold text-sm px-8 py-4 rounded-2xl transition-all duration-150 shadow-lg shadow-[#007bff]/25"
-                >
-                  <Music2 size={18} />
-                  Listen on all platforms
-                </a>
-                <p className="text-white/20 text-[10px] mt-4">Individual streaming links updating soon</p>
-              </div>
-            ) : (
-              <div className="text-center py-10 text-white/30 text-sm">
-                Store links coming soon — check back shortly.
-              </div>
-            )}
+              );
+            })()}
 
             {/* QR code */}
             <div className="mt-10 flex flex-col items-center gap-3">

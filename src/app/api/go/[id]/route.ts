@@ -11,7 +11,6 @@ export async function GET(
     .from("releases")
     .select("ditto_smart_link, store_links, status")
     .eq("id", id)
-    .eq("status", "approved")
     .maybeSingle();
 
   if (!data) {
