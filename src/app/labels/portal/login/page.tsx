@@ -48,7 +48,7 @@ export default function LabelPortalLoginPage() {
 
     const { error: authError } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
-      options: { shouldCreateUser: false },
+      options: { shouldCreateUser: true },
     });
 
     setLoading(false);
