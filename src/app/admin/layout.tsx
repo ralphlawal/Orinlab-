@@ -93,24 +93,59 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isSuperAdmin = adminEmail === SUPER_ADMIN;
 
-  const NAV = [
-    { label: "Dashboard",     href: "/admin",               icon: <LayoutDashboard size={17} />, badge: 0 },
-    { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases },
-    { label: "Artists",       href: "/admin/artists",       icon: <Users size={17} />,           badge: 0 },
-    { label: "Labels",        href: "/admin/labels",        icon: <Globe size={17} />,           badge: counts.labels },
-    { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={17} />,   badge: counts.messages },
-    { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={17} />,        badge: counts.support },
-    { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={17} />,      badge: counts.payouts },
-    { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: 0 },
-    { label: "Assets",        href: "/admin/assets",        icon: <Palette size={17} />,         badge: 0 },
-    { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={17} />,       badge: 0 },
-    { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={17} />,            badge: 0, superOnly: true },
-    { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={17} />,       badge: 0 },
-    { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={17} />,        badge: 0 },
-    { label: "Settings",      href: "/admin/settings",      icon: <Settings size={17} />,        badge: 0, superOnly: true },
+  const NAV_SECTIONS = [
+    {
+      label: "",
+      items: [
+        { label: "Dashboard",     href: "/admin",               icon: <LayoutDashboard size={17} />, badge: 0, superOnly: false },
+      ],
+    },
+    {
+      label: "Content Review",
+      items: [
+        { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases, superOnly: false },
+        { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: 0,               superOnly: false },
+      ],
+    },
+    {
+      label: "People",
+      items: [
+        { label: "Artists",       href: "/admin/artists",       icon: <Users size={17} />,           badge: 0,               superOnly: false },
+        { label: "Labels",        href: "/admin/labels",        icon: <Globe size={17} />,           badge: counts.labels,   superOnly: false },
+      ],
+    },
+    {
+      label: "Communications",
+      items: [
+        { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={17} />,   badge: counts.messages, superOnly: false },
+        { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={17} />,        badge: counts.support,  superOnly: false },
+        { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={17} />,       badge: 0,               superOnly: false },
+        { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={17} />,            badge: 0,               superOnly: true  },
+      ],
+    },
+    {
+      label: "Finance",
+      items: [
+        { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={17} />,      badge: counts.payouts,  superOnly: false },
+      ],
+    },
+    {
+      label: "Platform",
+      items: [
+        { label: "Analytics",     href: "/admin/analytics",     icon: <BarChart2 size={17} />,       badge: 0,               superOnly: false },
+        { label: "Blog",          href: "/admin/blog",          icon: <BookOpen size={17} />,        badge: 0,               superOnly: false },
+        { label: "Assets",        href: "/admin/assets",        icon: <Palette size={17} />,         badge: 0,               superOnly: false },
+        { label: "Settings",      href: "/admin/settings",      icon: <Settings size={17} />,        badge: 0,               superOnly: true  },
+      ],
+    },
   ];
 
-  const navItems = NAV.filter(item => !item.superOnly || isSuperAdmin);
+  const visibleSections = NAV_SECTIONS.map(section => ({
+    ...section,
+    items: section.items.filter(item => !item.superOnly || isSuperAdmin),
+  })).filter(section => section.items.length > 0);
+
+  const allNavItems = visibleSections.flatMap(s => s.items);
 
   // Total pending for the hamburger dot
   const totalPending = counts.releases + counts.labels + counts.support + counts.payouts;
@@ -146,28 +181,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-[#007bff]/10 text-[#007bff]"
-                    : "text-white/45 hover:text-white hover:bg-white/[0.05]"
-                }`}
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                <span className="flex-1 truncate">{item.label}</span>
-                {item.badge > 0 && <Badge n={item.badge} />}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
+          {visibleSections.map((section) => (
+            <div key={section.label || "top"}>
+              {section.label && (
+                <p className="px-3 text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-1">
+                  {section.label}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const active = item.href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        active
+                          ? "bg-[#007bff]/10 text-[#007bff]"
+                          : "text-white/45 hover:text-white hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      <span className="flex-shrink-0">{item.icon}</span>
+                      <span className="flex-1 truncate">{item.label}</span>
+                      {item.badge > 0 && <Badge n={item.badge} />}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Logout */}
@@ -198,7 +244,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
           </button>
           <h2 className="text-white font-semibold text-sm">
-            {navItems.find(n => n.href === pathname || (n.href !== "/admin" && pathname.startsWith(n.href)))?.label ?? "Admin"}
+            {allNavItems.find(n => n.href === pathname || (n.href !== "/admin" && pathname.startsWith(n.href)))?.label ?? "Admin"}
           </h2>
           {totalPending > 0 && (
             <span className="ml-auto text-yellow-400/80 text-xs flex items-center gap-1.5 font-medium">

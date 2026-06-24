@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Music2, ExternalLink, Globe } from "lucide-react";
+import { Music2, ExternalLink, Globe, ArrowLeft } from "lucide-react";
 
 type Profile = {
   email: string;
@@ -105,7 +105,12 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
         {/* Subtle bottom fade to black */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" />
 
-        <div className="max-w-3xl mx-auto px-6 pl-8 pt-24 pb-14 flex flex-col sm:flex-row items-center sm:items-end gap-7 relative z-10">
+        <div className="max-w-3xl mx-auto px-6 pl-8 pt-24 relative z-10">
+          <Link href="/artists" className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors mb-6">
+            <ArrowLeft size={15} /> All Artists
+          </Link>
+        </div>
+        <div className="max-w-3xl mx-auto px-6 pl-8 pb-14 flex flex-col sm:flex-row items-center sm:items-end gap-7 relative z-10">
           {/* Photo */}
           <div
             className="w-36 h-36 sm:w-44 sm:h-44 rounded-3xl overflow-hidden flex-shrink-0 flex items-center justify-center"
