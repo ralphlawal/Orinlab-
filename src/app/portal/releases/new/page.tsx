@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
@@ -48,6 +48,8 @@ function clearDraftStorage() {
 
 export default function NewReleasePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromId = searchParams.get("from");
   // Read draft once on mount (lazy init — runs before any render)
   const [draft] = useState<Record<string, string> | null>(() => readDraft());
   const draftWasRestored = !!(draft && (draft.songTitle || draft.genre || draft.songwriters));
@@ -118,16 +120,36 @@ export default function NewReleasePage() {
         .limit(1)
         .maybeSingle();
 
-      if (!data) {
+      // Allow resubmission from a rejected release even if no approved releases
+      const hasApproved = !!data;
+      if (!hasApproved && !fromId) {
         router.push("/portal");
         return;
+      }
+
+      // If resubmitting from a rejected release, pre-fill state from that release
+      if (fromId) {
+        const { data: prev } = await supabase
+          .from("releases")
+          .select("artist_name, email, song_title, genre, language, release_type, copyright_owner, copyright_year")
+          .eq("id", fromId)
+          .eq("email", session.user.email!)
+          .maybeSingle();
+        if (prev) {
+          setGenre(prev.genre ?? "");
+          setLanguage(prev.language ?? "");
+          setReleaseType(prev.release_type ?? "Single");
+          setProfile({ artist_name: prev.artist_name, email: prev.email });
+          setLoading(false);
+          return;
+        }
       }
 
       setProfile(data as ArtistProfile);
       setLoading(false);
     }
     load();
-  }, [router]);
+  }, [router, fromId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function validateArtwork(file: File | null) {
     setCoverFile(file);
@@ -428,6 +450,13 @@ export default function NewReleasePage() {
               <p className="text-white/40 text-xs">{profile.email}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {fromId && (
+        <div className="mb-6 flex items-center gap-3 bg-amber-500/10 border border-amber-500/25 px-4 py-3 rounded-xl">
+          <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
+          <p className="text-amber-300 text-xs">Resubmitting from a previous release. Your genre and release type have been pre-filled — upload new audio and cover art, then fix any metadata before submitting.</p>
         </div>
       )}
 

@@ -147,6 +147,36 @@ export default function PortalDashboard() {
         );
       })()}
 
+      {/* Onboarding checklist — only for artists with no releases yet */}
+      {releases.length === 0 && (
+        <div className="mb-8 bg-[#007bff]/5 border border-[#007bff]/20 rounded-2xl p-6">
+          <p className="text-white font-bold text-lg mb-1">Welcome to Orinlabí 👋</p>
+          <p className="text-white/50 text-sm mb-5">Here&apos;s how to get your music distributed in three steps.</p>
+          <div className="space-y-3">
+            {[
+              { num: "1", title: "Complete your profile", body: "Add your photo, bio, and social links so fans can find you.", href: "/portal/profile", cta: "Edit Profile" },
+              { num: "2", title: "Submit your first release", body: "Upload your track, cover art, and credits. We'll review it within 3–5 business days.", href: "/portal/releases/new", cta: "Submit Release" },
+              { num: "3", title: "Get your smart link", body: "Once approved, share one link that works on Spotify, Apple Music, Boomplay, and everywhere else.", href: null, cta: null },
+            ].map(({ num, title, body, href, cta }) => (
+              <div key={num} className="flex items-start gap-4 bg-white/[0.03] rounded-xl px-4 py-4">
+                <div className="w-7 h-7 rounded-full bg-[#007bff]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-[#007bff] text-xs font-bold">{num}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">{title}</p>
+                  <p className="text-white/40 text-xs mt-0.5 leading-relaxed">{body}</p>
+                </div>
+                {href && cta && (
+                  <Link href={href} className="flex-shrink-0 text-xs font-semibold text-[#007bff] hover:text-white border border-[#007bff]/30 hover:border-[#007bff] px-3 py-1.5 rounded-lg transition-colors">
+                    {cta}
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Platform announcements */}
       {announcements.length > 0 && (
         <div className="mb-6 space-y-2">

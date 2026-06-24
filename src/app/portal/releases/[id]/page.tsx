@@ -43,6 +43,8 @@ type Release = {
   distribution_stage: "submitted" | "in_distribution" | "live" | null;
   presave_enabled: boolean | null;
   presave_url: string | null;
+  youtube_content_id: boolean | null;
+  artist_bio: string | null;
 };
 
 const DITTO_PLATFORMS = ALL_PLATFORMS;
@@ -79,6 +81,7 @@ export default function ReleaseDetailPage() {
   const [sendingTakedown, setSendingTakedown] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [presaveCopied, setPresaveCopied] = useState(false);
+  const [copiedCaption, setCopiedCaption] = useState<string | null>(null);
   const [payoutState, setPayoutState] = useState<"idle" | "confirm" | "sent">("idle");
   const [payoutLoading, setPayoutLoading] = useState(false);
   const [hasPayoutDetails, setHasPayoutDetails] = useState(false);
@@ -94,6 +97,10 @@ export default function ReleaseDetailPage() {
   const [localLinks, setLocalLinks] = useState<Record<string, string>>({});
   const [savingLinks, setSavingLinks] = useState(false);
   const [linksSaved, setLinksSaved] = useState(false);
+  const [editingMeta, setEditingMeta] = useState(false);
+  const [metaDraft, setMetaDraft] = useState({ song_title: "", genre: "", language: "", copyright_owner: "", copyright_year: "", artist_bio: "" });
+  const [savingMeta, setSavingMeta] = useState(false);
+  const [metaSaved, setMetaSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -173,6 +180,23 @@ export default function ReleaseDetailPage() {
       body: JSON.stringify({ type: "store-links-added", data: { email: release.email, artist_name: release.artist_name, song_title: release.song_title, store_links: filtered } }) }).catch(() => {});
     setSavingLinks(false); setLinksSaved(true); setEditingLinks(false);
     setTimeout(() => setLinksSaved(false), 3000);
+  }
+
+  async function saveMeta() {
+    if (!release) return;
+    setSavingMeta(true);
+    const update = {
+      song_title: metaDraft.song_title.trim() || release.song_title,
+      genre: metaDraft.genre || release.genre,
+      language: metaDraft.language || release.language,
+      copyright_owner: metaDraft.copyright_owner.trim() || release.copyright_owner,
+      copyright_year: metaDraft.copyright_year.trim() || release.copyright_year,
+      artist_bio: metaDraft.artist_bio.trim() || release.artist_bio,
+    };
+    await supabase.from("releases").update(update).eq("id", release.id);
+    setRelease((r) => r ? { ...r, ...update } : r);
+    setSavingMeta(false); setMetaSaved(true); setEditingMeta(false);
+    setTimeout(() => setMetaSaved(false), 3000);
   }
 
   async function handlePayoutRequest() {
@@ -317,8 +341,20 @@ export default function ReleaseDetailPage() {
 
           {/* Status message */}
           <div className={`rounded-2xl border p-5 ${cfg.bg}`}>
-            <p className={`font-semibold mb-1.5 ${cfg.color}`}>{cfg.heading}</p>
-            <p className="text-white/60 text-sm leading-relaxed">{cfg.body}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <p className={`font-semibold mb-1.5 ${cfg.color}`}>{cfg.heading}</p>
+                <p className="text-white/60 text-sm leading-relaxed">{cfg.body}</p>
+              </div>
+              {release.status === "pending" && (
+                <button
+                  onClick={() => { setMetaDraft({ song_title: release.song_title, genre: release.genre, language: release.language ?? "", copyright_owner: release.copyright_owner, copyright_year: release.copyright_year, artist_bio: release.artist_bio ?? "" }); setEditingMeta(true); }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-white/40 hover:text-white border border-white/[0.1] hover:border-white/30 px-3 py-2 rounded-xl transition-colors flex-shrink-0"
+                >
+                  <PenLine size={13} /> Edit Info
+                </button>
+              )}
+            </div>
             {release.review_notes && (
               <div className="mt-4 pt-4 border-t border-white/[0.08]">
                 <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Note from Orinlabí</p>
@@ -326,6 +362,66 @@ export default function ReleaseDetailPage() {
               </div>
             )}
           </div>
+
+          {/* Inline metadata editor — pending releases only */}
+          {editingMeta && release.status === "pending" && (() => {
+            const inp = "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-2.5 rounded-xl transition-colors";
+            return (
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                <p className="text-white font-semibold mb-4">Edit Release Info</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-white/40 text-xs mb-1">Track Title</label>
+                    <input value={metaDraft.song_title} onChange={(e) => setMetaDraft((d) => ({ ...d, song_title: e.target.value }))} className={inp} />
+                  </div>
+                  <div>
+                    <label className="block text-white/40 text-xs mb-1">Genre</label>
+                    <input value={metaDraft.genre} onChange={(e) => setMetaDraft((d) => ({ ...d, genre: e.target.value }))} className={inp} />
+                  </div>
+                  <div>
+                    <label className="block text-white/40 text-xs mb-1">Language</label>
+                    <input value={metaDraft.language} onChange={(e) => setMetaDraft((d) => ({ ...d, language: e.target.value }))} className={inp} />
+                  </div>
+                  <div>
+                    <label className="block text-white/40 text-xs mb-1">Copyright Owner</label>
+                    <input value={metaDraft.copyright_owner} onChange={(e) => setMetaDraft((d) => ({ ...d, copyright_owner: e.target.value }))} className={inp} />
+                  </div>
+                  <div>
+                    <label className="block text-white/40 text-xs mb-1">Copyright Year</label>
+                    <input value={metaDraft.copyright_year} onChange={(e) => setMetaDraft((d) => ({ ...d, copyright_year: e.target.value }))} className={inp} />
+                  </div>
+                </div>
+                <div className="mb-5">
+                  <label className="block text-white/40 text-xs mb-1">Artist Bio</label>
+                  <textarea value={metaDraft.artist_bio} onChange={(e) => setMetaDraft((d) => ({ ...d, artist_bio: e.target.value }))} rows={3} className={`${inp} resize-none`} />
+                </div>
+                <div className="flex items-center gap-3">
+                  <button onClick={saveMeta} disabled={savingMeta}
+                    className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0066dd] disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors">
+                    {savingMeta ? <Loader2 size={14} className="animate-spin" /> : null}
+                    Save Changes
+                  </button>
+                  <button onClick={() => setEditingMeta(false)} className="text-sm text-white/30 hover:text-white transition-colors">Cancel</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Resubmit after rejection */}
+          {release.status === "rejected" && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+              <p className="text-white font-semibold mb-1">Want to try again?</p>
+              <p className="text-white/40 text-sm mb-4 leading-relaxed">
+                You can resubmit this release after making changes. Your info will be pre-filled so you only need to fix what&apos;s needed.
+              </p>
+              <Link
+                href={`/portal/releases/new?from=${release.id}`}
+                className="inline-flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+              >
+                <ArrowLeft size={14} className="rotate-180" /> Fix &amp; Resubmit
+              </Link>
+            </div>
+          )}
 
           {/* Contract */}
           {release.status === "approved" && (
@@ -354,17 +450,39 @@ export default function ReleaseDetailPage() {
             </div>
           )}
 
-          {/* Pre-save */}
-          {release.presave_enabled && release.presave_url && (
-            <div className="bg-[#1db954]/5 border border-[#1db954]/20 rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-2"><Star size={17} className="text-[#1db954]" /><p className="text-white font-semibold">Pre-save Link</p><span className="text-[10px] font-bold bg-[#1db954]/20 text-[#1db954] px-2 py-0.5 rounded-full uppercase tracking-widest">Live</span></div>
-              <p className="text-white/40 text-sm mb-4">Share this link so fans can pre-save before your release drops.</p>
-              <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
-                <span className="text-white/60 text-xs flex-1 truncate font-mono">https://orinlabi.com/presave/{release.id}</span>
-                <button onClick={() => { navigator.clipboard.writeText(`https://orinlabi.com/presave/${release.id}`); setPresaveCopied(true); setTimeout(() => setPresaveCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs font-semibold text-[#1db954] hover:text-white transition-colors flex-shrink-0">
-                  {presaveCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}{presaveCopied ? "Copied!" : "Copy"}
+          {/* Pre-save — artists can self-enable for pending/approved releases */}
+          {(release.status === "pending" || release.status === "approved") && (
+            <div className={`border rounded-2xl p-5 ${release.presave_enabled ? "bg-[#1db954]/5 border-[#1db954]/20" : "bg-white/[0.03] border-white/[0.06]"}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <Star size={17} className={release.presave_enabled ? "text-[#1db954]" : "text-white/30"} />
+                  <p className="text-white font-semibold">Pre-save Campaign</p>
+                  {release.presave_enabled && <span className="text-[10px] font-bold bg-[#1db954]/20 text-[#1db954] px-2 py-0.5 rounded-full uppercase tracking-widest">Active</span>}
+                </div>
+                <button
+                  onClick={async () => {
+                    const next = !release.presave_enabled;
+                    await supabase.from("releases").update({ presave_enabled: next, presave_url: next ? `https://orinlabi.com/presave/${release.id}` : null }).eq("id", release.id);
+                    setRelease((r) => r ? { ...r, presave_enabled: next, presave_url: next ? `https://orinlabi.com/presave/${release.id}` : null } : r);
+                  }}
+                  className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-colors ${release.presave_enabled ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20" : "bg-[#1db954]/10 border-[#1db954]/20 text-[#1db954] hover:bg-[#1db954]/20"}`}
+                >
+                  {release.presave_enabled ? "Turn Off" : "Enable Pre-save"}
                 </button>
               </div>
+              <p className="text-white/40 text-sm mb-4">
+                {release.presave_enabled
+                  ? "Fans can follow this link to pre-save your release before it drops."
+                  : "Enable this to get a shareable pre-save link for your release."}
+              </p>
+              {release.presave_enabled && (
+                <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
+                  <span className="text-white/60 text-xs flex-1 truncate font-mono">https://orinlabi.com/presave/{release.id}</span>
+                  <button onClick={() => { navigator.clipboard.writeText(`https://orinlabi.com/presave/${release.id}`); setPresaveCopied(true); setTimeout(() => setPresaveCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs font-semibold text-[#1db954] hover:text-white transition-colors flex-shrink-0">
+                    {presaveCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}{presaveCopied ? "Copied!" : "Copy"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -398,6 +516,54 @@ export default function ReleaseDetailPage() {
             </div>
           )}
 
+          {/* Social sharing copy */}
+          {release.status === "approved" && (() => {
+            const smartLink = `https://orinlabi.com/listen/${release.id}`;
+            const captions: { label: string; key: string; text: string }[] = [
+              {
+                label: "Instagram / TikTok",
+                key: "ig",
+                text: `🎵 "${release.song_title}" by ${release.artist_name} is OUT NOW!\n\nStream on all platforms 👇\n${smartLink}\n\n#${release.artist_name.replace(/\s+/g, "")} #NewMusic #Orinlabi`,
+              },
+              {
+                label: "Twitter / X",
+                key: "x",
+                text: `"${release.song_title}" is out now 🎶\nStream it here → ${smartLink}`,
+              },
+              {
+                label: "WhatsApp",
+                key: "wa",
+                text: `My new ${release.release_type.toLowerCase()} "${release.song_title}" is out! 🔥 Listen here: ${smartLink}`,
+              },
+            ];
+            return (
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                <div className="flex items-center gap-3 mb-2">
+                  <Send size={17} className="text-violet-400" />
+                  <p className="text-white font-semibold">Share Your Release</p>
+                </div>
+                <p className="text-white/40 text-sm mb-4">Ready-made captions — tap to copy, paste anywhere.</p>
+                <div className="space-y-3">
+                  {captions.map(({ label, key, text }) => (
+                    <div key={key} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-white/50 text-xs font-semibold uppercase tracking-widest">{label}</p>
+                        <button
+                          onClick={() => { navigator.clipboard.writeText(text); setCopiedCaption(key); setTimeout(() => setCopiedCaption(null), 2000); }}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-violet-400 hover:text-white transition-colors"
+                        >
+                          {copiedCaption === key ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+                          {copiedCaption === key ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                      <p className="text-white/60 text-xs leading-relaxed whitespace-pre-line">{text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Stream analytics */}
           {release.status === "approved" && release.streams && Object.values(release.streams).some((v) => v > 0) && (
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
@@ -412,6 +578,34 @@ export default function ReleaseDetailPage() {
                 ))}
               </div>
               <p className="text-white/20 text-xs mt-4">Stream counts updated monthly from DSP reports.</p>
+            </div>
+          )}
+
+          {/* Content ID status */}
+          {release.status === "approved" && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+              <div className="flex items-center gap-3 mb-2">
+                <ShieldCheck size={17} className={release.youtube_content_id ? "text-green-400" : "text-white/25"} />
+                <p className="text-white font-semibold">YouTube Content ID</p>
+              </div>
+              {release.youtube_content_id ? (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1.5 text-[10px] font-bold bg-green-400/15 text-green-400 px-2.5 py-1 rounded-full uppercase tracking-widest">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block" />
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-white/40 text-sm leading-relaxed">
+                    Your music is registered with Content ID. If your track is used in YouTube videos, you&apos;ll earn a share of ad revenue. Earnings appear in your royalties report.
+                  </p>
+                  <p className="text-white/25 text-xs mt-3">To dispute a Content ID claim or report an issue, use the Support tab.</p>
+                </>
+              ) : (
+                <p className="text-white/40 text-sm leading-relaxed">
+                  Content ID is not active for this release. If you requested it during submission and it&apos;s been more than 14 days, contact us via the Support tab.
+                </p>
+              )}
             </div>
           )}
 

@@ -113,6 +113,10 @@ export default function ReleasesPage() {
   const [savingStage, setSavingStage] = useState(false);
   const [stageSaved, setStageSaved]   = useState(false);
 
+  // Batch selection
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const [batchStatus, setBatchStatus] = useState<"idle" | "running">("idle");
+
   // Pre-save state
   const [presaveEnabled, setPresaveEnabled] = useState(false);
   const [presaveUrl, setPresaveUrl] = useState("");
@@ -469,6 +473,36 @@ export default function ReleasesPage() {
     load();
   }
 
+  async function batchApprove() {
+    if (!checkedIds.size) return;
+    setBatchStatus("running");
+    for (const id of checkedIds) {
+      const r = releases.find((x) => x.id === id);
+      if (!r || r.status === "approved") continue;
+      await supabase.from("releases").update({ status: "approved", review_notes: null }).eq("id", id);
+      fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "approved", data: { email: r.email, artist_name: r.artist_name, song_title: r.song_title, release_type: r.release_type, country: r.country, review_notes: null, release_id: id } }) }).catch(() => {});
+    }
+    setCheckedIds(new Set());
+    setBatchStatus("idle");
+    load();
+  }
+
+  async function batchReject(reason: string) {
+    if (!checkedIds.size) return;
+    setBatchStatus("running");
+    for (const id of checkedIds) {
+      const r = releases.find((x) => x.id === id);
+      if (!r || r.status === "rejected") continue;
+      await supabase.from("releases").update({ status: "rejected", review_notes: reason }).eq("id", id);
+      fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "rejected", data: { email: r.email, artist_name: r.artist_name, song_title: r.song_title, release_type: r.release_type, country: r.country, review_notes: reason, release_id: id } }) }).catch(() => {});
+    }
+    setCheckedIds(new Set());
+    setBatchStatus("idle");
+    load();
+  }
+
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -512,6 +546,28 @@ export default function ReleasesPage() {
         </div>
       ) : (
         <div className="space-y-3">
+          {/* Batch action bar */}
+          {checkedIds.size > 0 && (
+            <div className="sticky top-0 z-10 flex items-center gap-3 flex-wrap bg-[#0a0a0a]/90 backdrop-blur border border-white/[0.1] rounded-2xl px-5 py-3">
+              <p className="text-white/60 text-sm flex-1">{checkedIds.size} release{checkedIds.size !== 1 ? "s" : ""} selected</p>
+              <button onClick={batchApprove} disabled={batchStatus === "running"}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-green-500/15 hover:bg-green-500/25 text-green-400 px-4 py-2 rounded-xl transition-colors disabled:opacity-50">
+                {batchStatus === "running" ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={12} />} Approve All
+              </button>
+              {[
+                { label: "Audio quality issues", reason: "The audio does not meet our quality standards. Please re-master your track to at least 16-bit / 44.1kHz WAV or 320kbps MP3 and resubmit." },
+                { label: "Artwork doesn't meet specs", reason: "The cover art does not meet platform requirements. Please submit a square JPG/PNG at least 3000×3000px with no streaming platform logos or URLs." },
+                { label: "Metadata incomplete", reason: "Your submission is missing required metadata (songwriters, copyright owner, or release date). Please complete all fields and resubmit." },
+              ].map(({ label, reason }) => (
+                <button key={label} onClick={() => batchReject(reason)} disabled={batchStatus === "running"}
+                  className="text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-xl transition-colors disabled:opacity-50">
+                  Reject: {label}
+                </button>
+              ))}
+              <button onClick={() => setCheckedIds(new Set())} className="text-xs text-white/30 hover:text-white transition-colors ml-2">Clear</button>
+            </div>
+          )}
+
           {releases.filter((r) => !search || r.artist_name.toLowerCase().includes(search.toLowerCase()) || r.song_title.toLowerCase().includes(search.toLowerCase())).map((r) => (
             <div
               key={r.id}
@@ -520,6 +576,9 @@ export default function ReleasesPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
+                    <input type="checkbox" checked={checkedIds.has(r.id)}
+                      onChange={(e) => setCheckedIds((prev) => { const next = new Set(prev); e.target.checked ? next.add(r.id) : next.delete(r.id); return next; })}
+                      className="w-4 h-4 rounded accent-[#007bff] cursor-pointer flex-shrink-0" />
                     <h3 className="text-white font-semibold">{r.song_title}</h3>
                     <StatusBadge status={r.status} />
                     {r.explicit && (

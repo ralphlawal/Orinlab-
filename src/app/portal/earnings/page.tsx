@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2, DollarSign, BarChart2, TrendingUp, ExternalLink } from "lucide-react";
+import { Loader2, DollarSign, BarChart2, TrendingUp, ExternalLink, Download } from "lucide-react";
 import Link from "next/link";
 
 type Release = {
@@ -18,6 +18,7 @@ type Release = {
 };
 
 type Split = { id: string; name: string; role: string | null; percentage: number };
+type PayoutRequest = { id: string; song_title: string; amount_usd: number; status: "pending" | "paid" | "rejected"; payout_method: string | null; created_at: string; paid_at: string | null; admin_notes: string | null };
 
 const PLATFORM_COLORS: Record<string, string> = {
   spotify: "#1db954", apple_music: "#fc3c44", youtube_music: "#ff0000",
@@ -32,20 +33,31 @@ function fmt(n: number) {
 export default function EarningsPage() {
   const [releases, setReleases] = useState<Release[]>([]);
   const [splits, setSplits]     = useState<Record<string, Split[]>>({});
+  const [payouts, setPayouts]   = useState<PayoutRequest[]>([]);
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
-      const { data: r } = await supabase
-        .from("releases")
-        .select("id, song_title, release_type, genre, cover_art_url, streams, royalties_usd, store_links, status")
-        .eq("email", data.session.user.email!)
-        .eq("status", "approved")
-        .order("submitted_at", { ascending: false });
+      const email = data.session.user.email!;
 
-      const list = (r ?? []) as Release[];
+      const [relRes, payRes] = await Promise.all([
+        supabase
+          .from("releases")
+          .select("id, song_title, release_type, genre, cover_art_url, streams, royalties_usd, store_links, status")
+          .eq("email", email)
+          .eq("status", "approved")
+          .order("submitted_at", { ascending: false }),
+        supabase
+          .from("payout_requests")
+          .select("id, song_title, amount_usd, status, payout_method, created_at, paid_at, admin_notes")
+          .eq("email", email)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      const list = (relRes.data ?? []) as Release[];
       setReleases(list);
+      setPayouts((payRes.data ?? []) as PayoutRequest[]);
 
       if (list.length > 0) {
         const ids = list.map((x) => x.id);
@@ -71,9 +83,38 @@ export default function EarningsPage() {
 
   return (
     <section className="max-w-3xl mx-auto px-4 py-12">
-      <div className="mb-8">
-        <h1 className="text-white font-bold text-2xl flex items-center gap-2"><DollarSign size={22} /> Earnings</h1>
-        <p className="text-white/40 text-sm mt-1">Revenue breakdown across all your approved releases.</p>
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-white font-bold text-2xl flex items-center gap-2"><DollarSign size={22} /> Earnings</h1>
+          <p className="text-white/40 text-sm mt-1">Revenue breakdown across all your approved releases.</p>
+        </div>
+        {releases.length > 0 && (
+          <button
+            onClick={() => {
+              const rows = releases.map((r) => ({
+                Release: r.song_title,
+                Type: r.release_type,
+                Genre: r.genre,
+                Status: r.status,
+                "Total Streams": Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0),
+                ...Object.fromEntries(Object.entries(r.streams ?? {}).map(([k, v]) => [`Streams – ${k}`, v])),
+                "Royalties (USD)": r.royalties_usd ?? 0,
+              }));
+              const keys = Object.keys(rows[0]);
+              const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+              const csv = [keys.join(","), ...rows.map((row) => keys.map((k) => esc((row as Record<string, unknown>)[k])).join(","))].join("\n");
+              const blob = new Blob([csv], { type: "text/csv" });
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = `orinlabi-earnings-${new Date().toISOString().slice(0, 10)}.csv`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }}
+            className="flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors flex-shrink-0"
+          >
+            <Download size={14} /> Export CSV
+          </button>
+        )}
       </div>
 
       {/* Summary */}
@@ -172,6 +213,38 @@ export default function EarningsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Payout history */}
+      {payouts.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-white font-bold text-lg mb-4">Payout History</h2>
+          <div className="space-y-3">
+            {payouts.map((p) => {
+              const statusStyle = p.status === "paid"
+                ? { label: "Paid", color: "text-green-400", bg: "bg-green-400/10 border-green-400/20" }
+                : p.status === "rejected"
+                ? { label: "Rejected", color: "text-red-400", bg: "bg-red-400/10 border-red-400/20" }
+                : { label: "Pending", color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" };
+              return (
+                <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold truncate">{p.song_title}</p>
+                    <p className="text-white/40 text-xs mt-0.5">
+                      {p.payout_method ? p.payout_method.replace(/_/g, " ") : "—"} · Requested {new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                    {p.paid_at && <p className="text-green-400/60 text-xs mt-0.5">Paid {new Date(p.paid_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>}
+                    {p.admin_notes && <p className="text-white/30 text-xs mt-1 italic">{p.admin_notes}</p>}
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <p className="text-white font-bold">${p.amount_usd.toFixed(2)}</p>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-widest ${statusStyle.bg} ${statusStyle.color}`}>{statusStyle.label}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </section>

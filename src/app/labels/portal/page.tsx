@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
-  Clock, CheckCircle2, XCircle, Loader2, Users, Music, Globe, ArrowRight, Pencil,
+  Clock, CheckCircle2, XCircle, Loader2, Users, Music, Globe, ArrowRight, Pencil, BarChart2, DollarSign,
 } from "lucide-react";
 
 type LabelProfile = {
@@ -25,6 +25,8 @@ export default function LabelPortalDashboard() {
   const [label, setLabel]         = useState<LabelProfile | null>(null);
   const [artistCount, setArtistCount] = useState(0);
   const [releaseCount, setReleaseCount] = useState(0);
+  const [totalStreams, setTotalStreams] = useState(0);
+  const [totalRoyalties, setTotalRoyalties] = useState(0);
   const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
@@ -53,12 +55,15 @@ export default function LabelPortalDashboard() {
 
         if (count > 0) {
           const emails = profiles!.map((p) => p.email);
-          const { count: rc } = await supabase
+          const { data: rData, count: rc } = await supabase
             .from("releases")
-            .select("id", { count: "exact", head: true })
+            .select("streams, royalties_usd", { count: "exact" })
             .in("email", emails)
             .eq("status", "approved");
           setReleaseCount(rc ?? 0);
+          const allReleases = (rData ?? []) as { streams: Record<string, number> | null; royalties_usd: number | null }[];
+          setTotalStreams(allReleases.reduce((s, r) => s + Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0), 0));
+          setTotalRoyalties(allReleases.reduce((s, r) => s + (r.royalties_usd ?? 0), 0));
         }
       }
 
@@ -165,28 +170,35 @@ export default function LabelPortalDashboard() {
 
       {/* Stats (approved only) */}
       {status === "approved" && (
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-[#007bff]/10 rounded-xl flex items-center justify-center">
-                <Users size={20} className="text-[#007bff]" />
-              </div>
-              <p className="text-white/50 text-sm">Artists on Roster</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+            <div className="w-9 h-9 bg-[#007bff]/10 rounded-xl flex items-center justify-center mb-3">
+              <Users size={18} className="text-[#007bff]" />
             </div>
-            <p className="text-white font-bold text-3xl">{artistCount}</p>
-            <Link href="/labels/portal/artists" className="flex items-center gap-1 text-[#007bff] text-xs mt-3 hover:underline">
-              View Roster <ArrowRight size={11} />
-            </Link>
+            <p className="text-white font-bold text-2xl">{artistCount}</p>
+            <p className="text-white/40 text-xs mt-0.5">Artists</p>
+            <Link href="/labels/portal/artists" className="flex items-center gap-1 text-[#007bff] text-xs mt-2 hover:underline">Roster <ArrowRight size={10} /></Link>
           </div>
-
-          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-[#007bff]/10 rounded-xl flex items-center justify-center">
-                <Music size={20} className="text-[#007bff]" />
-              </div>
-              <p className="text-white/50 text-sm">Approved Releases</p>
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+            <div className="w-9 h-9 bg-[#007bff]/10 rounded-xl flex items-center justify-center mb-3">
+              <Music size={18} className="text-[#007bff]" />
             </div>
-            <p className="text-white font-bold text-3xl">{releaseCount}</p>
+            <p className="text-white font-bold text-2xl">{releaseCount}</p>
+            <p className="text-white/40 text-xs mt-0.5">Releases</p>
+          </div>
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+            <div className="w-9 h-9 bg-emerald-400/10 rounded-xl flex items-center justify-center mb-3">
+              <BarChart2 size={18} className="text-emerald-400" />
+            </div>
+            <p className="text-white font-bold text-2xl">{totalStreams >= 1_000_000 ? `${(totalStreams / 1_000_000).toFixed(1)}M` : totalStreams >= 1_000 ? `${(totalStreams / 1_000).toFixed(1)}K` : totalStreams}</p>
+            <p className="text-white/40 text-xs mt-0.5">Total Streams</p>
+          </div>
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+            <div className="w-9 h-9 bg-amber-400/10 rounded-xl flex items-center justify-center mb-3">
+              <DollarSign size={18} className="text-amber-400" />
+            </div>
+            <p className="text-white font-bold text-2xl">{totalRoyalties > 0 ? `$${totalRoyalties.toFixed(2)}` : "—"}</p>
+            <p className="text-white/40 text-xs mt-0.5">Royalties</p>
           </div>
         </div>
       )}
