@@ -129,7 +129,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {[
               { href: "/portal",               label: "Releases",  exact: true  },
               { href: "/portal/earnings",       label: "Earnings",  exact: false },
-              { href: "/portal/pitch",          label: "Pitch",     exact: false },
+              { href: "/portal/services",       label: "Services",  exact: false },
+              { href: "/portal/pitch",          label: "Promote",   exact: false },
+              { href: "/portal/tools",          label: "Tools",     exact: false },
               { href: "/portal/assets",         label: "Assets",    exact: false },
               { href: "/portal/messages",       label: "Messages",  exact: false },
               { href: "/portal/support",        label: "Support",       exact: false },
