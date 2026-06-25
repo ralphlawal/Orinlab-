@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Music2 } from "lucide-react";
@@ -71,6 +71,13 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
   const { id } = await params;
   const release = await getRelease(id);
   if (!release) notFound();
+
+  // When admin has set a Ditto smart link and there are no individual per-platform
+  // store links yet, send fans directly to Ditto — no orinlabi middleman page.
+  const hasStoreLinks = release.store_links && Object.keys(release.store_links).length > 0;
+  if (release.ditto_smart_link && !hasStoreLinks && release.status === "approved") {
+    redirect(release.ditto_smart_link);
+  }
 
   // Release exists but not yet approved — show a holding page
   if (release.status !== "approved") {

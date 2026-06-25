@@ -16,6 +16,7 @@ import {
 type PendingRelease = {
   id: string;
   artist_name: string;
+  email: string;
   song_title: string;
   genre: string | null;
   release_type: string;
@@ -123,13 +124,51 @@ function QuickReleaseCard({ release, onDone }: { release: PendingRelease; onDone
 
   async function act(action: "approve" | "reject") {
     setActing(action);
-    await supabase.from("releases").update({ status: action === "approve" ? "approved" : "rejected" }).eq("id", release.id);
-    await fetch("/api/notify", {
+    await supabase.from("releases").update({
+      status: action === "approve" ? "approved" : "rejected",
+      reviewed_at: new Date().toISOString(),
+    }).eq("id", release.id);
+    // Email the artist
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: action === "approve" ? "approved" : "rejected",
+        release: {
+          email: release.email,
+          artist_name: release.artist_name,
+          song_title: release.song_title,
+          release_type: release.release_type,
+          genre: release.genre,
+          review_notes: null,
+        },
+      }),
+    }).catch(() => {});
+    // In-app notification for artist
+    supabase.from("notifications").insert({
+      email: release.email,
+      type: action === "approve" ? "approved" : "rejected",
+      title: action === "approve"
+        ? `"${release.song_title}" has been approved!`
+        : `"${release.song_title}" was not selected`,
+      body: action === "approve"
+        ? "Your release has been approved and is being prepared for distribution."
+        : "Your release was not selected at this time. Check your portal for details.",
+      link: null,
+    }).then(() => {}).then(undefined, () => {});
+    // Admin record copy
+    fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: action === "approve" ? "release-approved" : "release-rejected",
-        data: { song_title: release.song_title, artist_name: release.artist_name },
+        data: {
+          song_title: release.song_title,
+          artist_name: release.artist_name,
+          email: release.email,
+          release_type: release.release_type,
+          reviewed_at: new Date().toISOString(),
+        },
       }),
     }).catch(() => {});
     setActing(null);
@@ -332,7 +371,7 @@ export default function AdminDashboard() {
       supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("active", true),
       supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("payout_requests").select("id,artist_name,song_title,amount_usd,payout_method,created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(5),
-      supabase.from("releases").select("id,artist_name,song_title,genre,release_type,submitted_at").eq("status", "pending").order("submitted_at", { ascending: false }).limit(8),
+      supabase.from("releases").select("id,artist_name,email,song_title,genre,release_type,submitted_at").eq("status", "pending").order("submitted_at", { ascending: false }).limit(8),
       supabase.from("label_profiles").select("id,name,email,country,submitted_at").eq("status", "pending").order("submitted_at", { ascending: false }).limit(5),
       supabase.from("support_tickets").select("id,artist_name,subject,category,created_at").eq("status", "open").order("created_at", { ascending: false }).limit(5),
       supabase.from("releases").select("id,artist_name,song_title,status,submitted_at").order("submitted_at", { ascending: false }).limit(6),
@@ -552,7 +591,7 @@ export default function AdminDashboard() {
             {[
               { label: "Send Newsletter",   sub: "Email subscribers",   href: "/admin/newsletter",    icon: <Mail size={16} />,        color: "text-pink-400" },
               { label: "Add Announcement",  sub: "Portal-wide message", href: "/admin/announcements", icon: <Megaphone size={16} />,   color: "text-[#007bff]" },
-              { label: "Playlist Pitches",  sub: "Review submissions",  href: "/admin/pitches",       icon: <Radio size={16} />,       color: "text-purple-400" },
+              { label: "Promotion Pitches", sub: "Review submissions",  href: "/admin/pitches",       icon: <Radio size={16} />,       color: "text-purple-400" },
               { label: "Site Settings",     sub: "Edit live content",   href: "/admin/settings",      icon: <Bell size={16} />,        color: "text-amber-400" },
               { label: "System Tools",      sub: "Emails & reminders",  href: "/admin/settings?tab=system", icon: <Zap size={16} />,  color: "text-cyan-400" },
               { label: "Blog",              sub: "Manage articles",     href: "/admin/blog",           icon: <MessageSquare size={16} />, color: "text-green-400" },

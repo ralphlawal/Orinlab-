@@ -968,7 +968,7 @@ export default function ReleasesPage() {
                   <div className="mb-4 pb-4 border-b border-white/[0.06]">
                     <p className="text-white/30 text-xs mb-1.5">Ditto Smart Link</p>
                     <p className="text-white/20 text-[10px] mb-2">
-                      Copy the <span className="text-white/40">ditto.fm/…</span> link from the Ditto dashboard and paste it here. It shows on the artist's smart link page until individual store URLs are entered.
+                      Copy the <span className="text-white/40">ditto.fm/…</span> link from the Ditto dashboard. While no individual store URLs are saved, fans visiting the smart link will be redirected directly to Ditto.
                     </p>
                     <div className="flex gap-2">
                       <input
@@ -1060,7 +1060,7 @@ export default function ReleasesPage() {
                         <ExternalLink size={12} />
                       </a>
                     </div>
-                    <p className="text-white/20 text-[10px] mt-1.5">This is the artist's shareable fan link. It activates as soon as a platform router link is saved above.</p>
+                    <p className="text-white/20 text-[10px] mt-1.5">Permanent fan link. Redirects to Ditto (when set) or shows individual store links.</p>
                   </div>
 
                 </Section>
