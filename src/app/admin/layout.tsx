@@ -17,6 +17,7 @@ type Counts = {
   support: number;
   payouts: number;
   messages: number;
+  pitches: number;
 };
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
@@ -42,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [checking, setChecking]     = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0 });
+  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0, pitches: 0 });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -61,12 +62,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       { count: support },
       { count: payouts },
       { count: messages },
+      { count: pitches },
     ] = await Promise.all([
       supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("label_profiles").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist"),
+      supabase.from("playlist_pitches").select("*", { count: "exact", head: true }).eq("status", "pending"),
     ]);
     setCounts({
       releases: releases ?? 0,
@@ -74,6 +77,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       support: support ?? 0,
       payouts: payouts ?? 0,
       messages: messages ?? 0,
+      pitches: pitches ?? 0,
     });
   }, []);
 
@@ -104,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "Content Review",
       items: [
         { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases, superOnly: false },
-        { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: 0,               superOnly: false },
+        { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: counts.pitches,  superOnly: false },
       ],
     },
     {

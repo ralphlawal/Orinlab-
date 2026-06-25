@@ -520,18 +520,22 @@ export async function POST(req: NextRequest) {
       );
 
     } else if (type === "pitch-submitted") {
-      subject = `Playlist pitch — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
+      const pitchTypeLabel = data.pitch_type
+        ? ({ playlist: "Playlist Pitching", radio: "Radio Promotion", blog: "Blog & Press", sync: "Sync Licensing", social: "Social Media Push" } as Record<string, string>)[data.pitch_type] ?? data.pitch_type
+        : "Playlist Pitch";
+      subject = `${pitchTypeLabel} pitch — ${esc(data.artist_name)} · ${esc(data.song_title)}`;
       html = wrap(
         "#7c3aed",
         "Pitch Received",
-        `New Playlist Pitch: ${esc(data.song_title)}`,
-        `${esc(data.artist_name)} has submitted a playlist pitch.`,
+        `New ${esc(pitchTypeLabel)}: ${esc(data.song_title)}`,
+        `${esc(data.artist_name)} has submitted a promotion pitch.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
-          ${row("Artist",  data.artist_name)}
-          ${row("Email",   data.email)}
-          ${row("Release", data.song_title)}
-          ${data.genre ? row("Genre",  data.genre)  : ""}
-          ${data.mood  ? row("Mood",   data.mood)   : ""}
+          ${row("Artist",     data.artist_name)}
+          ${row("Email",      data.email)}
+          ${row("Release",    data.song_title)}
+          ${row("Pitch Type", pitchTypeLabel)}
+          ${data.genre ? row("Genre", data.genre) : ""}
+          ${data.mood  ? row("Mood",  data.mood)  : ""}
         </table>
         ${data.pitch_notes ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Pitch Notes</p>${quote(data.pitch_notes)}` : ""}
         ${btn("Review in Admin Panel", "https://orinlabi.com/admin/pitches", "#7c3aed")}`
