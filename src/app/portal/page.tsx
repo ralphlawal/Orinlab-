@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { PlatformIcon } from "@/components/PlatformIcon";
 import {
   Music2, Clock, CheckCircle2, XCircle,
   ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
@@ -75,9 +76,40 @@ const PLT_LABELS: Record<string, string> = {
   soundcloud: "SoundCloud", anghami: "Anghami",
 };
 
+// ─── Animated counter hook ────────────────────────────────────────────────────
+
+function useCounter(target: number, duration = 1400, delay = 0) {
+  const [value, setValue] = useState(0);
+  const started = useRef(false);
+  useEffect(() => {
+    if (!target || started.current) return;
+    const timeout = setTimeout(() => {
+      started.current = true;
+      let startTs: number | null = null;
+      const tick = (ts: number) => {
+        if (!startTs) startTs = ts;
+        const progress = Math.min((ts - startTs) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setValue(Math.round(target * eased));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [target, duration, delay]);
+  return value;
+}
+
 // ─── Platform Chart ────────────────────────────────────────────────────────────
 
 function PlatformChart({ releases }: { releases: Release[] }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), 300);
+    return () => clearTimeout(t);
+  }, []);
+
   const totals: Record<string, number> = {};
   for (const r of releases.filter((r) => r.status === "approved")) {
     for (const [k, v] of Object.entries(r.streams ?? {})) {
@@ -87,7 +119,7 @@ function PlatformChart({ releases }: { releases: Release[] }) {
   const entries = Object.entries(totals)
     .filter(([, v]) => v > 0)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 6);
+    .slice(0, 7);
   if (!entries.length) return null;
   const max = entries[0][1];
 
@@ -98,19 +130,72 @@ function PlatformChart({ releases }: { releases: Release[] }) {
         <Link href="/portal/earnings" className="text-[#007bff] text-xs hover:underline">Full report →</Link>
       </div>
       <div className="space-y-3">
-        {entries.map(([key, val]) => (
-          <div key={key} className="flex items-center gap-3">
-            <span className="text-white/50 text-xs w-24 flex-shrink-0 truncate">{PLT_LABELS[key] ?? key}</span>
-            <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+        {entries.map(([key, val], i) => {
+          const color = PLT_COLORS[key] ?? "#007bff";
+          const label = PLT_LABELS[key] ?? key;
+          return (
+            <div key={key} className="flex items-center gap-3">
+              {/* Platform icon */}
               <div
-                className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${(val / max) * 100}%`, background: PLT_COLORS[key] ?? "#007bff" }}
-              />
+                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: `${color}22`, color }}
+              >
+                <PlatformIcon platformKey={key} size={14} />
+              </div>
+              {/* Label */}
+              <span className="text-white/50 text-xs w-20 flex-shrink-0 truncate">{label}</span>
+              {/* Animated bar */}
+              <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: ready ? `${(val / max) * 100}%` : "0%",
+                    background: color,
+                    transition: `width ${700 + i * 80}ms cubic-bezier(0.4, 0, 0.2, 1)`,
+                  }}
+                />
+              </div>
+              {/* Value */}
+              <span className="text-white/60 text-xs w-10 text-right flex-shrink-0">{fmtN(val)}</span>
             </div>
-            <span className="text-white/60 text-xs w-10 text-right flex-shrink-0">{fmtN(val)}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
+    </div>
+  );
+}
+
+// ─── Stat card with animated counter ─────────────────────────────────────────
+
+function StatCard({
+  icon: Icon,
+  iconColor,
+  label,
+  target,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  delay = 0,
+}: {
+  icon: React.ElementType;
+  iconColor: string;
+  label: string;
+  target: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  delay?: number;
+}) {
+  const count = useCounter(target, 1400, delay);
+  const display = decimals > 0
+    ? `${prefix}${count.toFixed(decimals)}${suffix}`
+    : target === 0 ? "—" : `${prefix}${fmtN(count)}${suffix}`;
+
+  return (
+    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
+      <Icon size={16} className={`${iconColor} mx-auto mb-2`} />
+      <p className="text-white font-bold text-xl tabular-nums">{display}</p>
+      <p className="text-white/40 text-xs mt-0.5">{label}</p>
     </div>
   );
 }
@@ -198,6 +283,23 @@ const QUICK_ACTIONS = [
   { label: "Edit Profile",  href: "/portal/profile",      icon: UserCircle2, colorCls: "text-amber-400",  bgCls: "bg-amber-400/10" },
 ];
 
+// ─── Fade-in wrapper ──────────────────────────────────────────────────────────
+
+function FadeIn({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  return (
+    <div
+      className={`transition-all duration-500 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function PortalDashboard() {
@@ -266,8 +368,9 @@ export default function PortalDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
         <Loader2 size={28} className="text-[#007bff] animate-spin" />
+        <p className="text-white/20 text-xs">Loading your dashboard…</p>
       </div>
     );
   }
@@ -282,235 +385,224 @@ export default function PortalDashboard() {
     <section className="max-w-3xl mx-auto px-4 py-12">
 
       {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <h1 className="text-white font-bold text-3xl">
-            {artistName ? `Hey, ${artistName}.` : "Your Dashboard"}
-          </h1>
-          <p className="text-white/40 text-sm mt-2">
-            {hasApproved
-              ? `${approved.length} active release${approved.length !== 1 ? "s" : ""} · distributing globally`
-              : "Track the status of your applications and approved distributions."}
-          </p>
+      <FadeIn delay={0}>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-white font-bold text-3xl">
+              {artistName ? `Hey, ${artistName}.` : "Your Dashboard"}
+            </h1>
+            <p className="text-white/40 text-sm mt-2">
+              {hasApproved
+                ? `${approved.length} active release${approved.length !== 1 ? "s" : ""} · distributing globally`
+                : "Track the status of your applications and approved distributions."}
+            </p>
+          </div>
+          {hasApproved && (
+            <Link
+              href="/portal/releases/new"
+              className="flex-shrink-0 inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-5 py-2.5 rounded-full text-sm transition-colors"
+            >
+              <PlusCircle size={16} /> New Release
+            </Link>
+          )}
         </div>
-        {hasApproved && (
-          <Link
-            href="/portal/releases/new"
-            className="flex-shrink-0 inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-5 py-2.5 rounded-full text-sm transition-colors"
-          >
-            <PlusCircle size={16} /> New Release
-          </Link>
-        )}
-      </div>
+      </FadeIn>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        {QUICK_ACTIONS.map(({ label, href, icon: Icon, colorCls, bgCls }) => (
-          <Link
-            key={href}
-            href={href}
-            className="flex flex-col items-center gap-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/20 rounded-2xl p-4 transition-all text-center group"
-          >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bgCls} group-hover:scale-110 transition-transform duration-200`}>
-              <Icon size={18} className={colorCls} />
-            </div>
-            <span className="text-white/60 text-xs font-medium group-hover:text-white/90 transition-colors">{label}</span>
-          </Link>
-        ))}
-      </div>
+      <FadeIn delay={80}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+          {QUICK_ACTIONS.map(({ label, href, icon: Icon, colorCls, bgCls }, i) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex flex-col items-center gap-2 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/20 rounded-2xl p-4 transition-all text-center group"
+              style={{ transitionDelay: `${i * 40}ms` }}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${bgCls} group-hover:scale-110 transition-transform duration-200`}>
+                <Icon size={18} className={colorCls} />
+              </div>
+              <span className="text-white/60 text-xs font-medium group-hover:text-white/90 transition-colors">{label}</span>
+            </Link>
+          ))}
+        </div>
+      </FadeIn>
 
-      {/* Analytics strip */}
+      {/* Analytics strip with animated counters */}
       {hasApproved && (
-        <div className="mb-6 grid grid-cols-3 gap-3">
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
-            <BarChart2 size={16} className="text-[#007bff] mx-auto mb-2" />
-            <p className="text-white font-bold text-xl">{fmtN(totalStreams)}</p>
-            <p className="text-white/40 text-xs mt-0.5">Total Streams</p>
+        <FadeIn delay={180}>
+          <div className="mb-6 grid grid-cols-3 gap-3">
+            <StatCard icon={BarChart2} iconColor="text-[#007bff]" label="Total Streams" target={totalStreams} delay={200} />
+            <StatCard icon={DollarSign} iconColor="text-green-400" label="Total Earnings"
+              target={totalEarnings} prefix="$" decimals={totalEarnings > 0 ? 2 : 0} delay={350} />
+            <StatCard icon={Radio} iconColor="text-green-400" label="Live Releases" target={liveCount} delay={500} />
           </div>
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
-            <DollarSign size={16} className="text-green-400 mx-auto mb-2" />
-            <p className="text-white font-bold text-xl">
-              {totalEarnings > 0 ? `$${totalEarnings.toFixed(2)}` : "—"}
-            </p>
-            <p className="text-white/40 text-xs mt-0.5">Total Earnings</p>
-          </div>
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center">
-            <Radio size={16} className="text-green-400 mx-auto mb-2" />
-            <p className="text-white font-bold text-xl">{liveCount}</p>
-            <p className="text-white/40 text-xs mt-0.5">Live Releases</p>
-          </div>
-        </div>
+        </FadeIn>
       )}
 
-      {/* Platform chart */}
+      {/* Platform chart — bars animate in */}
       {hasApproved && totalStreams > 0 && (
-        <div className="mb-6">
+        <FadeIn delay={280} className="mb-6">
           <PlatformChart releases={releases} />
-        </div>
+        </FadeIn>
       )}
 
-      {/* Pitches + Activity — side by side on desktop */}
+      {/* Pitches + Activity side by side */}
       {(pitches.length > 0 || recentNotifs.length > 0) && (
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <PitchSection pitches={pitches} />
-          <ActivitySection notifications={recentNotifs} />
-        </div>
+        <FadeIn delay={380} className="mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <PitchSection pitches={pitches} />
+            <ActivitySection notifications={recentNotifs} />
+          </div>
+        </FadeIn>
       )}
 
       {/* Profile completion banner */}
       {showProfileBanner && (
-        <div className="mb-8 bg-[#007bff]/10 border border-[#007bff]/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <UserCircle2 size={20} className="text-[#007bff] flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-white font-semibold text-sm">Complete your distribution profile</p>
-              <p className="text-white/50 text-xs mt-1">
-                Your release was approved! We need your platform IDs and social handles to finalise your distribution setup.
-              </p>
+        <FadeIn delay={460} className="mb-8">
+          <div className="bg-[#007bff]/10 border border-[#007bff]/30 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <UserCircle2 size={20} className="text-[#007bff] flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-white font-semibold text-sm">Complete your distribution profile</p>
+                <p className="text-white/50 text-xs mt-1">
+                  Your release was approved! We need your platform IDs and social handles to finalise your distribution setup.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/portal/profile"
+              className="flex-shrink-0 bg-[#007bff] hover:bg-[#0069d9] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors whitespace-nowrap"
+            >
+              Complete Profile →
+            </Link>
+          </div>
+        </FadeIn>
+      )}
+
+      {/* Onboarding checklist */}
+      {releases.length === 0 && (
+        <FadeIn delay={200} className="mb-8">
+          <div className="bg-[#007bff]/5 border border-[#007bff]/20 rounded-2xl p-6">
+            <p className="text-white font-bold text-lg mb-1">Welcome to Orinlabí</p>
+            <p className="text-white/50 text-sm mb-5">Here&apos;s how to get your music distributed in three steps.</p>
+            <div className="space-y-3">
+              {[
+                { num: "1", title: "Complete your profile", body: "Add your photo, bio, and social links so fans can find you.", href: "/portal/profile", cta: "Edit Profile" },
+                { num: "2", title: "Submit your first release", body: "Upload your track, cover art, and credits. We'll review it within 3–5 business days.", href: "/portal/releases/new", cta: "Submit Release" },
+                { num: "3", title: "Get your smart link", body: "Once approved, share one link that works on Spotify, Apple Music, Boomplay, and everywhere else.", href: null, cta: null },
+              ].map(({ num, title, body, href, cta }) => (
+                <div key={num} className="flex items-start gap-4 bg-white/[0.03] rounded-xl px-4 py-4">
+                  <div className="w-7 h-7 rounded-full bg-[#007bff]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-[#007bff] text-xs font-bold">{num}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-sm">{title}</p>
+                    <p className="text-white/40 text-xs mt-0.5 leading-relaxed">{body}</p>
+                  </div>
+                  {href && cta && (
+                    <Link href={href} className="flex-shrink-0 text-xs font-semibold text-[#007bff] hover:text-white border border-[#007bff]/30 hover:border-[#007bff] px-3 py-1.5 rounded-lg transition-colors">
+                      {cta}
+                    </Link>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
-          <Link
-            href="/portal/profile"
-            className="flex-shrink-0 bg-[#007bff] hover:bg-[#0069d9] text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-colors whitespace-nowrap"
-          >
-            Complete Profile →
-          </Link>
-        </div>
+        </FadeIn>
       )}
 
-      {/* Onboarding checklist — only if no releases yet */}
-      {releases.length === 0 && (
-        <div className="mb-8 bg-[#007bff]/5 border border-[#007bff]/20 rounded-2xl p-6">
-          <p className="text-white font-bold text-lg mb-1">Welcome to Orinlabí</p>
-          <p className="text-white/50 text-sm mb-5">Here&apos;s how to get your music distributed in three steps.</p>
-          <div className="space-y-3">
-            {[
-              { num: "1", title: "Complete your profile", body: "Add your photo, bio, and social links so fans can find you.", href: "/portal/profile", cta: "Edit Profile" },
-              { num: "2", title: "Submit your first release", body: "Upload your track, cover art, and credits. We'll review it within 3–5 business days.", href: "/portal/releases/new", cta: "Submit Release" },
-              { num: "3", title: "Get your smart link", body: "Once approved, share one link that works on Spotify, Apple Music, Boomplay, and everywhere else.", href: null, cta: null },
-            ].map(({ num, title, body, href, cta }) => (
-              <div key={num} className="flex items-start gap-4 bg-white/[0.03] rounded-xl px-4 py-4">
-                <div className="w-7 h-7 rounded-full bg-[#007bff]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-[#007bff] text-xs font-bold">{num}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">{title}</p>
-                  <p className="text-white/40 text-xs mt-0.5 leading-relaxed">{body}</p>
-                </div>
-                {href && cta && (
-                  <Link href={href} className="flex-shrink-0 text-xs font-semibold text-[#007bff] hover:text-white border border-[#007bff]/30 hover:border-[#007bff] px-3 py-1.5 rounded-lg transition-colors">
-                    {cta}
-                  </Link>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Platform announcements */}
+      {/* Announcements */}
       {announcements.length > 0 && (
-        <div className="mb-6 space-y-2">
-          {announcements.map((a) => {
-            const styles = {
-              info:    { icon: <Info size={14} />,          border: "border-[#007bff]/25", bg: "bg-[#007bff]/[0.08]", text: "text-[#007bff]" },
-              warning: { icon: <AlertTriangle size={14} />, border: "border-amber-500/25", bg: "bg-amber-500/[0.08]",  text: "text-amber-400" },
-              success: { icon: <CheckCircle2 size={14} />,  border: "border-green-500/25", bg: "bg-green-500/[0.08]",  text: "text-green-400" },
-            }[a.type] ?? { icon: <Megaphone size={14} />, border: "border-white/10", bg: "bg-white/[0.03]", text: "text-white/60" };
-            return (
-              <div key={a.id} className={`${styles.bg} border ${styles.border} rounded-2xl px-4 py-3 flex items-start gap-3`}>
-                <span className={`${styles.text} flex-shrink-0 mt-0.5`}>{styles.icon}</span>
-                <div>
-                  <p className="text-white font-semibold text-sm">{a.title}</p>
-                  <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{a.body}</p>
+        <FadeIn delay={480} className="mb-6">
+          <div className="space-y-2">
+            {announcements.map((a) => {
+              const styles = {
+                info:    { icon: <Info size={14} />,          border: "border-[#007bff]/25", bg: "bg-[#007bff]/[0.08]", text: "text-[#007bff]" },
+                warning: { icon: <AlertTriangle size={14} />, border: "border-amber-500/25", bg: "bg-amber-500/[0.08]",  text: "text-amber-400" },
+                success: { icon: <CheckCircle2 size={14} />,  border: "border-green-500/25", bg: "bg-green-500/[0.08]",  text: "text-green-400" },
+              }[a.type] ?? { icon: <Megaphone size={14} />, border: "border-white/10", bg: "bg-white/[0.03]", text: "text-white/60" };
+              return (
+                <div key={a.id} className={`${styles.bg} border ${styles.border} rounded-2xl px-4 py-3 flex items-start gap-3`}>
+                  <span className={`${styles.text} flex-shrink-0 mt-0.5`}>{styles.icon}</span>
+                  <div>
+                    <p className="text-white font-semibold text-sm">{a.title}</p>
+                    <p className="text-white/50 text-xs mt-0.5 leading-relaxed">{a.body}</p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </FadeIn>
       )}
 
       {/* Releases */}
       {releases.length === 0 ? (
-        <div className="text-center py-20">
-          <div className="w-16 h-16 bg-white/[0.04] rounded-full flex items-center justify-center mx-auto mb-5">
-            <Music2 size={28} className="text-white/20" />
+        <FadeIn delay={300}>
+          <div className="text-center py-20">
+            <div className="w-16 h-16 bg-white/[0.04] rounded-full flex items-center justify-center mx-auto mb-5">
+              <Music2 size={28} className="text-white/20" />
+            </div>
+            <p className="text-white/50 font-medium mb-2">No submissions yet</p>
+            <p className="text-white/30 text-sm mb-8">Apply to distribute your music with Orinlabí.</p>
+            <Link href="/submit" className="inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-6 py-3 rounded-full transition-colors text-sm">
+              Submit Application <ArrowRight size={16} />
+            </Link>
           </div>
-          <p className="text-white/50 font-medium mb-2">No submissions yet</p>
-          <p className="text-white/30 text-sm mb-8">
-            Apply to distribute your music with Orinlabí.
-          </p>
-          <Link
-            href="/submit"
-            className="inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-6 py-3 rounded-full transition-colors text-sm"
-          >
-            Submit Application <ArrowRight size={16} />
-          </Link>
-        </div>
+        </FadeIn>
       ) : (
         <div className="space-y-4">
-          <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Your Releases</p>
-          {releases.map((r) => {
+          <FadeIn delay={540}>
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Your Releases</p>
+          </FadeIn>
+          {releases.map((r, i) => {
             const cfg = statusConfig[r.status] ?? statusConfig.pending;
             const Icon = cfg.icon;
             return (
-              <Link
-                key={r.id}
-                href={`/portal/releases/${r.id}`}
-                className="group flex items-center gap-5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/20 rounded-2xl p-5 transition-all duration-200"
-              >
-                {/* Cover */}
-                <div className="w-14 h-14 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center">
-                  {r.cover_art_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.cover_art_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Music2 size={20} className="text-[#007bff]/40" />
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold truncate">{r.song_title}</p>
-                  <p className="text-white/40 text-xs mt-0.5">
-                    {r.release_type} · {r.genre}
-                  </p>
-                  <p className="text-white/25 text-xs mt-1">
-                    Applied {new Date(r.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                  </p>
-                </div>
-
-                {/* Status */}
-                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                  <span className="hidden sm:block">{cfg.label}</span>
-                  <Icon size={13} className="sm:hidden" />
-                </div>
-
-                <ChevronRight size={16} className="text-white/20 group-hover:text-white/40 flex-shrink-0 transition-colors" />
-              </Link>
+              <FadeIn key={r.id} delay={560 + i * 60}>
+                <Link
+                  href={`/portal/releases/${r.id}`}
+                  className="group flex items-center gap-5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/20 rounded-2xl p-5 transition-all duration-200"
+                >
+                  <div className="w-14 h-14 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center">
+                    {r.cover_art_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.cover_art_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Music2 size={20} className="text-[#007bff]/40" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold truncate">{r.song_title}</p>
+                    <p className="text-white/40 text-xs mt-0.5">{r.release_type} · {r.genre}</p>
+                    <p className="text-white/25 text-xs mt-1">
+                      Applied {new Date(r.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                    <span className="hidden sm:block">{cfg.label}</span>
+                    <Icon size={13} className="sm:hidden" />
+                  </div>
+                  <ChevronRight size={16} className="text-white/20 group-hover:text-white/40 flex-shrink-0 transition-colors" />
+                </Link>
+              </FadeIn>
             );
           })}
 
-          {/* Submit more CTA */}
-          <div className="mt-8 pt-8 border-t border-white/[0.06] text-center">
-            <p className="text-white/30 text-sm mb-4">Have more music to release?</p>
-            {hasApproved ? (
-              <Link
-                href="/portal/releases/new"
-                className="inline-flex items-center gap-2 border border-[#007bff]/30 hover:border-[#007bff]/60 text-[#007bff]/70 hover:text-[#007bff] font-medium px-6 py-3 rounded-full text-sm transition-all"
-              >
-                <PlusCircle size={15} /> Submit a New Release <ArrowRight size={15} />
-              </Link>
-            ) : (
-              <Link
-                href="/submit"
-                className="inline-flex items-center gap-2 border border-white/10 hover:border-[#007bff]/40 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all"
-              >
-                Submit Another Application <ArrowRight size={15} />
-              </Link>
-            )}
-          </div>
+          <FadeIn delay={600 + releases.length * 60}>
+            <div className="mt-8 pt-8 border-t border-white/[0.06] text-center">
+              <p className="text-white/30 text-sm mb-4">Have more music to release?</p>
+              {hasApproved ? (
+                <Link href="/portal/releases/new" className="inline-flex items-center gap-2 border border-[#007bff]/30 hover:border-[#007bff]/60 text-[#007bff]/70 hover:text-[#007bff] font-medium px-6 py-3 rounded-full text-sm transition-all">
+                  <PlusCircle size={15} /> Submit a New Release <ArrowRight size={15} />
+                </Link>
+              ) : (
+                <Link href="/submit" className="inline-flex items-center gap-2 border border-white/10 hover:border-[#007bff]/40 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all">
+                  Submit Another Application <ArrowRight size={15} />
+                </Link>
+              )}
+            </div>
+          </FadeIn>
         </div>
       )}
     </section>

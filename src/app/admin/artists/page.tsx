@@ -8,6 +8,8 @@ import {
   ChevronDown, ChevronUp, Save, User, BarChart3, Send,
   UserCheck, UserX, TrendingUp,
 } from "lucide-react";
+import { PlatformIcon } from "@/components/PlatformIcon";
+import { getPlatform } from "@/lib/platforms";
 
 const SUPER_ADMIN = (
   process.env.NEXT_PUBLIC_SUPER_ADMIN_EMAIL ||
@@ -67,11 +69,6 @@ const statusCfg = {
 };
 
 const PLATFORMS = ["spotify", "apple_music", "youtube", "boomplay", "audiomack", "deezer", "tidal", "amazon_music"];
-const PLATFORM_LABELS: Record<string, string> = {
-  spotify: "Spotify", apple_music: "Apple Music", youtube: "YouTube",
-  boomplay: "Boomplay", audiomack: "Audiomack", deezer: "Deezer",
-  tidal: "Tidal", amazon_music: "Amazon Music",
-};
 
 function fmtN(n: number) {
   return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
@@ -303,17 +300,26 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
                 <div>
                   <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">Streams per Platform</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {PLATFORMS.map((p) => (
-                      <div key={p} className="flex items-center gap-2">
-                        <span className="text-white/30 text-xs w-24 flex-shrink-0">{PLATFORM_LABELS[p]}</span>
-                        <input
-                          className={`${inputCls} py-1.5`}
-                          value={stats.streams[p]}
-                          onChange={(e) => setStreamVal(r.id, p, e.target.value)}
-                          placeholder="0"
-                        />
-                      </div>
-                    ))}
+                    {PLATFORMS.map((p) => {
+                      const plt = getPlatform(p);
+                      return (
+                        <div key={p} className="flex items-center gap-2">
+                          <div
+                            className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+                            style={{ background: `${plt.color}20`, color: plt.color }}
+                          >
+                            <PlatformIcon platformKey={p} size={13} />
+                          </div>
+                          <span className="text-white/30 text-xs w-20 flex-shrink-0 truncate">{plt.label}</span>
+                          <input
+                            className={`${inputCls} py-1.5`}
+                            value={stats.streams[p]}
+                            onChange={(e) => setStreamVal(r.id, p, e.target.value)}
+                            placeholder="0"
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

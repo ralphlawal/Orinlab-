@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Loader2, DollarSign, BarChart2, TrendingUp, ExternalLink, Download } from "lucide-react";
 import Link from "next/link";
+import { PlatformIcon } from "@/components/PlatformIcon";
+import { getPlatform } from "@/lib/platforms";
 
 type Release = {
   id: string;
@@ -20,11 +22,6 @@ type Release = {
 type Split = { id: string; name: string; role: string | null; percentage: number };
 type PayoutRequest = { id: string; song_title: string; amount_usd: number; status: "pending" | "paid" | "rejected"; payout_method: string | null; created_at: string; paid_at: string | null; admin_notes: string | null };
 
-const PLATFORM_COLORS: Record<string, string> = {
-  spotify: "#1db954", apple_music: "#fc3c44", youtube_music: "#ff0000",
-  boomplay: "#f5a623", audiomack: "#ffa500", deezer: "#a238ff",
-  tidal: "#00ffff", amazon_music: "#00a8e1",
-};
 
 function fmt(n: number) {
   return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : n.toString();
@@ -160,20 +157,43 @@ export default function EarningsPage() {
                   </div>
                 </div>
 
-                {/* Stream breakdown */}
-                {r.streams && Object.keys(r.streams).length > 0 && (
-                  <div className="px-5 py-3 border-b border-white/[0.04]">
-                    <p className="text-white/30 text-xs uppercase tracking-widest mb-2">By Platform</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(r.streams).filter(([, v]) => v > 0).map(([platform, count]) => (
-                        <span key={platform} className="text-xs px-2.5 py-1 rounded-full border"
-                          style={{ color: PLATFORM_COLORS[platform] ?? "#007bff", borderColor: `${PLATFORM_COLORS[platform] ?? "#007bff"}30`, background: `${PLATFORM_COLORS[platform] ?? "#007bff"}10` }}>
-                          {platform.replace(/_/g, " ")} · {fmt(count)}
-                        </span>
-                      ))}
+                {/* Stream breakdown with platform icons + animated bars */}
+                {r.streams && Object.keys(r.streams).length > 0 && (() => {
+                  const sortedPlatforms = Object.entries(r.streams)
+                    .filter(([, v]) => v > 0)
+                    .sort(([, a], [, b]) => b - a);
+                  const maxPlatformStreams = sortedPlatforms[0]?.[1] ?? 1;
+                  return (
+                    <div className="px-5 py-4 border-b border-white/[0.04]">
+                      <p className="text-white/30 text-xs uppercase tracking-widest mb-3">By Platform</p>
+                      <div className="space-y-2.5">
+                        {sortedPlatforms.map(([platform, count]) => {
+                          const plt = getPlatform(platform);
+                          return (
+                            <div key={platform} className="flex items-center gap-3">
+                              <div
+                                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{ background: `${plt.color}22`, color: plt.color }}
+                              >
+                                <PlatformIcon platformKey={platform} size={14} />
+                              </div>
+                              <span className="text-white/60 text-xs w-24 flex-shrink-0 truncate">{plt.label}</span>
+                              <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all duration-700 ease-out"
+                                  style={{ width: `${(count / maxPlatformStreams) * 100}%`, background: plt.color }}
+                                />
+                              </div>
+                              <span className="text-white/60 text-xs w-12 text-right flex-shrink-0 font-medium tabular-nums">
+                                {fmt(count)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Royalty splits */}
                 {relSplits.length > 0 && (
