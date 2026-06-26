@@ -331,3 +331,37 @@ export function rejectionEmail(data: {
     </p>
   `);
 }
+
+/* ── Admin-to-artist/label notification ── */
+export function adminNotificationEmail(data: {
+  recipientName: string;
+  title: string;
+  body: string;
+  type: "info" | "success" | "warning" | "error";
+  ctaUrl: string;
+  ctaLabel: string;
+  categoryLabel?: string;
+}) {
+  const palette = {
+    info:    { color: "#007bff", bg: "#e8f0fe", label: "From Orinlabí" },
+    success: { color: "#059669", bg: "#d1fae5", label: "Good News" },
+    warning: { color: "#d97706", bg: "#fef3c7", label: "Action Required" },
+    error:   { color: "#dc2626", bg: "#fee2e2", label: "Important Notice" },
+  }[data.type];
+
+  return base(`
+    ${badge(data.categoryLabel ?? palette.label, palette.color, palette.bg)}
+    ${h1(data.title)}
+    <p style="margin:0 0 8px;color:#888888;font-size:13px;font-family:Arial,sans-serif;">Hi ${data.recipientName},</p>
+    <p style="margin:0 0 24px;color:#333333;font-size:15px;line-height:1.8;font-family:Arial,sans-serif;">${data.body.replace(/\n/g, "<br/>")}</p>
+    ${divider()}
+    <p style="margin:0 0 16px;color:#555555;font-size:13px;line-height:1.6;font-family:Arial,sans-serif;">
+      Log in to your Orinlabí portal to view the full notification and take any required action.
+    </p>
+    ${btn(data.ctaLabel, data.ctaUrl)}
+    <p style="margin:20px 0 0;font-size:12px;color:#aaaaaa;font-family:Arial,sans-serif;">
+      This notification was sent by the Orinlabí team. Reply to
+      <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a> with any questions.
+    </p>
+  `);
+}
