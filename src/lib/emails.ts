@@ -1,85 +1,153 @@
-/* ── Branded email HTML templates ── */
+/* ── Orinlabí branded email templates ── */
 
 /*
- * Email design: dark logo strip on top (#050505) + white content card.
- * This renders identically on Gmail iOS/Android, Apple Mail, Outlook, and webmail.
- * Pure dark emails get "auto-inverted" by Gmail iOS — this hybrid avoids that.
+ * Design rules:
+ * - Outer wrapper: light gray (#f2f2f2) — safe across all clients
+ * - Card: pure white — content area
+ * - Header band: brand navy (#0b1120) with white logo — dark enough to show
+ *   white logo; NOT pure black so email clients don't auto-invert it
+ * - Forced light color-scheme meta + inline [data-ogsc] overrides for Outlook dark
+ * - Logo alt="" (decorative) — prevents "Orinlabí" text from appearing on load fail
+ * - Footer: single copyright line, no duplicate brand name
  */
 
-const base = (content: string) => `
+const LOGO = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
+const PORTAL = "https://orinlabi.com/portal/login";
+
+const base = (content: string, accentColor = "#007bff") => `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
   <meta name="supported-color-schemes" content="light" />
+  <meta name="format-detection" content="telephone=no,date=no,address=no,email=no" />
   <title>Orinlabí</title>
+  <style>
+    /* Force light mode — prevent Gmail / Outlook dark-mode inversion */
+    :root { color-scheme: light only; }
+    body, table, td, th { color-scheme: light only; }
+
+    /* Outlook dark mode overrides */
+    [data-ogsc] .email-header { background-color: #0b1120 !important; }
+    [data-ogsc] .email-body   { background-color: #ffffff !important; }
+    [data-ogsc] .email-footer { background-color: #f2f2f2 !important; }
+    [data-ogsb] .email-header { background-color: #0b1120 !important; }
+    [data-ogsb] .email-body   { background-color: #ffffff !important; }
+
+    /* Gmail dark mode override */
+    @media (prefers-color-scheme: dark) {
+      .email-header { background-color: #0b1120 !important; }
+      .email-body   { background-color: #ffffff !important; color: #111111 !important; }
+      .email-footer { background-color: #f2f2f2 !important; }
+      .body-text    { color: #333333 !important; }
+      .muted-text   { color: #666666 !important; }
+    }
+
+    @media only screen and (max-width: 600px) {
+      .card { width: 100% !important; }
+      .pad  { padding-left: 24px !important; padding-right: 24px !important; }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
-  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0" style="background:#f0f0f0;padding:0;">
-    <tr>
-      <td align="center" bgcolor="#f0f0f0" style="background:#f0f0f0;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+<body style="margin:0;padding:0;background-color:#f2f2f2;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;" bgcolor="#f2f2f2">
 
-          <!-- Logo header — dark strip -->
-          <tr>
-            <td bgcolor="#050505" style="background:#050505;padding:28px 36px 28px;border-radius:16px 16px 0 0;" align="left">
-              <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-                alt="Orinlabí" width="130" height="35"
-                style="display:block;border:0;outline:none;text-decoration:none;" />
-            </td>
-          </tr>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f2f2f2" style="background-color:#f2f2f2;margin:0;padding:0;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
 
-          <!-- Blue accent line -->
-          <tr>
-            <td bgcolor="#007bff" style="background:#007bff;height:3px;font-size:1px;line-height:1px;">&nbsp;</td>
-          </tr>
+      <table role="presentation" class="card" width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
 
-          <!-- White content card -->
-          <tr>
-            <td bgcolor="#ffffff" style="background:#ffffff;padding:40px 36px;border-radius:0 0 16px 16px;">
-              ${content}
-            </td>
-          </tr>
+        <!-- ─── Header: dark navy with logo ─── -->
+        <tr>
+          <td class="email-header" bgcolor="#0b1120" style="background-color:#0b1120;padding:28px 40px;" align="left">
+            <img src="${LOGO}" alt="" width="120" height="auto"
+              style="display:block;border:0;outline:none;text-decoration:none;max-width:120px;height:auto;line-height:1;" />
+          </td>
+        </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td bgcolor="#f0f0f0" style="background:#f0f0f0;padding:24px 36px;text-align:center;color:#999999;font-size:12px;line-height:1.6;font-family:Arial,sans-serif;">
-              ℗ 2026 Orinlabí &nbsp;·&nbsp; © 2026 Orinlabí &nbsp;·&nbsp; A Ralph Lawal Group Company<br/>
+        <!-- ─── Accent bar ─── -->
+        <tr>
+          <td bgcolor="${accentColor}" style="background-color:${accentColor};height:4px;font-size:1px;line-height:1px;">&nbsp;</td>
+        </tr>
+
+        <!-- ─── Body ─── -->
+        <tr>
+          <td class="email-body pad" bgcolor="#ffffff" style="background-color:#ffffff;padding:44px 40px 40px;">
+            ${content}
+          </td>
+        </tr>
+
+        <!-- ─── Footer ─── -->
+        <tr>
+          <td class="email-footer" bgcolor="#f2f2f2" style="background-color:#f2f2f2;padding:24px 40px;text-align:center;">
+            <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;line-height:1.5;">
+              © 2026 Orinlabí Music Distribution Ltd.&nbsp;&nbsp;·&nbsp;&nbsp;A Ralph Lawal Group Company
+            </p>
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;">
               <a href="https://orinlabi.com" style="color:#007bff;text-decoration:none;">orinlabi.com</a>
-            </td>
-          </tr>
+              &nbsp;·&nbsp;
+              <a href="mailto:info@orinlabi.com" style="color:#888888;text-decoration:none;">info@orinlabi.com</a>
+            </p>
+          </td>
+        </tr>
 
-        </table>
-      </td>
-    </tr>
-  </table>
+      </table>
+    </td>
+  </tr>
+</table>
 </body>
 </html>`;
 
+/* ── Shared block helpers ──────────────────────────────────────────────────── */
+
+const label = (text: string, color: string, bg: string) =>
+  `<p style="margin:0 0 20px;">
+    <span style="display:inline-block;background:${bg};color:${color};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:5px 14px;border-radius:100px;">${text}</span>
+  </p>`;
+
 const h1 = (text: string) =>
-  `<h1 style="margin:0 0 12px;color:#111111;font-size:24px;font-weight:700;line-height:1.3;font-family:Arial,sans-serif;">${text}</h1>`;
+  `<h1 style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:26px;font-weight:800;line-height:1.25;color:#0d0d0d;">${text}</h1>`;
 
-const p = (text: string) =>
-  `<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.7;font-family:Arial,sans-serif;">${text}</p>`;
+const p = (html: string) =>
+  `<p class="body-text" style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.75;color:#444444;">${html}</p>`;
 
-const badge = (label: string, color: string, bg: string) =>
-  `<span style="display:inline-block;background:${bg};color:${color};font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;margin-bottom:20px;font-family:Arial,sans-serif;">${label}</span>`;
-
-const infoRow = (label: string, value: string) =>
-  `<tr>
-    <td style="padding:9px 0;color:#999999;font-size:13px;width:130px;vertical-align:top;font-family:Arial,sans-serif;">${label}</td>
-    <td style="padding:9px 0;color:#222222;font-size:13px;vertical-align:top;font-weight:600;font-family:Arial,sans-serif;">${value}</td>
-  </tr>`;
+const muted = (html: string) =>
+  `<p class="muted-text" style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:#888888;">${html}</p>`;
 
 const divider = () =>
-  `<hr style="border:none;border-top:1px solid #eeeeee;margin:24px 0;" />`;
+  `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:28px 0;">
+    <tr><td style="border-top:1px solid #ebebeb;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+  </table>`;
 
-const btn = (text: string, url: string) =>
-  `<a href="${url}" style="display:inline-block;background:#007bff;color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;padding:14px 30px;border-radius:999px;margin-top:8px;font-family:Arial,sans-serif;">${text}</a>`;
+const btn = (text: string, url: string, color = "#007bff") =>
+  `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;">
+    <tr>
+      <td bgcolor="${color}" style="background-color:${color};border-radius:100px;">
+        <a href="${url}" style="display:inline-block;padding:15px 34px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;">${text}</a>
+      </td>
+    </tr>
+  </table>`;
 
-/* ── 1. Submission confirmation ── */
+const infoTable = (rows: [string, string][]) =>
+  `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:4px 0 4px;">
+    ${rows.map(([lbl, val]) => `
+    <tr>
+      <td style="padding:9px 0 9px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#999999;width:140px;vertical-align:top;border-bottom:1px solid #f5f5f5;">${lbl}</td>
+      <td style="padding:9px 0 9px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:600;vertical-align:top;border-bottom:1px solid #f5f5f5;">${val}</td>
+    </tr>`).join("")}
+  </table>`;
+
+const sectionLabel = (text: string) =>
+  `<p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaaaaa;">${text}</p>`;
+
+const noteBox = (text: string, borderColor = "#007bff") =>
+  `<div style="background-color:#f8f9fa;border-left:3px solid ${borderColor};border-radius:0 8px 8px 0;padding:16px 18px;margin:0;">
+    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#444444;">${text}</p>
+  </div>`;
+
+/* ── 1. Submission confirmation ──────────────────────────────────────────────── */
 export function submissionEmail(data: {
   artistName: string;
   songTitle: string;
@@ -88,24 +156,25 @@ export function submissionEmail(data: {
   releaseDate: string;
 }) {
   return base(`
-    ${badge("Submission Received", "#007bff", "#e8f0fe")}
-    ${h1(`We've received your release, ${data.artistName}.`)}
-    ${p("Thanks for submitting to Orinlabí. Our team will review your release within <strong style='color:#111111;'>24–48 hours</strong> and get back to you with a decision.")}
+    ${label("Submission Received", "#1d6ae5", "#e8f0fe")}
+    ${h1(`We got your release, ${data.artistName}.`)}
+    ${p(`Thanks for submitting to Orinlabí. Our team will review your release within <strong style="color:#0d0d0d;">24–48 hours</strong> and notify you with a decision.`)}
     ${divider()}
-    <p style="margin:0 0 12px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">YOUR SUBMISSION</p>
-    <table cellpadding="0" cellspacing="0" width="100%">
-      ${infoRow("Title", data.songTitle)}
-      ${infoRow("Type", data.releaseType)}
-      ${infoRow("Genre", data.genre)}
-      ${infoRow("Release Date", data.releaseDate)}
-    </table>
+    ${sectionLabel("Your Submission")}
+    ${infoTable([
+      ["Title",        data.songTitle],
+      ["Type",         data.releaseType],
+      ["Genre",        data.genre],
+      ["Release Date", data.releaseDate],
+      ["Status",       "Under Review"],
+    ])}
     ${divider()}
-    ${p("While you wait, make sure your social media profiles and streaming bios are up to date. We'll be in touch soon.")}
-    ${btn("Check Your Application Status", "https://orinlabi.com/portal/login")}
+    ${p("While you wait, make sure your artist profile, social links, and platform bios are up to date.")}
+    ${btn("View Your Portal", PORTAL)}
   `);
 }
 
-/* ── 2. Approval ── */
+/* ── 2. Release approved ─────────────────────────────────────────────────────── */
 export function approvalEmail(data: {
   artistName: string;
   songTitle: string;
@@ -114,25 +183,25 @@ export function approvalEmail(data: {
   notes?: string;
 }) {
   return base(`
-    ${badge("Release Approved ✓", "#16a34a", "#dcfce7")}
+    ${label("Release Approved ✓", "#166534", "#dcfce7")}
     ${h1(`Congratulations, ${data.artistName}!`)}
-    ${p(`Your ${data.releaseType.toLowerCase()} <strong style="color:#111111;">${data.songTitle}</strong> has been approved and is entering our global distribution pipeline.`)}
+    ${p(`Your ${data.releaseType.toLowerCase()} <strong style="color:#0d0d0d;">${data.songTitle}</strong> has been approved and is entering the global distribution pipeline.`)}
     ${divider()}
-    <p style="margin:0 0 12px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">RELEASE DETAILS</p>
-    <table cellpadding="0" cellspacing="0" width="100%">
-      ${infoRow("Title", data.songTitle)}
-      ${infoRow("Type", data.releaseType)}
-      ${infoRow("Genre", data.genre)}
-      ${infoRow("Status", "Approved — In Distribution")}
-    </table>
-    ${data.notes ? `${divider()}<p style="margin:0 0 8px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">NOTES FROM OUR TEAM</p><p style="margin:0;color:#444444;font-size:14px;line-height:1.7;background:#f8f8f8;border-left:3px solid #007bff;border-radius:0 8px 8px 0;padding:14px 16px;font-family:Arial,sans-serif;">${data.notes}</p>` : ""}
+    ${sectionLabel("Release Details")}
+    ${infoTable([
+      ["Title",  data.songTitle],
+      ["Type",   data.releaseType],
+      ["Genre",  data.genre],
+      ["Status", "Approved — In Distribution"],
+    ])}
+    ${data.notes ? `${divider()}${sectionLabel("Notes from Our Team")}${noteBox(data.notes, "#22c55e")}` : ""}
     ${divider()}
-    ${p("Your music will go live on Spotify, Apple Music, Boomplay, Audiomack, and 150+ platforms within 24–48 hours. Log into your portal to track your release and complete your distribution profile.")}
-    ${btn("Access Your Artist Portal", "https://orinlabi.com/portal/login")}
-  `);
+    ${p("Your music will go live on Spotify, Apple Music, Boomplay, Audiomack, and 150+ platforms within 24–48 hours.")}
+    ${btn("Open My Portal", PORTAL, "#16a34a")}
+  `, "#22c55e");
 }
 
-/* ── 3. Release Live ── */
+/* ── 3. Release live ─────────────────────────────────────────────────────────── */
 export function liveEmail(data: {
   artistName: string;
   songTitle: string;
@@ -144,98 +213,92 @@ export function liveEmail(data: {
     amazon_music: "Amazon Music", deezer: "Deezer", tidal: "TIDAL",
     pandora: "Pandora", audiomack: "Audiomack", boomplay: "Boomplay",
     soundcloud: "SoundCloud", anghami: "Anghami", napster: "Napster",
-    iheartradio: "iHeartRadio", tiktok: "TikTok", shazam: "Shazam",
-    beatport: "Beatport", jio_saavn: "JioSaavn", gaana: "Gaana",
-    wynk: "Wynk Music", kkbox: "KKBOX", claro_musica: "Claro Música",
-    "7digital": "7digital",
+    tiktok: "TikTok", shazam: "Shazam", beatport: "Beatport",
   };
   const linkRows = Object.entries(data.storeLinks)
     .filter(([, url]) => url?.trim())
     .map(([key, url]) => {
-      const label = platformNames[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-      return `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><a href="${url}" style="color:#007bff;font-size:14px;font-weight:600;text-decoration:none;font-family:Arial,sans-serif;">${label} &rarr;</a></td></tr>`;
-    })
-    .join("");
+      const name = platformNames[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      return `<tr><td style="padding:10px 0;border-bottom:1px solid #f5f5f5;">
+        <a href="${url}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#007bff;text-decoration:none;">${name} →</a>
+      </td></tr>`;
+    }).join("");
 
   return base(`
-    ${badge("Your Music is Live!", "#16a34a", "#dcfce7")}
-    ${h1(`${data.songTitle} is streaming worldwide, ${data.artistName}!`)}
-    ${p(`Your ${data.releaseType.toLowerCase()} is officially live on streaming platforms around the world. Start sharing your links and let your fans know.`)}
+    ${label("Your Music is Live! 🎉", "#166534", "#dcfce7")}
+    ${h1(`${data.songTitle} is streaming worldwide!`)}
+    ${p(`Congratulations ${data.artistName} — your ${data.releaseType.toLowerCase()} is officially live on streaming platforms around the world.`)}
     ${divider()}
-    <p style="margin:0 0 12px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">STREAMING LINKS</p>
-    <table cellpadding="0" cellspacing="0" width="100%">${linkRows}</table>
+    ${sectionLabel("Your Streaming Links")}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${linkRows}</table>
     ${divider()}
-    ${p("Log in to your Artist Portal to see all your streaming links and check your distribution details.")}
-    ${btn("Open My Portal", "https://orinlabi.com/portal/login")}
-    <p style="margin:16px 0 0;font-size:13px;color:#999999;font-family:Arial,sans-serif;">
-      Questions? Email us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>
-    </p>
-  `);
+    ${p("Log in to your portal to get your smart link, share it everywhere, and start tracking streams.")}
+    ${btn("Open My Portal", PORTAL, "#16a34a")}
+  `, "#22c55e");
 }
 
-/* ── 4. Takedown confirmation (artist) ── */
+/* ── 4. Takedown confirmation ───────────────────────────────────────────────── */
 export function takedownConfirmEmail(data: { artistName: string; songTitle: string }) {
   return base(`
-    ${badge("Takedown Request Received", "#6b7280", "#f3f4f6")}
-    ${h1("We've received your takedown request.")}
-    ${p(`Hi ${data.artistName}, your request to remove <strong style="color:#111111;">${data.songTitle}</strong> from all streaming platforms has been logged.`)}
+    ${label("Takedown Request Received", "#6b7280", "#f3f4f6")}
+    ${h1("We received your takedown request.")}
+    ${p(`Hi ${data.artistName}, your request to remove <strong style="color:#0d0d0d;">${data.songTitle}</strong> from all streaming platforms has been logged.`)}
     ${divider()}
-    ${p("Our team will begin the takedown process within 1–3 business days. You will receive a follow-up once it is complete.")}
-    ${p("If you submitted this request by mistake, contact us immediately at <a href='mailto:info@orinlabi.com' style='color:#007bff;'>info@orinlabi.com</a>.")}
-    ${btn("Visit Your Portal", "https://orinlabi.com/portal/login")}
+    ${p("Our team will begin the takedown process within 1–3 business days and send you a confirmation once it is complete.")}
+    ${muted(`Submitted this by mistake? Email us immediately at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>.`)}
+    ${btn("Visit My Portal", PORTAL, "#6b7280")}
   `);
 }
 
-/* ── 5. Payout request confirmation (artist) ── */
+/* ── 5. Payout request confirmation ─────────────────────────────────────────── */
 export function payoutConfirmEmail(data: { artistName: string; songTitle: string; amountUsd: number }) {
   return base(`
-    ${badge("Payout Request Received", "#16a34a", "#dcfce7")}
+    ${label("Payout Request Received", "#166534", "#dcfce7")}
     ${h1("Your payout request is in.")}
-    ${p(`Hi ${data.artistName}, we've received your withdrawal request for royalties earned on <strong style="color:#111111;">${data.songTitle}</strong>.`)}
+    ${p(`Hi ${data.artistName}, we've received your withdrawal request for royalties earned on <strong style="color:#0d0d0d;">${data.songTitle}</strong>.`)}
     ${divider()}
-    <table cellpadding="0" cellspacing="0" width="100%">
-      ${infoRow("Release", data.songTitle)}
-      ${infoRow("Amount Requested", `$${data.amountUsd.toFixed(2)} USD`)}
-      ${infoRow("Status", "Pending — under review")}
-    </table>
+    ${infoTable([
+      ["Release",          data.songTitle],
+      ["Amount Requested", `$${data.amountUsd.toFixed(2)} USD`],
+      ["Status",           "Pending — Under Review"],
+    ])}
     ${divider()}
     ${p("Our team will review and process your payout within 3–5 business days. Funds are sent to the payout method saved in your profile.")}
-    ${btn("View My Portal", "https://orinlabi.com/portal/login")}
-  `);
+    ${btn("View My Portal", PORTAL, "#16a34a")}
+  `, "#22c55e");
 }
 
-/* ── 6. Support ticket confirmation (artist) ── */
+/* ── 6. Support ticket confirmation ─────────────────────────────────────────── */
 export function supportConfirmEmail(data: { artistName: string; subject: string; category: string }) {
   return base(`
-    ${badge("Support Ticket Open", "#007bff", "#e8f0fe")}
-    ${h1("We've received your support request.")}
-    ${p(`Hi ${data.artistName}, your ticket has been submitted and our team will get back to you within 1–2 business days.`)}
+    ${label("Support Ticket Open", "#1d6ae5", "#e8f0fe")}
+    ${h1("We received your support request.")}
+    ${p(`Hi ${data.artistName}, your ticket has been submitted. Our team will get back to you within 1–2 business days.`)}
     ${divider()}
-    <table cellpadding="0" cellspacing="0" width="100%">
-      ${infoRow("Category", data.category)}
-      ${infoRow("Subject", data.subject)}
-      ${infoRow("Status", "Open")}
-    </table>
+    ${infoTable([
+      ["Category", data.category],
+      ["Subject",  data.subject],
+      ["Status",   "Open"],
+    ])}
     ${divider()}
-    ${p("You can view your ticket and check for our response in your artist portal at any time.")}
-    ${btn("View My Tickets", "https://orinlabi.com/portal/support")}
+    ${p("You can view your ticket status and our response in your artist portal at any time.")}
+    ${btn("View My Ticket", "https://orinlabi.com/portal/support")}
   `);
 }
 
-/* ── 7. Playlist pitch confirmation (artist) ── */
+/* ── 7. Playlist pitch confirmation ─────────────────────────────────────────── */
 export function pitchConfirmEmail(data: { artistName: string; songTitle: string }) {
   return base(`
-    ${badge("Pitch Submitted", "#7c3aed", "#ede9fe")}
+    ${label("Pitch Submitted", "#6d28d9", "#ede9fe")}
     ${h1("Your playlist pitch is in!")}
-    ${p(`Hi ${data.artistName}, we've received your pitch for <strong style="color:#111111;">${data.songTitle}</strong> and our team will review it shortly.`)}
+    ${p(`Hi ${data.artistName}, we've received your pitch for <strong style="color:#0d0d0d;">${data.songTitle}</strong> and our team will review it shortly.`)}
     ${divider()}
-    ${p("We'll pitch your song to playlist curators on your behalf. This typically takes 2–5 business days. We'll reach out if we need anything else from you.")}
-    ${p("Keep creating and promoting your music in the meantime — curator engagement loves active artists.")}
-    ${btn("Go to My Portal", "https://orinlabi.com/portal/login")}
-  `);
+    ${p("We'll pitch your song to curators on your behalf. This typically takes 2–5 business days. Keep creating and promoting — curator engagement loves active artists.")}
+    ${btn("Go to My Portal", PORTAL, "#7c3aed")}
+  `, "#7c3aed");
 }
 
-/* ── 8. Distribution stage update (artist) ── */
+/* ── 8. Distribution stage update ───────────────────────────────────────────── */
 export function stageUpdateEmail(data: {
   artistName: string;
   songTitle: string;
@@ -246,7 +309,6 @@ export function stageUpdateEmail(data: {
     spotify: "Spotify", apple_music: "Apple Music", boomplay: "Boomplay",
     audiomack: "Audiomack", youtube_music: "YouTube Music", deezer: "Deezer",
     tidal: "TIDAL", amazon_music: "Amazon Music", soundcloud: "SoundCloud",
-    anghami: "Anghami", tiktok: "TikTok", pandora: "Pandora",
   };
 
   if (data.stage === "live") {
@@ -254,33 +316,33 @@ export function stageUpdateEmail(data: {
     const linkRows = Object.entries(links)
       .filter(([, url]) => url?.trim())
       .map(([key, url]) => {
-        const label = platformNames[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-        return `<tr><td style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><a href="${url}" style="color:#007bff;font-size:14px;font-weight:600;text-decoration:none;font-family:Arial,sans-serif;">${label} &rarr;</a></td></tr>`;
-      })
-      .join("");
+        const name = platformNames[key] ?? key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        return `<tr><td style="padding:10px 0;border-bottom:1px solid #f5f5f5;">
+          <a href="${url}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#007bff;text-decoration:none;">${name} →</a>
+        </td></tr>`;
+      }).join("");
 
     return base(`
-      ${badge("Your Music is Live!", "#16a34a", "#dcfce7")}
+      ${label("Your Music is Live! 🎉", "#166534", "#dcfce7")}
       ${h1(`${data.songTitle} is streaming worldwide!`)}
-      ${p(`Congratulations, ${data.artistName} — your release is officially live on streaming platforms around the world. Start sharing and let your fans know.`)}
-      ${linkRows ? `${divider()}<p style="margin:0 0 12px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">YOUR STREAMING LINKS</p><table cellpadding="0" cellspacing="0" width="100%">${linkRows}</table>` : ""}
+      ${p(`Congratulations ${data.artistName} — your release is officially live. Start sharing your links and track your streams in the portal.`)}
+      ${linkRows ? `${divider()}${sectionLabel("Streaming Links")}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${linkRows}</table>` : ""}
       ${divider()}
-      ${p("Log in to your portal to get your smart link, share it everywhere, and check your streaming stats.")}
-      ${btn("Open My Portal", "https://orinlabi.com/portal/login")}
-    `);
+      ${btn("Open My Portal", PORTAL, "#16a34a")}
+    `, "#22c55e");
   }
 
   return base(`
-    ${badge("Distribution Update", "#007bff", "#e8f0fe")}
+    ${label("Distribution Update", "#1d6ae5", "#e8f0fe")}
     ${h1("Your release is being distributed.")}
-    ${p(`Hi ${data.artistName}, <strong style="color:#111111;">${data.songTitle}</strong> has entered our distribution pipeline and is on its way to streaming platforms.`)}
+    ${p(`Hi ${data.artistName}, <strong style="color:#0d0d0d;">${data.songTitle}</strong> has entered our distribution pipeline and is on its way to streaming platforms.`)}
     ${divider()}
-    ${p("Your music typically appears on platforms within 24–72 hours. We'll send you another email as soon as it goes live.")}
-    ${btn("Track My Release", "https://orinlabi.com/portal/login")}
+    ${p("Your music typically appears on platforms within 24–72 hours. We'll send another email as soon as it goes live.")}
+    ${btn("Track My Release", PORTAL)}
   `);
 }
 
-/* ── 9. Smart link ready (artist) ── */
+/* ── 9. Smart link ready ─────────────────────────────────────────────────────── */
 export function smartlinkReadyEmail(data: {
   artistName: string;
   songTitle: string;
@@ -288,51 +350,42 @@ export function smartlinkReadyEmail(data: {
 }) {
   const smartLink = `https://orinlabi.com/listen/${data.releaseId}`;
   return base(`
-    ${badge("Smart Link Ready", "#007bff", "#eff6ff")}
+    ${label("Smart Link Ready", "#1d6ae5", "#eff6ff")}
     ${h1(`Your smart link is live, ${data.artistName}!`)}
-    ${p(`<strong style="color:#111111;">${data.songTitle}</strong> now has a shareable streaming link. Send it to your fans and they can listen on their preferred platform.`)}
+    ${p(`<strong style="color:#0d0d0d;">${data.songTitle}</strong> now has a shareable streaming link. Send it to fans and they'll be taken to their favourite platform automatically.`)}
     ${divider()}
-    <p style="margin:0 0 8px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">YOUR SMART LINK</p>
-    <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px;">
+    ${sectionLabel("Your Smart Link")}
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:20px;">
       <tr>
-        <td style="background:#f5f9ff;border:1px solid #d0e4ff;border-radius:10px;padding:14px 18px;">
-          <a href="${smartLink}" style="color:#007bff;font-size:14px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif;">${smartLink}</a>
+        <td style="background-color:#f0f7ff;border:1px solid #bcd9ff;border-radius:10px;padding:14px 18px;">
+          <a href="${smartLink}" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#1d6ae5;text-decoration:none;word-break:break-all;">${smartLink}</a>
         </td>
       </tr>
     </table>
-    ${p("Share this link anywhere — social media, WhatsApp, bio links. Fans choose their own streaming app.")}
+    ${p("Drop this link in your Instagram bio, WhatsApp status, or anywhere you promote — fans choose their own streaming app.")}
     ${btn("Share Your Smart Link", smartLink)}
-    <p style="margin:16px 0 0;font-size:13px;color:#999999;font-family:Arial,sans-serif;">
-      View your full release in <a href="https://orinlabi.com/portal" style="color:#007bff;">your portal</a>.
-    </p>
   `);
 }
 
-/* ── 10. Rejection ── */
+/* ── 10. Rejection ───────────────────────────────────────────────────────────── */
 export function rejectionEmail(data: {
   artistName: string;
   songTitle: string;
   notes?: string;
 }) {
   return base(`
-    ${badge("Action Required", "#b45309", "#fef3c7")}
-    ${h1(`Hi ${data.artistName}, we need to make some changes.`)}
-    ${p(`Your submission <strong style="color:#111111;">${data.songTitle}</strong> was not approved at this stage. Don't worry — this is fixable. Please review the notes below and resubmit.`)}
-    ${data.notes ? `
+    ${label("Action Required", "#92400e", "#fef3c7")}
+    ${h1(`Hi ${data.artistName}, we need some changes.`)}
+    ${p(`Your submission <strong style="color:#0d0d0d;">${data.songTitle}</strong> was not approved at this stage. This is fixable — review the notes below and resubmit.`)}
+    ${data.notes ? `${divider()}${sectionLabel("Reason / Notes")}${noteBox(data.notes, "#f59e0b")}` : ""}
     ${divider()}
-    <p style="margin:0 0 8px;color:#999999;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;font-family:Arial,sans-serif;">REASON / NOTES</p>
-    <p style="margin:0;color:#444444;font-size:14px;line-height:1.7;background:#f8f8f8;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:14px 16px;font-family:Arial,sans-serif;">${data.notes}</p>
-    ` : ""}
-    ${divider()}
-    ${p("Once you've made the necessary changes, submit your release again through the link below. Our team is here to help — reach out if you have any questions.")}
-    ${btn("Resubmit Your Release", "https://orinlabi.com/submit")}
-    <p style="margin:16px 0 0;font-size:13px;color:#999999;font-family:Arial,sans-serif;">
-      Questions? Email us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>
-    </p>
-  `);
+    ${p("Once you've made the necessary corrections, submit your release again through your portal. Our team is here to help.")}
+    ${btn("Resubmit Your Release", "https://orinlabi.com/portal/releases/new", "#d97706")}
+    ${muted(`Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, "#f59e0b");
 }
 
-/* ── Admin-to-artist/label notification ── */
+/* ── 11. Admin → artist / label notification ─────────────────────────────────── */
 export function adminNotificationEmail(data: {
   recipientName: string;
   title: string;
@@ -342,26 +395,23 @@ export function adminNotificationEmail(data: {
   ctaLabel: string;
   categoryLabel?: string;
 }) {
-  const palette = {
-    info:    { color: "#007bff", bg: "#e8f0fe", label: "From Orinlabí" },
-    success: { color: "#059669", bg: "#d1fae5", label: "Good News" },
-    warning: { color: "#d97706", bg: "#fef3c7", label: "Action Required" },
-    error:   { color: "#dc2626", bg: "#fee2e2", label: "Important Notice" },
+  const styles = {
+    info:    { labelColor: "#1d6ae5", labelBg: "#e8f0fe", accent: "#007bff", btnColor: "#007bff" },
+    success: { labelColor: "#166534", labelBg: "#dcfce7", accent: "#22c55e", btnColor: "#16a34a" },
+    warning: { labelColor: "#92400e", labelBg: "#fef3c7", accent: "#f59e0b", btnColor: "#d97706" },
+    error:   { labelColor: "#991b1b", labelBg: "#fee2e2", accent: "#ef4444", btnColor: "#dc2626" },
   }[data.type];
 
+  const categoryText = data.categoryLabel ?? "Message from Orinlabí";
+
   return base(`
-    ${badge(data.categoryLabel ?? palette.label, palette.color, palette.bg)}
+    ${label(categoryText, styles.labelColor, styles.labelBg)}
     ${h1(data.title)}
-    <p style="margin:0 0 8px;color:#888888;font-size:13px;font-family:Arial,sans-serif;">Hi ${data.recipientName},</p>
-    <p style="margin:0 0 24px;color:#333333;font-size:15px;line-height:1.8;font-family:Arial,sans-serif;">${data.body.replace(/\n/g, "<br/>")}</p>
+    ${p(`Hi ${data.recipientName},`)}
+    <p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.8;color:#333333;white-space:pre-line;">${data.body}</p>
     ${divider()}
-    <p style="margin:0 0 16px;color:#555555;font-size:13px;line-height:1.6;font-family:Arial,sans-serif;">
-      Log in to your Orinlabí portal to view the full notification and take any required action.
-    </p>
-    ${btn(data.ctaLabel, data.ctaUrl)}
-    <p style="margin:20px 0 0;font-size:12px;color:#aaaaaa;font-family:Arial,sans-serif;">
-      This notification was sent by the Orinlabí team. Reply to
-      <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a> with any questions.
-    </p>
-  `);
+    ${p("Log in to your Orinlabí portal to view this notification and take any required action.")}
+    ${btn(data.ctaLabel, data.ctaUrl, styles.btnColor)}
+    ${muted(`This message was sent by the Orinlabí team. Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, styles.accent);
 }
