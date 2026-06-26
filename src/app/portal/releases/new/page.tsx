@@ -159,8 +159,12 @@ export default function NewReleasePage() {
     const img = new Image();
     img.onload = () => {
       URL.revokeObjectURL(url);
-      if (img.naturalWidth < 3000 || img.naturalHeight < 3000) {
-        setArtworkError(`Image is ${img.naturalWidth}×${img.naturalHeight}px — minimum is 3000×3000px. Ditto will reject smaller artwork.`);
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+      if (w !== h) {
+        setArtworkError(`Image must be square (1:1 ratio). Yours is ${w}×${h}px — crop it to ${Math.min(w, h)}×${Math.min(w, h)}px first.`);
+      } else if (w < 3000 || h < 3000) {
+        setArtworkError(`Image is ${w}×${h}px — minimum is 3000×3000px. DSPs will reject smaller artwork.`);
       }
     };
     img.src = url;
@@ -528,10 +532,31 @@ export default function NewReleasePage() {
 
         {/* Cover Art — always shown */}
         <div>
-          <h2 className="text-white font-bold text-lg mb-2 pb-3 border-b border-white/10">
+          <h2 className="text-white font-bold text-lg mb-4 pb-3 border-b border-white/10">
             Cover Artwork
           </h2>
-          <p className="text-white/30 text-xs mb-5">JPG or PNG · Min. 3000×3000px</p>
+
+          {/* Requirements banner */}
+          <div className="mb-5 rounded-xl border border-[#007bff]/20 overflow-hidden">
+            <div className="bg-[#007bff]/10 px-4 py-2.5 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#007bff] animate-pulse" />
+              <p className="text-[#60a5fa] text-xs font-bold uppercase tracking-widest">Artwork Requirements</p>
+            </div>
+            <div className="bg-white/[0.02] px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: "Format", value: "JPG or PNG" },
+                { label: "Min. Size", value: "3000 × 3000px" },
+                { label: "Aspect Ratio", value: "1:1 Square" },
+                { label: "No text/URLs", value: "On the artwork" },
+              ].map(({ label, value }) => (
+                <div key={label} className="text-center">
+                  <p className="text-white/30 text-[10px] uppercase tracking-wider mb-0.5">{label}</p>
+                  <p className="text-white text-xs font-semibold">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <FileUpload
             label="Cover Artwork"
             name="coverFile"

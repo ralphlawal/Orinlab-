@@ -6,14 +6,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import {
-  LayoutDashboard, Music, DollarSign, Megaphone, Wrench, FolderOpen,
+  LayoutDashboard, DollarSign, Megaphone, Wrench, FolderOpen,
   MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus,
 } from "lucide-react";
 
 type Counts = { messages: number; notifications: number };
 type NavBadge = "none" | "messages" | "notifications";
 type NavItem = { href: string; label: string; icon: React.ReactNode; exact: boolean; badge: NavBadge };
-type NavSection = { label: string; items: NavItem[] };
+type NavSection = { label: string; color: string; items: NavItem[] };
 
 function Badge({ n }: { n: number }) {
   if (!n) return null;
@@ -27,38 +27,43 @@ function Badge({ n }: { n: number }) {
 const NAV_SECTIONS: NavSection[] = [
   {
     label: "Music",
+    color: "#60a5fa",
     items: [
-      { href: "/portal",           label: "My Releases",  icon: <LayoutDashboard size={17} />, exact: true,  badge: "none" as const },
-      { href: "/portal/releases/new", label: "New Release", icon: <Plus size={17} />,          exact: false, badge: "none" as const },
+      { href: "/portal",               label: "My Releases",  icon: <LayoutDashboard size={16} />, exact: true,  badge: "none" as const },
+      { href: "/portal/releases/new",  label: "New Release",  icon: <Plus size={16} />,            exact: false, badge: "none" as const },
     ],
   },
   {
     label: "Finances",
+    color: "#34d399",
     items: [
-      { href: "/portal/earnings",  label: "Earnings",     icon: <DollarSign size={17} />,      exact: false, badge: "none" as const },
-      { href: "/portal/services",  label: "Services",     icon: <Megaphone size={17} />,       exact: false, badge: "none" as const },
+      { href: "/portal/earnings",  label: "Earnings",   icon: <DollarSign size={16} />,  exact: false, badge: "none" as const },
+      { href: "/portal/services",  label: "Services",   icon: <Megaphone size={16} />,   exact: false, badge: "none" as const },
     ],
   },
   {
     label: "Growth",
+    color: "#c084fc",
     items: [
-      { href: "/portal/pitch",     label: "Promote",      icon: <Music size={17} />,           exact: false, badge: "none" as const },
-      { href: "/portal/tools",     label: "Tools",        icon: <Wrench size={17} />,          exact: false, badge: "none" as const },
-      { href: "/portal/assets",    label: "Assets",       icon: <FolderOpen size={17} />,      exact: false, badge: "none" as const },
+      { href: "/portal/pitch",   label: "Promote",  icon: <Megaphone size={16} />,  exact: false, badge: "none" as const },
+      { href: "/portal/tools",   label: "Tools",    icon: <Wrench size={16} />,     exact: false, badge: "none" as const },
+      { href: "/portal/assets",  label: "Assets",   icon: <FolderOpen size={16} />, exact: false, badge: "none" as const },
     ],
   },
   {
     label: "Support",
+    color: "#fb923c",
     items: [
-      { href: "/portal/messages",  label: "Messages",     icon: <MessageSquare size={17} />,   exact: false, badge: "messages" as const },
-      { href: "/portal/support",   label: "Support",      icon: <LifeBuoy size={17} />,        exact: false, badge: "none" as const },
+      { href: "/portal/messages", label: "Messages", icon: <MessageSquare size={16} />, exact: false, badge: "messages" as const },
+      { href: "/portal/support",  label: "Support",  icon: <LifeBuoy size={16} />,      exact: false, badge: "none" as const },
     ],
   },
   {
     label: "Account",
+    color: "#f472b6",
     items: [
-      { href: "/portal/profile",        label: "Profile",       icon: <User size={17} />,     exact: false, badge: "none" as const },
-      { href: "/portal/notifications",  label: "Notifications", icon: <Bell size={17} />,     exact: false, badge: "notifications" as const },
+      { href: "/portal/profile",       label: "Profile",       icon: <User size={16} />, exact: false, badge: "none" as const },
+      { href: "/portal/notifications", label: "Notifications", icon: <Bell size={16} />, exact: false, badge: "notifications" as const },
     ],
   },
 ];
@@ -66,11 +71,12 @@ const NAV_SECTIONS: NavSection[] = [
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [checking, setChecking]     = useState(true);
-  const [email, setEmail]           = useState<string | null>(null);
-  const [artistName, setArtistName] = useState<string>("");
-  const [counts, setCounts]         = useState<Counts>({ messages: 0, notifications: 0 });
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [checking, setChecking]         = useState(true);
+  const [email, setEmail]               = useState<string | null>(null);
+  const [artistName, setArtistName]     = useState<string>("");
+  const [artistImage, setArtistImage]   = useState<string | null>(null);
+  const [counts, setCounts]             = useState<Counts>({ messages: 0, notifications: 0 });
+  const [sidebarOpen, setSidebarOpen]   = useState(false);
 
   const loadCounts = useCallback(async (userEmail: string) => {
     const [{ count: msg }, { count: notif }] = await Promise.all([
@@ -160,11 +166,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     return () => clearInterval(id);
   }, [email, loadCounts]);
 
-  // Fetch artist name from profile
+  // Fetch artist name + avatar from profile
   useEffect(() => {
     if (!email) return;
-    supabase.from("artist_profiles").select("artist_name").eq("email", email).maybeSingle()
-      .then(({ data }) => { if (data?.artist_name) setArtistName(data.artist_name); });
+    supabase.from("artist_profiles").select("artist_name,artist_image_url").eq("email", email).maybeSingle()
+      .then(({ data }) => {
+        if (data?.artist_name) setArtistName(data.artist_name);
+        if (data?.artist_image_url) setArtistImage(data.artist_image_url);
+      });
   }, [email]);
 
   async function signOut() {
@@ -185,30 +194,67 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   }
 
   const totalUnread = counts.messages + counts.notifications;
+  const initials = artistName ? artistName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase() : "A";
+
+  // Find which section the current page belongs to, for color tinting
+  const activeSection = NAV_SECTIONS.find((s) =>
+    s.items.some((item) => item.exact ? pathname === item.href : pathname.startsWith(item.href))
+  );
+  const activeSectionColor = activeSection?.color ?? "#007bff";
 
   return (
     <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-56 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-56 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        style={{ background: "linear-gradient(180deg, #050505 0%, #080808 100%)", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
+
         {/* Logo + identity */}
-        <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
+        <div className="flex flex-col px-4 py-5 border-b border-white/[0.05]">
           <Image
             src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
             alt="Orinlabí" width={88} height={24} className="object-contain"
           />
-          <p className="text-white/25 text-[11px] mt-1.5 font-medium tracking-wide uppercase">Artist Portal</p>
-          {artistName && (
-            <p className="text-white/60 text-xs mt-1 truncate">{artistName}</p>
-          )}
+          <p className="text-white/20 text-[10px] mt-1.5 font-semibold tracking-widest uppercase">Artist Portal</p>
+        </div>
+
+        {/* Artist identity card */}
+        <div className="px-3 py-3 border-b border-white/[0.05]">
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl bg-white/[0.03]">
+            {/* Avatar */}
+            <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden relative">
+              {artistImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={artistImage} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-white text-[11px] font-bold"
+                  style={{ background: "linear-gradient(135deg, #007bff, #8B5CF6)" }}
+                >
+                  {initials}
+                </div>
+              )}
+              {/* Online indicator */}
+              <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-400 rounded-full border border-[#050505]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              {artistName
+                ? <p className="text-white text-xs font-semibold truncate">{artistName}</p>
+                : <p className="text-white/40 text-xs truncate">{email ?? "Artist"}</p>}
+              <p className="text-white/30 text-[10px] truncate">Active</p>
+            </div>
+          </div>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
           {NAV_SECTIONS.map((section) => (
             <div key={section.label}>
-              <p className="px-3 text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-1">
-                {section.label}
-              </p>
+              <div className="flex items-center gap-1.5 px-3 mb-1">
+                <div className="w-1 h-1 rounded-full" style={{ background: section.color, opacity: 0.6 }} />
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: section.color, opacity: 0.5 }}>
+                  {section.label}
+                </p>
+              </div>
               <div className="space-y-0.5">
                 {section.items.map((item) => {
                   const active = item.exact
@@ -221,11 +267,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                       key={item.href}
                       href={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                        active
-                          ? "bg-[#007bff]/10 text-[#007bff]"
-                          : "text-white/45 hover:text-white hover:bg-white/[0.05]"
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
+                        active ? "text-white" : "text-white/40 hover:text-white/80 hover:bg-white/[0.04]"
                       }`}
+                      style={active ? {
+                        background: `${section.color}18`,
+                        boxShadow: `inset 0 0 0 1px ${section.color}20`,
+                        color: section.color,
+                      } : undefined}
                     >
                       <span className="flex-shrink-0">{item.icon}</span>
                       <span className="flex-1 truncate">{item.label}</span>
@@ -239,12 +288,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </nav>
 
         {/* Sign out */}
-        <div className="px-2.5 py-3 border-t border-white/[0.06]">
+        <div className="px-2.5 py-3 border-t border-white/[0.05]">
           <button
             onClick={signOut}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/35 hover:text-white hover:bg-white/[0.05] transition-colors w-full"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-all w-full"
           >
-            <LogOut size={17} />
+            <LogOut size={16} />
             Sign Out
           </button>
         </div>
@@ -252,30 +301,38 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-30 bg-black/70 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Main content */}
       <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-6 py-3.5 flex items-center gap-4">
-          <button className="lg:hidden relative text-white/60 hover:text-white" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <header className="flex-shrink-0 z-20 px-6 py-3.5 flex items-center gap-4"
+          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+          <button className="lg:hidden relative text-white/50 hover:text-white transition-colors" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             {!sidebarOpen && totalUnread > 0 && (
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#007bff] rounded-full" />
             )}
           </button>
-          <h2 className="text-white font-semibold text-sm truncate">
-            {NAV_SECTIONS.flatMap(s => s.items).find(n =>
-              n.exact ? pathname === n.href : (pathname.startsWith(n.href) && n.href !== "/portal")
-            )?.label ?? (pathname === "/portal" ? "My Releases" : "Portal")}
-          </h2>
-          {totalUnread > 0 && (
-            <span className="ml-auto text-[#007bff]/80 text-xs flex items-center gap-1.5 font-medium">
-              <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse inline-block" />
-              {totalUnread} unread
-            </span>
-          )}
+
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-4 rounded-full" style={{ background: activeSectionColor }} />
+            <h2 className="text-white font-semibold text-sm">
+              {NAV_SECTIONS.flatMap(s => s.items).find(n =>
+                n.exact ? pathname === n.href : (pathname.startsWith(n.href) && n.href !== "/portal")
+              )?.label ?? (pathname === "/portal" ? "My Releases" : "Portal")}
+            </h2>
+          </div>
+
+          <div className="ml-auto flex items-center gap-3">
+            {totalUnread > 0 && (
+              <Link href="/portal/notifications" className="flex items-center gap-1.5 text-[#007bff] text-xs font-medium hover:text-white transition-colors">
+                <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse inline-block" />
+                {totalUnread} unread
+              </Link>
+            )}
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto">
