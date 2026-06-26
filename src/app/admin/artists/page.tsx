@@ -6,6 +6,7 @@ import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, Music2, Globe, CheckCircle2, Clock, XCircle,
   ChevronDown, ChevronUp, Save, User, BarChart3, Send,
+  UserCheck, UserX, TrendingUp,
 } from "lucide-react";
 
 const SUPER_ADMIN = (
@@ -37,6 +38,7 @@ type ProfileRow = {
   artist_image_url: string | null;
   instagram_handle: string | null;
   spotify_artist_id: string | null;
+  account_status: "active" | "suspended" | null;
 };
 
 type Artist = {
@@ -50,15 +52,18 @@ type Artist = {
   spotify_artist_id: string | null;
   total_releases: number;
   approved_releases: number;
+  total_streams: number;
+  total_royalties: number;
   latest_status: "pending" | "approved" | "rejected";
   joined: string;
   releases: ReleaseRow[];
+  accountStatus: "active" | "suspended";
 };
 
 const statusCfg = {
-  approved: { icon: CheckCircle2, label: "Approved", color: "text-green-400", bg: "bg-green-400/10 border-green-400/20" },
-  pending:  { icon: Clock,         label: "Pending",  color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" },
-  rejected: { icon: XCircle,       label: "Rejected", color: "text-red-400",    bg: "bg-red-400/10 border-red-400/20" },
+  approved: { icon: CheckCircle2, label: "Approved", color: "text-green-400",  bg: "bg-green-400/10 border-green-400/20" },
+  pending:  { icon: Clock,        label: "Pending",  color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" },
+  rejected: { icon: XCircle,      label: "Rejected", color: "text-red-400",    bg: "bg-red-400/10 border-red-400/20" },
 };
 
 const PLATFORMS = ["spotify", "apple_music", "youtube", "boomplay", "audiomack", "deezer", "tidal", "amazon_music"];
@@ -67,6 +72,12 @@ const PLATFORM_LABELS: Record<string, string> = {
   boomplay: "Boomplay", audiomack: "Audiomack", deezer: "Deezer",
   tidal: "Tidal", amazon_music: "Amazon Music",
 };
+
+function fmtN(n: number) {
+  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
+    : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K`
+    : n.toString();
+}
 
 const inputCls = "w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-3 py-2 rounded-lg transition-colors";
 
@@ -80,7 +91,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
   const [sendingMsg, setSendingMsg]   = useState(false);
   const [msgSent, setMsgSent]         = useState(false);
 
-  // Profile state
   const [name, setName]         = useState(artist.artist_name);
   const [bio, setBio]           = useState(artist.bio ?? "");
   const [country, setCountry]   = useState(artist.country ?? "");
@@ -90,7 +100,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
   const [savingProfile, setSavingProfile] = useState(false);
   const [savedProfile, setSavedProfile]   = useState(false);
 
-  // Release stats state — keyed by release ID
   const [relStats, setRelStats] = useState<Record<string, { streams: Record<string, string>; royalties: string }>>(
     () => {
       const init: Record<string, { streams: Record<string, string>; royalties: string }> = {};
@@ -160,7 +169,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
   async function doSendMessage() {
     if (!msgTitle.trim() || !msgBody.trim()) return;
     setSendingMsg(true);
-    // In-app notification
     await supabase.from("notifications").insert({
       email: artist.email,
       type: "info",
@@ -168,7 +176,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
       body: msgBody.trim(),
       link: "/portal",
     });
-    // Email via notify API
     await fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -186,7 +193,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
 
   return (
     <div className="mt-4 border-t border-white/[0.06] pt-4">
-      {/* Sub-tabs */}
       <div className="flex gap-1 mb-4">
         {(["profile", "releases", "message"] as const).map((t) => (
           <button
@@ -274,7 +280,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
 
             return (
               <div key={r.id} className="border border-white/[0.06] rounded-xl p-4 space-y-3">
-                {/* Release header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {r.cover_art_url ? (
@@ -295,7 +300,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
                   </span>
                 </div>
 
-                {/* Streams */}
                 <div>
                   <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">Streams per Platform</p>
                   <div className="grid grid-cols-2 gap-2">
@@ -313,7 +317,6 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
                   </div>
                 </div>
 
-                {/* Royalties */}
                 <div className="flex items-center gap-3">
                   <label className="text-white/40 text-xs w-24 flex-shrink-0">Royalties (USD)</label>
                   <input
@@ -365,11 +368,13 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function AdminArtistsPage() {
+  const { requestUnlock } = usePinGate();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [togglingEmail, setTogglingEmail] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -387,7 +392,7 @@ export default function AdminArtistsPage() {
           .order("submitted_at", { ascending: false }),
         supabase
           .from("artist_profiles")
-          .select("email, artist_name, bio, country, artist_image_url, instagram_handle, spotify_artist_id"),
+          .select("email, artist_name, bio, country, artist_image_url, instagram_handle, spotify_artist_id, account_status"),
       ]);
 
       const profileMap: Record<string, ProfileRow> = {};
@@ -402,6 +407,9 @@ export default function AdminArtistsPage() {
       const built: Artist[] = Object.entries(byEmail).map(([email, rows]) => {
         const prof = profileMap[email];
         const latest = rows[0];
+        const totalStreams = rows.reduce((sum, r) =>
+          sum + Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0), 0);
+        const totalRoyalties = rows.reduce((sum, r) => sum + (r.royalties_usd ?? 0), 0);
         return {
           email,
           artist_name: prof?.artist_name || latest.artist_name,
@@ -413,9 +421,12 @@ export default function AdminArtistsPage() {
           spotify_artist_id: prof?.spotify_artist_id ?? null,
           total_releases: rows.length,
           approved_releases: rows.filter((r) => r.status === "approved").length,
+          total_streams: totalStreams,
+          total_royalties: totalRoyalties,
           latest_status: latest.status,
           joined: rows[rows.length - 1].submitted_at,
           releases: rows,
+          accountStatus: (prof?.account_status === "suspended" ? "suspended" : "active") as "active" | "suspended",
         };
       });
 
@@ -430,6 +441,29 @@ export default function AdminArtistsPage() {
     setArtists((prev) =>
       prev.map((a) => (a.email === email ? { ...a, ...updated } : a))
     );
+  }
+
+  async function toggleStatus(email: string, current: "active" | "suspended") {
+    const newStatus = current === "suspended" ? "active" : "suspended";
+    setTogglingEmail(email);
+    await supabase.from("artist_profiles").upsert(
+      { email, account_status: newStatus },
+      { onConflict: "email" }
+    );
+    setArtists((prev) =>
+      prev.map((a) => (a.email === email ? { ...a, accountStatus: newStatus } : a))
+    );
+    // Notify artist via in-app notification
+    await supabase.from("notifications").insert({
+      email,
+      type: newStatus === "suspended" ? "warning" : "success",
+      title: newStatus === "suspended" ? "Account Suspended" : "Account Reactivated",
+      body: newStatus === "suspended"
+        ? "Your Orinlabí account has been suspended. Please contact support for details."
+        : "Your Orinlabí account has been reactivated. Welcome back!",
+      link: "/portal",
+    });
+    setTogglingEmail(null);
   }
 
   const filtered = search.trim()
@@ -450,15 +484,16 @@ export default function AdminArtistsPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Stats — now includes active/suspended counts */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Total Artists",  value: artists.length },
-          { label: "Approved",       value: artists.filter((a) => a.approved_releases > 0).length },
-          { label: "Pending Review", value: artists.filter((a) => a.latest_status === "pending").length },
+          { label: "Active",         value: artists.filter((a) => a.accountStatus === "active").length,    color: "text-green-400" },
+          { label: "Suspended",      value: artists.filter((a) => a.accountStatus === "suspended").length, color: "text-red-400" },
+          { label: "Pending Review", value: artists.filter((a) => a.latest_status === "pending").length,   color: "text-yellow-400" },
         ].map((s) => (
           <div key={s.label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-center">
-            <p className="text-white font-bold text-2xl">{s.value}</p>
+            <p className={`font-bold text-2xl ${s.color ?? "text-white"}`}>{s.value}</p>
             <p className="text-white/40 text-xs mt-1">{s.label}</p>
           </div>
         ))}
@@ -483,15 +518,21 @@ export default function AdminArtistsPage() {
             const StatusIcon = cfg.icon;
             const isOpen = expanded === artist.email;
             const avatarSrc = artist.photo || artist.releases.find((r) => r.cover_art_url)?.cover_art_url || null;
+            const isSuspended = artist.accountStatus === "suspended";
+            const isToggling = togglingEmail === artist.email;
 
             return (
               <div
                 key={artist.email}
-                className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5"
+                className={`border rounded-2xl p-5 transition-colors ${
+                  isSuspended
+                    ? "bg-red-500/[0.04] border-red-500/20"
+                    : "bg-white/[0.03] border-white/[0.06]"
+                }`}
               >
                 <div className="flex items-start gap-4">
-                  {/* Avatar — profile photo first, cover art fallback */}
-                  <div className="relative w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black">
+                  {/* Avatar */}
+                  <div className={`relative w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black ${isSuspended ? "opacity-50 grayscale" : ""}`}>
                     {avatarSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={avatarSrc} alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
@@ -506,14 +547,45 @@ export default function AdminArtistsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div>
-                        <p className="text-white font-semibold text-sm">{artist.artist_name}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-semibold text-sm ${isSuspended ? "text-white/50" : "text-white"}`}>
+                            {artist.artist_name}
+                          </p>
+                          {isSuspended && (
+                            <span className="text-[10px] font-bold text-red-400 bg-red-400/10 border border-red-400/20 px-2 py-0.5 rounded-full">
+                              SUSPENDED
+                            </span>
+                          )}
+                        </div>
                         <p className="text-white/40 text-xs mt-0.5">{artist.email}</p>
                       </div>
-                      <div className="flex items-center gap-2">
+
+                      {/* Controls */}
+                      <div className="flex items-center gap-2 flex-wrap">
                         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
                           <StatusIcon size={12} />
                           {cfg.label}
                         </div>
+
+                        {/* Activate / Suspend toggle */}
+                        <button
+                          onClick={() => requestUnlock(() => toggleStatus(artist.email, artist.accountStatus))}
+                          disabled={isToggling}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border disabled:opacity-50 ${
+                            isSuspended
+                              ? "bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20"
+                              : "bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"
+                          }`}
+                        >
+                          {isToggling ? (
+                            <Loader2 size={11} className="animate-spin" />
+                          ) : isSuspended ? (
+                            <><UserCheck size={12} /> Activate</>
+                          ) : (
+                            <><UserX size={12} /> Suspend</>
+                          )}
+                        </button>
+
                         {isSuperAdmin && (
                           <button
                             onClick={() => setExpanded(isOpen ? null : artist.email)}
@@ -525,7 +597,7 @@ export default function AdminArtistsPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-x-5 gap-y-1 mt-3">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
                       {artist.genre && (
                         <span className="text-white/30 text-xs">{artist.genre}</span>
                       )}
@@ -538,6 +610,14 @@ export default function AdminArtistsPage() {
                         {artist.total_releases} release{artist.total_releases !== 1 ? "s" : ""}
                         {artist.approved_releases > 0 && ` · ${artist.approved_releases} approved`}
                       </span>
+                      {artist.total_streams > 0 && (
+                        <span className="flex items-center gap-1 text-white/30 text-xs">
+                          <TrendingUp size={10} />{fmtN(artist.total_streams)} streams
+                        </span>
+                      )}
+                      {artist.total_royalties > 0 && (
+                        <span className="text-white/30 text-xs">${artist.total_royalties.toFixed(2)} royalties</span>
+                      )}
                       <span className="text-white/20 text-xs">
                         Joined {new Date(artist.joined).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}
                       </span>
@@ -549,7 +629,7 @@ export default function AdminArtistsPage() {
                   </div>
                 </div>
 
-                {/* Edit panel — Ralph only */}
+                {/* Edit panel — super admin only */}
                 {isOpen && isSuperAdmin && (
                   <EditPanel
                     artist={artist}

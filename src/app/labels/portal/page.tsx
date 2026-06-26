@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
-  Clock, CheckCircle2, XCircle, Loader2, Users, Music, Globe, ArrowRight, Pencil, BarChart2, DollarSign,
+  Clock, CheckCircle2, XCircle, Loader2, Users, Music, Globe, ArrowRight, Pencil, BarChart2, DollarSign, TrendingUp,
 } from "lucide-react";
 
 type LabelProfile = {
@@ -21,12 +21,31 @@ type LabelProfile = {
   submitted_at: string | null;
 };
 
+type RosterArtist = {
+  email: string;
+  artist_name: string | null;
+  artist_image_url: string | null;
+  country: string | null;
+  releaseCount: number;
+  totalStreams: number;
+  totalRoyalties: number;
+  coverArt: string | null;
+  latestTitle: string | null;
+};
+
+function fmtN(n: number) {
+  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
+    : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K`
+    : n.toString();
+}
+
 export default function LabelPortalDashboard() {
   const [label, setLabel]         = useState<LabelProfile | null>(null);
   const [artistCount, setArtistCount] = useState(0);
   const [releaseCount, setReleaseCount] = useState(0);
   const [totalStreams, setTotalStreams] = useState(0);
   const [totalRoyalties, setTotalRoyalties] = useState(0);
+  const [roster, setRoster]       = useState<RosterArtist[]>([]);
   const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
@@ -43,11 +62,10 @@ export default function LabelPortalDashboard() {
       if (!data) { setLoading(false); return; }
       setLabel(data as LabelProfile);
 
-      // Count artists and releases if approved
       if (data.status === "approved") {
         const { data: profiles } = await supabase
           .from("artist_profiles")
-          .select("email")
+          .select("email,artist_name,artist_image_url,country")
           .ilike("record_label", data.name);
 
         const count = profiles?.length ?? 0;
@@ -57,13 +75,42 @@ export default function LabelPortalDashboard() {
           const emails = profiles!.map((p) => p.email);
           const { data: rData, count: rc } = await supabase
             .from("releases")
-            .select("streams, royalties_usd", { count: "exact" })
+            .select("email,song_title,streams,royalties_usd,cover_art_url,submitted_at", { count: "exact" })
             .in("email", emails)
-            .eq("status", "approved");
+            .eq("status", "approved")
+            .order("submitted_at", { ascending: false });
+
           setReleaseCount(rc ?? 0);
-          const allReleases = (rData ?? []) as { streams: Record<string, number> | null; royalties_usd: number | null }[];
-          setTotalStreams(allReleases.reduce((s, r) => s + Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0), 0));
+          const allReleases = (rData ?? []) as {
+            email: string;
+            song_title: string;
+            streams: Record<string, number> | null;
+            royalties_usd: number | null;
+            cover_art_url: string | null;
+          }[];
+
+          setTotalStreams(allReleases.reduce((s, r) =>
+            s + Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0), 0));
           setTotalRoyalties(allReleases.reduce((s, r) => s + (r.royalties_usd ?? 0), 0));
+
+          // Build per-artist roster with individual stats
+          const builtRoster: RosterArtist[] = profiles!.map((p) => {
+            const artistReleases = allReleases.filter((r) => r.email === p.email);
+            return {
+              email: p.email,
+              artist_name: p.artist_name,
+              artist_image_url: p.artist_image_url,
+              country: p.country,
+              releaseCount: artistReleases.length,
+              totalStreams: artistReleases.reduce((s, r) =>
+                s + Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0), 0),
+              totalRoyalties: artistReleases.reduce((s, r) => s + (r.royalties_usd ?? 0), 0),
+              coverArt: artistReleases.find((r) => r.cover_art_url)?.cover_art_url ?? null,
+              latestTitle: artistReleases[0]?.song_title ?? null,
+            };
+          });
+          builtRoster.sort((a, b) => b.totalStreams - a.totalStreams);
+          setRoster(builtRoster);
         }
       }
 
@@ -199,6 +246,66 @@ export default function LabelPortalDashboard() {
             </div>
             <p className="text-white font-bold text-2xl">{totalRoyalties > 0 ? `$${totalRoyalties.toFixed(2)}` : "—"}</p>
             <p className="text-white/40 text-xs mt-0.5">Royalties</p>
+          </div>
+        </div>
+      )}
+
+      {/* Roster preview — top 3 artists by streams */}
+      {status === "approved" && roster.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Roster Overview</p>
+            <Link href="/labels/portal/artists" className="text-[#007bff] text-xs hover:underline flex items-center gap-1">
+              View Full Roster <ArrowRight size={11} />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {roster.slice(0, 4).map((a, i) => {
+              const heroImg = a.artist_image_url ?? a.coverArt;
+              return (
+                <div key={a.email} className="flex items-center gap-4 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 transition-colors">
+                  {/* Rank */}
+                  <span className="text-white/20 text-xs font-bold w-4 flex-shrink-0 text-center">{i + 1}</span>
+
+                  {/* Avatar */}
+                  <div className="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black">
+                    {heroImg ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={heroImg} alt="" className="w-full h-full object-cover object-center" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Music size={14} className="text-[#007bff]/30" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Name + latest */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">{a.artist_name ?? a.email}</p>
+                    <p className="text-white/30 text-xs truncate">
+                      {a.releaseCount} release{a.releaseCount !== 1 ? "s" : ""}
+                      {a.latestTitle && ` · ${a.latestTitle}`}
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="text-right flex-shrink-0">
+                    {a.totalStreams > 0 && (
+                      <div className="flex items-center gap-1 justify-end text-white/60 text-xs font-semibold">
+                        <TrendingUp size={11} />
+                        {fmtN(a.totalStreams)}
+                      </div>
+                    )}
+                    {a.totalRoyalties > 0 && (
+                      <p className="text-white/30 text-[11px] mt-0.5">${a.totalRoyalties.toFixed(2)}</p>
+                    )}
+                    {a.totalStreams === 0 && (
+                      <p className="text-white/20 text-xs">No data</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
