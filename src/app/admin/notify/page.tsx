@@ -371,6 +371,8 @@ const TYPE_STYLES = {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
+type DeliveryMode = "both" | "inapp" | "email";
+
 export default function NotifyPage() {
   const [recipientType, setRecipientType] = useState<"artists" | "labels">("artists");
   const [artists, setArtists]   = useState<Artist[]>([]);
@@ -385,6 +387,7 @@ export default function NotifyPage() {
   const [error, setError]             = useState("");
   const [showTemplates, setShowTemplates] = useState(true);
   const [sentHistory, setSentHistory] = useState<{ title: string; count: number; time: string }[]>([]);
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("both");
 
   useEffect(() => {
     async function load() {
@@ -505,6 +508,7 @@ export default function NotifyPage() {
             ctaLabel: activeTemplate.ctaLabel,
             ctaUrl: `${portalBase}${ctaPath}`,
           },
+          deliveryMode,
         }),
       });
       const data = await res.json();
@@ -600,7 +604,7 @@ export default function NotifyPage() {
             />
           </div>
 
-          {/* Select all */}
+          {/* Select all + Send ALL quick action */}
           <div className="flex items-center justify-between px-1">
             <button
               onClick={toggleAll}
@@ -615,6 +619,17 @@ export default function NotifyPage() {
               </span>
             )}
           </div>
+
+          {/* Quick "send to everyone" pill */}
+          {!allSelected && filtered.length > 0 && (
+            <button
+              onClick={() => setSelected(new Set(allRecipients.map((r) => r.email)))}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-[#007bff]/30 text-[#007bff] text-xs font-semibold hover:bg-[#007bff]/10 transition-all"
+            >
+              <Users size={13} />
+              Send to ALL {recipientType} ({allRecipients.length})
+            </button>
+          )}
 
           {/* Recipient list */}
           <div className="flex-1 overflow-y-auto max-h-[480px] space-y-1 pr-1" style={{ scrollbarWidth: "thin" }}>
@@ -793,6 +808,33 @@ export default function NotifyPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Delivery mode */}
+          {activeTemplate && (
+            <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-4">
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Delivery Mode</p>
+              <div className="grid grid-cols-3 gap-2">
+                {([
+                  { id: "both",  label: "Both",       desc: "In-app + Email" },
+                  { id: "inapp", label: "In-app Only", desc: "Portal only"    },
+                  { id: "email", label: "Email Only",  desc: "No portal notif" },
+                ] as { id: DeliveryMode; label: string; desc: string }[]).map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setDeliveryMode(m.id)}
+                    className={`flex flex-col items-center px-3 py-2.5 rounded-xl border text-center transition-all ${
+                      deliveryMode === m.id
+                        ? "border-[#007bff]/40 bg-[#007bff]/10 text-[#007bff]"
+                        : "border-white/[0.06] text-white/40 hover:text-white hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <p className="text-xs font-semibold">{m.label}</p>
+                    <p className="text-[10px] opacity-60 mt-0.5">{m.desc}</p>
+                  </button>
+                ))}
               </div>
             </div>
           )}
