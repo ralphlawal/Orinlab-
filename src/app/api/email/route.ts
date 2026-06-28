@@ -5,10 +5,14 @@ import {
   takedownConfirmEmail, payoutConfirmEmail, supportConfirmEmail,
   pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
 } from "@/lib/emails";
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimitResponse(req, 15, 60_000);
+  if (limited) return limited;
+
   const resend = new Resend(process.env.RESEND_API_KEY);
   const body = await req.json();
   const { type, release, data } = body;

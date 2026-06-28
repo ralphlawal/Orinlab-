@@ -77,8 +77,8 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
   // Fetch label name
   useEffect(() => {
     if (!email) return;
-    supabase.from("label_profiles").select("label_name").eq("email", email).maybeSingle()
-      .then(({ data }) => { if (data?.label_name) setLabelName(data.label_name); });
+    supabase.from("label_profiles").select("name").eq("email", email).maybeSingle()
+      .then(({ data }) => { if (data?.name) setLabelName(data.name); });
   }, [email]);
 
   async function signOut() {

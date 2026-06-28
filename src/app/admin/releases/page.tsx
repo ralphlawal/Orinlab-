@@ -73,11 +73,15 @@ type ArtistProfile = {
   website_url: string | null;
 };
 
+const PAGE_SIZE = 25;
+
 export default function ReleasesPage() {
   const { requestUnlock } = usePinGate();
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("pending");
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [selected, setSelected] = useState<Release | null>(null);
   const [notes, setNotes] = useState("");
   const [storeLinks, setStoreLinks] = useState<Record<string, string>>({});
@@ -128,16 +132,23 @@ export default function ReleasesPage() {
   const [dittoUploaded, setDittoUploaded] = useState(false);
   const [dittoPackCopied, setDittoPackCopied] = useState(false);
 
-  async function load() {
+  async function load(p = page) {
     setLoading(true);
-    let query = supabase.from("releases").select("*").order("submitted_at", { ascending: false });
+    const from = p * PAGE_SIZE;
+    const to   = from + PAGE_SIZE - 1;
+    let query = supabase.from("releases")
+      .select("*", { count: "exact" })
+      .order("submitted_at", { ascending: false })
+      .range(from, to);
     if (filter !== "all") query = query.eq("status", filter);
-    const { data } = await query;
+    const { data, count } = await query;
     setReleases(data ?? []);
+    setTotalCount(count ?? 0);
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setPage(0); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(page); }, [page, filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function notifyLive() {
     if (!selected) return;
@@ -569,6 +580,12 @@ export default function ReleasesPage() {
             </div>
           )}
 
+          {totalCount > 0 && !search && (
+            <p className="text-white/20 text-xs px-1">
+              Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} of {totalCount}
+            </p>
+          )}
+
           {releases.filter((r) => !search || r.artist_name.toLowerCase().includes(search.toLowerCase()) || r.song_title.toLowerCase().includes(search.toLowerCase())).map((r) => (
             <div
               key={r.id}
@@ -639,6 +656,31 @@ export default function ReleasesPage() {
               </div>
             </div>
           ))}
+
+          {/* Pagination */}
+          {!search && totalCount > PAGE_SIZE && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-white/30 text-xs">
+                Page {page + 1} of {Math.ceil(totalCount / PAGE_SIZE)}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="text-xs px-4 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  ← Prev
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(Math.ceil(totalCount / PAGE_SIZE) - 1, p + 1))}
+                  disabled={(page + 1) * PAGE_SIZE >= totalCount}
+                  className="text-xs px-4 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

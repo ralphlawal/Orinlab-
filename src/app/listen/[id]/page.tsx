@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { Music2 } from "lucide-react";
 import { getPlatform } from "@/lib/platforms";
@@ -89,8 +90,7 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
         <div className="fixed inset-0 bg-black/70" />
         <div className="relative z-10 max-w-sm">
           {release.cover_art_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={release.cover_art_url} alt={release.song_title} className="w-32 h-32 object-cover rounded-2xl mx-auto mb-6 shadow-2xl" />
+            <Image src={release.cover_art_url} alt={release.song_title} width={128} height={128} className="w-32 h-32 object-cover rounded-2xl mx-auto mb-6 shadow-2xl" />
           )}
           <p className="text-white/25 text-[10px] uppercase tracking-[0.2em] mb-3">Distributed by ORINLABÍ</p>
           <h1 className="text-white font-bold text-2xl mb-2">{release.song_title}</h1>
@@ -145,11 +145,11 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
         <div className="w-full max-w-md">
           <div className="w-full aspect-square overflow-hidden relative">
             {release.cover_art_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={release.cover_art_url}
                 alt={release.song_title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-[#007bff]/30 to-black flex items-center justify-center">

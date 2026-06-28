@@ -78,16 +78,14 @@ export default function ServicesPage() {
         data: { email, artist_name: artistName, service: inquiry.label, message: inquiryMsg.trim() },
       }),
     }).catch(() => {});
-    await fetch("/api/support", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email, artist_name: artistName,
-        subject: `Service Inquiry: ${inquiry.label}`,
-        category: "service",
-        message: inquiryMsg.trim(),
-      }),
-    }).catch(() => {});
+    supabase.from("support_tickets").insert({
+      email,
+      artist_name: artistName,
+      subject: `Service Inquiry: ${inquiry.label}`,
+      category: "Service Inquiry",
+      description: inquiryMsg.trim(),
+      status: "open",
+    }).then(() => {});
     setSending(false);
     setSent(true);
   }

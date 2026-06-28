@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { adminNotificationEmail } from "@/lib/emails";
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
 
@@ -23,6 +24,9 @@ export async function POST(req: NextRequest) {
       ctaLabel: string;
     };
   } = body;
+
+  const limited = rateLimitResponse(req, 10, 60_000);
+  if (limited) return limited;
 
   if (!recipients?.length || !notification?.title) {
     return NextResponse.json({ error: "Missing recipients or notification data" }, { status: 400 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
 const ADMIN  = [process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com", "ibatwtc@gmail.com"];
@@ -114,6 +115,9 @@ function wrap(accentColor: string, badge: string, heading: string, subheading: s
 }
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimitResponse(req, 30, 60_000);
+  if (limited) return limited;
+
   const resend = new Resend(process.env.RESEND_API_KEY);
   const body = await req.json();
   const { type, data } = body;

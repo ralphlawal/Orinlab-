@@ -4,6 +4,7 @@ import { createElement } from "react";
 import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import { ContractDocument } from "@/lib/contractPdf";
+import { rateLimitResponse } from "@/lib/rateLimit";
 
 // Anon client used only for auth token verification
 import { supabase } from "@/lib/supabase";
@@ -12,6 +13,9 @@ const FROM  = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
 const ADMIN = process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com";
 
 export async function POST(req: NextRequest) {
+  const limited = rateLimitResponse(req, 5, 60_000);
+  if (limited) return limited;
+
   const { releaseId, signatureName } = await req.json();
 
   if (!releaseId || !signatureName?.trim()) {
