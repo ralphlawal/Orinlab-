@@ -59,14 +59,14 @@ export type FaqItem = {
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 export const DEFAULT_HERO: HeroSettings = {
-  badge: "African Music Distribution · 150+ Platforms",
+  badge: "Global Music Distribution · 150+ Platforms",
   headline: "Release Your Music",
   highlight: "Worldwide.",
   subheadline:
-    "Get your music on Spotify, Apple Music, Boomplay, and 150+ platforms globally. Apply today — our team personally reviews every submission.",
+    "Get your music on Spotify, Apple Music, TikTok, and 150+ platforms globally. Apply today — our team personally reviews every submission.",
   stats: [
     { value: "150+", label: "Platforms" },
-    { value: "50+", label: "Countries" },
+    { value: "∞",    label: "Releases" },
     { value: "100%", label: "Ownership" },
   ],
 };
@@ -74,27 +74,27 @@ export const DEFAULT_HERO: HeroSettings = {
 export const DEFAULT_TESTIMONIALS: Testimonial[] = [
   {
     name: "Temi Adeyemi",
-    role: "Afrobeats Artist, Lagos",
+    role: "Afrobeats Artist",
     quote:
-      "Orinlabí made my global debut possible. My single was live on Spotify, Apple Music, and Boomplay within 48 hours. The support team actually cares.",
+      "Orinlabí made my global debut possible. My single was live on Spotify, Apple Music, and TikTok within 48 hours. The support team actually cares.",
   },
   {
     name: "Kwame Asante",
-    role: "Highlife Producer, Accra",
+    role: "Music Producer",
     quote:
-      "Finally a distributor that understands the African market. The royalty transparency and playlist promotion are top-tier. I am not going anywhere else.",
+      "The royalty transparency and playlist promotion are top-tier. I'm hitting new markets every month without a label. I am not going anywhere else.",
   },
   {
     name: "Zara Musa",
-    role: "Afropop Vocalist, Abuja",
+    role: "Independent Vocalist",
     quote:
       "The release strategy team helped me plan my EP rollout from start to finish. Streams went up 400% compared to my previous release. Incredible.",
   },
 ];
 
 export const DEFAULT_ARTISTS_PAGE: ArtistsPageSettings = {
-  heading: "Voices of Africa.",
-  body: "Independent African artists who are reaching the world through Orinlabí. Selected. Supported. Global.",
+  heading: "Independent artists. Global reach.",
+  body: "Independent artists who are reaching the world through Orinlabí. Selected. Supported. Global.",
 };
 
 export const DEFAULT_CONTACT: ContactInfo = {
@@ -105,15 +105,15 @@ export const DEFAULT_CONTACT: ContactInfo = {
   instagram_url: "https://instagram.com/orinlabimusic",
   twitter: "@orinlabimusic",
   twitter_url: "https://x.com/orinlabimusic",
-  address: "Lagos, Nigeria · Ralph Lawal Group",
-  hours: "Monday – Friday, 9am – 6pm (WAT)",
+  address: "Ralph Lawal Group",
+  hours: "Monday – Friday, 9am – 6pm",
 };
 
 export const DEFAULT_SPOTLIGHT: SpotlightArtist[] = [
-  { name: "Temi Adeyemi", genre: "Afrobeats", country: "Nigeria", streams: "2.4M streams", image_url: "" },
-  { name: "Kwame Asante", genre: "Highlife", country: "Ghana", streams: "1.8M streams", image_url: "" },
-  { name: "Zara Musa", genre: "Afropop", country: "Nigeria", streams: "3.1M streams", image_url: "" },
-  { name: "Amara Diallo", genre: "Afro-soul", country: "Senegal", streams: "900K streams", image_url: "" },
+  { name: "Temi Adeyemi",  genre: "Afrobeats",  country: "Nigeria",  streams: "2.4M streams", image_url: "" },
+  { name: "Kwame Asante",  genre: "Highlife",    country: "Ghana",    streams: "1.8M streams", image_url: "" },
+  { name: "Zara Musa",     genre: "R&B",         country: "UK",       streams: "3.1M streams", image_url: "" },
+  { name: "Amara Diallo",  genre: "Afro-soul",   country: "Senegal",  streams: "900K streams", image_url: "" },
 ];
 
 export const DEFAULT_FEATURES: FeatureCard[] = [
@@ -145,8 +145,8 @@ export const DEFAULT_FEATURES: FeatureCard[] = [
 
 export const DEFAULT_WHY: WhyCard[] = [
   {
-    title: "African-Focused",
-    desc: "Built for the unique needs of African artists navigating the global music industry.",
+    title: "Artist-First",
+    desc: "Built for independent artists worldwide — everything we do starts with what's best for you, not the platform.",
   },
   {
     title: "Fast Delivery",
@@ -158,7 +158,7 @@ export const DEFAULT_WHY: WhyCard[] = [
   },
   {
     title: "Curated Selection",
-    desc: "Every application is reviewed by our team. We select based on sound quality, artistic vision, and cultural authenticity — not follower counts.",
+    desc: "Every application is reviewed by our team. We select based on sound quality and artistic vision — not follower counts.",
   },
 ];
 
@@ -181,7 +181,7 @@ export const DEFAULT_FAQ: FaqItem[] = [
   },
   {
     q: "What genres do you support?",
-    a: "We support all genres with a focus on African music — Afrobeats, Highlife, Afropop, Amapiano, Afro-soul, Afro-fusion, and more.",
+    a: "We support all genres — Pop, Hip-Hop, R&B, Afrobeats, Electronic, Gospel, Rock, Indie, Latin, and more. If it's music, we can distribute it.",
   },
   {
     q: "Can I release an album or EP?",

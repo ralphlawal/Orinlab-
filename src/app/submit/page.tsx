@@ -5,15 +5,17 @@ import { Upload, CheckCircle2, AlertCircle, Loader2, Info } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const genres = [
-  "Afrobeats", "Afropop", "Highlife", "Amapiano", "Afro-soul", "Afro-fusion",
-  "Afrohouse", "Kuduro", "Bongo Flava", "Jùjú", "Afrofolk", "R&B",
-  "Hip-Hop", "Gospel", "Reggae", "Electronic", "Jazz", "Classical", "Other",
+  "Pop", "Hip-Hop / Rap", "R&B / Soul", "Afrobeats", "Afropop", "Amapiano",
+  "Electronic / Dance", "House", "Dancehall / Reggae", "Gospel / Christian",
+  "Jazz", "Classical", "Rock", "Alternative / Indie", "Latin",
+  "Country", "K-Pop", "Drill", "Trap", "Lo-Fi", "Highlife",
+  "Afro-soul", "Afro-fusion", "World Music", "Instrumental", "Podcast / Spoken Word", "Other",
 ];
 
 const languages = [
-  "English", "Yoruba", "Igbo", "Hausa", "Nigerian Pidgin", "French",
-  "Portuguese", "Swahili", "Amharic", "Zulu", "Twi / Akan", "Afrikaans",
-  "Arabic", "Wolof", "Somali", "Other",
+  "English", "Spanish", "French", "Portuguese", "Arabic", "Mandarin",
+  "Hindi", "Yoruba", "Igbo", "Hausa", "Swahili", "Amharic",
+  "Zulu", "Twi / Akan", "Wolof", "Korean", "Japanese", "German", "Italian", "Other",
 ];
 
 const trackVersions = [
@@ -22,9 +24,12 @@ const trackVersions = [
 ];
 
 const countries = [
-  "Nigeria", "Ghana", "South Africa", "Kenya", "Tanzania", "Uganda",
-  "Ethiopia", "Senegal", "Ivory Coast", "Cameroon", "Angola", "Zambia",
-  "Zimbabwe", "Rwanda", "Mozambique", "Other",
+  "United States", "United Kingdom", "Canada", "Australia", "Nigeria",
+  "Ghana", "South Africa", "Kenya", "Tanzania", "Uganda", "Ethiopia",
+  "Senegal", "Ivory Coast", "Cameroon", "Angola", "Zimbabwe",
+  "France", "Germany", "Brazil", "Mexico", "Colombia", "India",
+  "Japan", "South Korea", "Indonesia", "Philippines", "Jamaica", "Trinidad & Tobago",
+  "Other",
 ];
 
 type FormState = "idle" | "uploading" | "saving" | "success" | "error";
