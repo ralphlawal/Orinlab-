@@ -55,7 +55,7 @@ export default function OGImage() {
             }}
           />
           <span style={{ color: "#007bff", fontSize: 16, fontWeight: 600 }}>
-            Selected Worldwide · Curated from Africa
+            Global Music Distribution · 150+ Platforms
           </span>
         </div>
 
@@ -86,7 +86,7 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          Invitation-based distribution for African artists. Every application
+          Release unlimited music. Keep 100% of your royalties. Every application
           reviewed by our team. 150+ platforms worldwide.
         </div>
 

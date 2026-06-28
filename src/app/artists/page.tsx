@@ -8,7 +8,7 @@ export const revalidate = 60;
 export const metadata = {
   title: "Artists – Orinlabí",
   description:
-    "Meet the independent African artists distributed and supported by Orinlabí.",
+    "Meet the independent artists distributed and supported worldwide by Orinlabí.",
 };
 
 function slugify(name: string) {

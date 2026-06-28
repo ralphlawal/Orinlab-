@@ -22,7 +22,7 @@ const FAQS = [
       },
       {
         q: "Which platforms will my music be on?",
-        a: "Your music will be distributed to 150+ platforms including Spotify, Apple Music, Amazon Music, YouTube Music, Deezer, TIDAL, Boomplay, Audiomack, SoundCloud, Facebook Music, and many more across Africa, Europe, North America, and globally.",
+        a: "Your music will be distributed to 150+ platforms including Spotify, Apple Music, Amazon Music, YouTube Music, Deezer, TIDAL, TikTok, Boomplay, Audiomack, SoundCloud, Facebook Music, and many more — worldwide.",
       },
       {
         q: "Can I set a future release date?",
@@ -52,7 +52,7 @@ const FAQS = [
     items: [
       {
         q: "What genres do you accept?",
-        a: "We focus on African music in all its forms — Afrobeats, Afropop, Amapiano, Highlife, Afro Soul, Afro R&B, Afro Hip-Hop, Jùjú, Fuji, Gospel, and more. If your sound has African roots or identity, we want to hear it.",
+        a: "We accept all genres — Pop, Hip-Hop, R&B, Afrobeats, Electronic, Gospel, Rock, Indie, Latin, and more. If it's music, we can distribute it. Our team reviews based on sound quality and artistic vision, not genre.",
       },
       {
         q: "What do I need to submit a release?",

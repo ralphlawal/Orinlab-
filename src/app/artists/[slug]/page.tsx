@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const name = decodeURIComponent(slug).trim();
   return {
     title: `${name} – Orinlabí`,
-    description: `${name} is an African artist distributed globally by Orinlabí.`,
+    description: `${name} is an independent artist distributed globally by Orinlabí.`,
   };
 }
 

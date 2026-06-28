@@ -10,11 +10,11 @@ import Link from "next/link";
 
 type Release = { id: string; song_title: string; artist_name: string; genre: string; status: string };
 
-const MOODS   = ["Energetic", "Chill", "Romantic", "Sad", "Party", "Inspirational", "Afrobeats Vibes", "Late Night", "Workout", "Focus", "Road Trip", "Heartbreak"];
+const MOODS   = ["Energetic", "Chill", "Romantic", "Sad", "Party", "Inspirational", "Late Night", "Workout", "Focus", "Road Trip", "Heartbreak", "Uplifting"];
 const TARGETS = {
-  playlist: ["Spotify Editorial", "Apple Music Editorial", "Deezer Editorial", "Independent Curators", "YouTube Playlist", "Afrobeats Playlists", "Gospel Playlists", "Afropop Network"],
-  radio:    ["BBC 1Xtra", "Capital XTRA", "Beats 1 (Apple Music)", "Naija FM Network", "Continental Radio", "Radio 2 Africa", "Cool FM Nigeria", "Hot 96 Kenya"],
-  blog:     ["The FADER", "Notion Magazine", "Afrobeats Intelligence", "Okay Africa", "Native Magazine", "Audiomack Blog", "Boomplay Blog", "Zikoko Sounds"],
+  playlist: ["Spotify Editorial", "Apple Music Editorial", "Deezer Editorial", "Independent Curators", "YouTube Playlist", "Genre Playlists", "Gospel Playlists", "Mood Playlists"],
+  radio:    ["BBC 1Xtra", "Capital XTRA", "Beats 1 (Apple Music)", "SiriusXM", "iHeartRadio", "COLORS Berlin", "NTS Radio", "Rinse FM"],
+  blog:     ["The FADER", "Pitchfork", "Notion Magazine", "Complex", "Audiomack Blog", "Boomplay Blog", "Ones To Watch", "Pigeons & Planes"],
   sync:     ["Film & TV Licensing", "Advertising / Brand Sync", "Sports Broadcast", "Netflix / Prime / Hulu", "Video Game Soundtrack", "Documentary Features"],
   social:   ["TikTok Viral Push", "Instagram Reels", "YouTube Shorts", "Facebook Push", "Twitter / X Trending"],
 };
@@ -23,7 +23,7 @@ type PitchType = "playlist" | "radio" | "blog" | "sync" | "social";
 
 const PITCH_TYPES: { key: PitchType; icon: React.ElementType; label: string; desc: string; color: string }[] = [
   { key: "playlist", icon: Music2,     label: "Playlist Pitching",    desc: "Get added to curated playlists on Spotify, Apple Music & more.", color: "text-green-400 bg-green-400/10 border-green-400/20" },
-  { key: "radio",    icon: Radio,      label: "Radio Promotion",       desc: "Pitch to radio stations across Africa, UK, and US.",             color: "text-orange-400 bg-orange-400/10 border-orange-400/20" },
+  { key: "radio",    icon: Radio,      label: "Radio Promotion",       desc: "Pitch to radio stations across the UK, US, and worldwide.",      color: "text-orange-400 bg-orange-400/10 border-orange-400/20" },
   { key: "blog",     icon: Newspaper,  label: "Blog & Press",          desc: "Get features, reviews and interviews in top music publications.",  color: "text-purple-400 bg-purple-400/10 border-purple-400/20" },
   { key: "sync",     icon: Tv,         label: "Sync Licensing",        desc: "License your music for film, TV, ads, and streaming shows.",       color: "text-[#007bff] bg-[#007bff]/10 border-[#007bff]/20" },
   { key: "social",   icon: Mic2,       label: "Social Media Push",     desc: "Viral campaign across TikTok, Instagram Reels, and Shorts.",      color: "text-pink-400 bg-pink-400/10 border-pink-400/20" },

@@ -22,7 +22,7 @@ export default function PrivacyPage() {
           <Section title="1. Introduction">
             <p>
               Orinlabí ("we," "us," or "our") operates orinlabi.com and provides
-              invitation-based music distribution services for independent African artists.
+              invitation-based music distribution services for independent artists worldwide.
               This Privacy Policy explains how we collect, use, and protect your personal
               information when you interact with our platform.
             </p>

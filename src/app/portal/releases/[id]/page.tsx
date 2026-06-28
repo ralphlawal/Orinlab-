@@ -840,11 +840,11 @@ export default function ReleaseDetailPage() {
             },
             {
               icon: <Globe size={22} className="text-white/30" />,
-              label: "Charts Registration Africa",
+              label: "Charts Registration",
               status: "Request via Support",
               statusColor: "text-white/30",
               dot: "bg-white/20",
-              desc: "Get your release registered for African chart programs.",
+              desc: "Get your release registered for international chart programs.",
               action: <a href="/portal/support" className="text-xs font-semibold text-white/40 hover:text-white transition-colors">Request via Support →</a>,
             },
             {

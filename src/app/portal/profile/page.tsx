@@ -87,12 +87,13 @@ const GENRES = [
 ];
 
 const COUNTRIES = [
-  "Nigeria", "Ghana", "Kenya", "South Africa", "Tanzania", "Uganda",
+  "United States", "United Kingdom", "Canada", "Australia", "Germany",
+  "France", "Netherlands", "Sweden", "Norway", "Denmark", "Spain", "Italy",
+  "Brazil", "Mexico", "Colombia", "Argentina", "Jamaica", "Trinidad & Tobago",
+  "Nigeria", "Ghana", "South Africa", "Kenya", "Tanzania", "Uganda",
   "Ethiopia", "Senegal", "Ivory Coast", "Cameroon", "Zimbabwe", "Rwanda",
-  "Egypt", "Morocco", "Algeria", "Tunisia", "Mali", "Burkina Faso", "Guinea",
-  "Benin", "Togo", "Sierra Leone", "Liberia", "Gambia", "Somalia", "Sudan",
-  "DR Congo", "Congo", "Angola", "Mozambique", "Zambia", "Malawi", "Botswana",
-  "Namibia", "Eswatini", "Lesotho", "Mauritius", "Seychelles", "Other",
+  "Egypt", "Morocco", "Angola", "DR Congo", "India", "Japan", "South Korea",
+  "Indonesia", "Philippines", "New Zealand", "Other",
 ];
 
 function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {

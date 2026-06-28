@@ -15,7 +15,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
     .maybeSingle();
 
   const title = post?.title ?? "Orinlabí Blog";
-  const excerpt = post?.excerpt ?? "Music industry insights for African artists.";
+  const excerpt = post?.excerpt ?? "Music industry insights for independent artists worldwide.";
   const category = post?.category ?? "";
 
   return new ImageResponse(

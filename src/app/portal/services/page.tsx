@@ -25,7 +25,7 @@ const SERVICES = [
     category: "Promotion & Pitching",
     items: [
       { icon: Music2,     key: "playlist",       label: "Playlist Pitching",          desc: "Get featured on editorial and independent playlists on Spotify, Apple Music & more.",   cta: "Submit Pitch",       href: "/portal/pitch",        color: "#1db954" },
-      { icon: Radio,      key: "radio",          label: "Radio Promotion",            desc: "Radio campaign across Africa, UK, and US including BBC 1Xtra and Beats 1.",             cta: "Submit Pitch",       href: "/portal/pitch",        color: "#f97316" },
+      { icon: Radio,      key: "radio",          label: "Radio Promotion",            desc: "Radio campaign across the UK, US, and worldwide including BBC 1Xtra and Beats 1.",             cta: "Submit Pitch",       href: "/portal/pitch",        color: "#f97316" },
       { icon: Newspaper,  key: "press",          label: "Blog & Press Coverage",      desc: "Music blog features, reviews, and artist interviews in top publications.",               cta: "Submit Pitch",       href: "/portal/pitch",        color: "#a855f7" },
       { icon: Tv,         key: "sync",           label: "Sync Licensing",             desc: "License your music for Netflix, film, TV, adverts, and video games.",                   cta: "Submit Pitch",       href: "/portal/pitch",        color: "#007bff" },
       { icon: Mic2,       key: "social",         label: "Social Media & Viral Push",  desc: "Organic campaign on TikTok, Instagram Reels, YouTube Shorts, and Twitter.",             cta: "Submit Pitch",       href: "/portal/pitch",        color: "#ec4899" },

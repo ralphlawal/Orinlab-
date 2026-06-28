@@ -7,7 +7,7 @@ export const revalidate = 60; // refresh every 60s
 export const metadata = {
   title: "Blog – Orinlabí",
   description:
-    "Music industry news, artist tips, marketing guides, distribution insights, and success stories for African artists.",
+    "Music industry news, artist tips, marketing guides, distribution insights, and success stories for independent artists worldwide.",
 };
 
 async function getPosts() {
@@ -35,7 +35,7 @@ export default async function BlogPage() {
           </h1>
           <p className="text-white/60 text-lg">
             Industry news, release tips, marketing guides, and success stories
-            for independent African artists.
+            for independent artists worldwide.
           </p>
         </div>
       </section>
