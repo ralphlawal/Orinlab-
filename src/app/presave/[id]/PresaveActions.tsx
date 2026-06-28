@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Music2 } from "lucide-react";
+import { Check, Copy, Music2, Bell, Loader2 } from "lucide-react";
 
 const PLATFORMS = [
   { label: "Spotify",      color: "#1db954" },
@@ -21,6 +21,8 @@ export default function PresaveActions({
   presaveUrl: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState("");
+  const [notifyState, setNotifyState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   function copyLink() {
     const url = window.location.origin + `/presave/${releaseId}`;
@@ -28,6 +30,22 @@ export default function PresaveActions({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  }
+
+  async function handleNotify(e: React.FormEvent) {
+    e.preventDefault();
+    if (!notifyEmail.trim()) return;
+    setNotifyState("loading");
+    try {
+      const res = await fetch("/api/presave", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ releaseId, email: notifyEmail.trim() }),
+      });
+      setNotifyState(res.ok ? "done" : "error");
+    } catch {
+      setNotifyState("error");
+    }
   }
 
   return (
@@ -55,6 +73,39 @@ export default function PresaveActions({
             {p.label}
           </span>
         ))}
+      </div>
+
+      {/* Notify me on drop */}
+      <div className="border border-white/[0.08] rounded-xl p-4">
+        {notifyState === "done" ? (
+          <div className="flex items-center justify-center gap-2 text-green-400 text-sm py-1">
+            <Check size={15} /> You&apos;re on the list — we&apos;ll notify you when it drops!
+          </div>
+        ) : (
+          <form onSubmit={handleNotify} className="space-y-2.5">
+            <p className="text-white/40 text-xs flex items-center gap-1.5">
+              <Bell size={12} /> Get notified when this drops
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={notifyEmail}
+                onChange={(e) => { setNotifyEmail(e.target.value); setNotifyState("idle"); }}
+                placeholder="your@email.com"
+                required
+                className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-white/30 outline-none text-white placeholder-white/20 text-sm px-3 py-2 rounded-lg transition-colors text-xs"
+              />
+              <button
+                type="submit"
+                disabled={notifyState === "loading"}
+                className="bg-white/[0.08] hover:bg-white/[0.14] disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-1.5"
+              >
+                {notifyState === "loading" ? <Loader2 size={12} className="animate-spin" /> : "Notify me"}
+              </button>
+            </div>
+            {notifyState === "error" && <p className="text-red-400 text-xs">Something went wrong — try again.</p>}
+          </form>
+        )}
       </div>
 
       {/* Copy link */}

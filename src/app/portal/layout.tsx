@@ -7,7 +7,7 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard, DollarSign, Megaphone, Wrench, FolderOpen,
-  MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus,
+  MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus, ShieldOff,
 } from "lucide-react";
 
 type Counts = { messages: number; notifications: number };
@@ -77,6 +77,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [artistImage, setArtistImage]   = useState<string | null>(null);
   const [counts, setCounts]             = useState<Counts>({ messages: 0, notifications: 0 });
   const [sidebarOpen, setSidebarOpen]   = useState(false);
+  const [suspended, setSuspended]       = useState(false);
 
   const loadCounts = useCallback(async (userEmail: string) => {
     const [{ count: msg }, { count: notif }] = await Promise.all([
@@ -166,11 +167,16 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     return () => clearInterval(id);
   }, [email, loadCounts]);
 
-  // Fetch artist name + avatar from profile
+  // Fetch artist profile — also enforces account_status suspension
   useEffect(() => {
     if (!email) return;
-    supabase.from("artist_profiles").select("artist_name,artist_image_url").eq("email", email).maybeSingle()
+    supabase.from("artist_profiles").select("artist_name,artist_image_url,account_status").eq("email", email).maybeSingle()
       .then(({ data }) => {
+        if (data?.account_status === "suspended") {
+          setSuspended(true);
+          supabase.auth.signOut();
+          return;
+        }
         if (data?.artist_name) setArtistName(data.artist_name);
         if (data?.artist_image_url) setArtistImage(data.artist_image_url);
       });
@@ -183,6 +189,24 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
   if (pathname.startsWith("/portal/login")) {
     return <div className="fixed inset-0 z-[60] bg-black">{children}</div>;
+  }
+
+  if (suspended) {
+    return (
+      <div className="fixed inset-0 bg-[#050505] flex items-center justify-center px-4 text-center">
+        <div className="max-w-sm">
+          <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
+            <ShieldOff size={26} className="text-red-400" />
+          </div>
+          <h1 className="text-white font-bold text-xl mb-2">Account Suspended</h1>
+          <p className="text-white/50 text-sm leading-relaxed">
+            Your account has been suspended. Contact us at{" "}
+            <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">info@orinlabi.com</a>{" "}
+            if you believe this is a mistake.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (checking) {

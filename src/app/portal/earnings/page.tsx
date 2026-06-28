@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2, DollarSign, BarChart2, TrendingUp, ExternalLink, Download } from "lucide-react";
+import { Loader2, DollarSign, BarChart2, TrendingUp, ExternalLink, Download, Send, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import { getPlatform } from "@/lib/platforms";
@@ -27,18 +27,25 @@ function fmt(n: number) {
   return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : n.toString();
 }
 
+type PayoutState = "idle" | "confirm" | "loading" | "sent";
+
 export default function EarningsPage() {
-  const [releases, setReleases] = useState<Release[]>([]);
-  const [splits, setSplits]     = useState<Record<string, Split[]>>({});
-  const [payouts, setPayouts]   = useState<PayoutRequest[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const [releases, setReleases]       = useState<Release[]>([]);
+  const [splits, setSplits]           = useState<Record<string, Split[]>>({});
+  const [payouts, setPayouts]         = useState<PayoutRequest[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [payoutStates, setPayoutStates] = useState<Record<string, PayoutState>>({});
+  const [hasPayoutDetails, setHasPayoutDetails] = useState(false);
+  const [userEmail, setUserEmail]     = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
       const email = data.session.user.email!;
 
-      const [relRes, payRes] = await Promise.all([
+        setUserEmail(email);
+
+      const [relRes, payRes, profileRes] = await Promise.all([
         supabase
           .from("releases")
           .select("id, song_title, release_type, genre, cover_art_url, streams, royalties_usd, store_links, status")
@@ -50,7 +57,14 @@ export default function EarningsPage() {
           .select("id, song_title, amount_usd, status, payout_method, created_at, paid_at, admin_notes")
           .eq("email", email)
           .order("created_at", { ascending: false }),
+        supabase
+          .from("artist_profiles")
+          .select("payout_method")
+          .eq("email", email)
+          .maybeSingle(),
       ]);
+
+      setHasPayoutDetails(!!profileRes.data?.payout_method);
 
       const list = (relRes.data ?? []) as Release[];
       setReleases(list);
@@ -72,6 +86,53 @@ export default function EarningsPage() {
       setLoading(false);
     });
   }, []);
+
+  async function handlePayout(r: Release) {
+    setPayoutStates((s) => ({ ...s, [r.id]: "loading" }));
+    try {
+      const { data: profile } = await supabase
+        .from("artist_profiles")
+        .select("payout_method,bank_name,bank_account_name,bank_account_number,bank_country,paypal_email,mobile_money_provider,mobile_money_number,artist_name")
+        .eq("email", userEmail)
+        .maybeSingle();
+
+      await supabase.from("payout_requests").insert({
+        email: userEmail,
+        artist_name: profile?.artist_name ?? "",
+        song_title: r.song_title,
+        release_id: r.id,
+        amount_usd: r.royalties_usd ?? 0,
+        payout_method: profile?.payout_method ?? null,
+        bank_name: profile?.bank_name ?? null,
+        bank_account_name: profile?.bank_account_name ?? null,
+        bank_account_number: profile?.bank_account_number ?? null,
+        bank_country: profile?.bank_country ?? null,
+        paypal_email: profile?.paypal_email ?? null,
+        mobile_money_provider: profile?.mobile_money_provider ?? null,
+        mobile_money_number: profile?.mobile_money_number ?? null,
+        status: "pending",
+      });
+
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "payout-request",
+          data: { email: userEmail, artist_name: profile?.artist_name ?? "", song_title: r.song_title, royalties_usd: r.royalties_usd, release_id: r.id, payout_method: profile?.payout_method ?? null },
+        }),
+      });
+
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "payout-confirmation", data: { email: userEmail, artist_name: profile?.artist_name ?? "", song_title: r.song_title, amount_usd: r.royalties_usd ?? 0 } }),
+      }).catch(() => {});
+
+      setPayoutStates((s) => ({ ...s, [r.id]: "sent" }));
+    } catch {
+      setPayoutStates((s) => ({ ...s, [r.id]: "idle" }));
+    }
+  }
 
   if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 size={26} className="text-[#007bff] animate-spin" /></div>;
 
@@ -224,10 +285,44 @@ export default function EarningsPage() {
                 {/* Payout CTA */}
                 {(r.royalties_usd ?? 0) > 0 && (
                   <div className="px-5 py-3 border-t border-white/[0.04]">
-                    <Link href={`/portal/releases/${r.id}`}
-                      className="text-green-400 text-xs hover:underline">
-                      Request payout →
-                    </Link>
+                    {(() => {
+                      const ps = payoutStates[r.id] ?? "idle";
+                      if (ps === "sent") return (
+                        <div className="flex items-center gap-2 text-green-400 text-xs">
+                          <CheckCircle2 size={13} /> Payout request sent — we&apos;ll reach out within 3–5 business days.
+                        </div>
+                      );
+                      if (ps === "confirm") return (
+                        <div className="space-y-2">
+                          {!hasPayoutDetails && (
+                            <p className="text-yellow-400/80 text-xs">
+                              No payout method on file.{" "}
+                              <Link href="/portal/profile" className="underline">Add one in your profile</Link> first.
+                            </p>
+                          )}
+                          <p className="text-white/70 text-xs">Request <span className="text-white font-semibold">${r.royalties_usd!.toFixed(2)}</span> for &quot;{r.song_title}&quot;?</p>
+                          <div className="flex gap-2">
+                            <button onClick={() => handlePayout(r)} className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full transition-colors">
+                              <Send size={11} /> Confirm
+                            </button>
+                            <button onClick={() => setPayoutStates((s) => ({ ...s, [r.id]: "idle" }))} className="text-white/40 hover:text-white text-xs px-3 py-1.5 rounded-full border border-white/10 transition-colors">Cancel</button>
+                          </div>
+                        </div>
+                      );
+                      if (ps === "loading") return (
+                        <div className="flex items-center gap-2 text-white/40 text-xs">
+                          <Loader2 size={12} className="animate-spin" /> Submitting…
+                        </div>
+                      );
+                      return (
+                        <button
+                          onClick={() => setPayoutStates((s) => ({ ...s, [r.id]: "confirm" }))}
+                          className="flex items-center gap-1.5 text-green-400 hover:text-green-300 text-xs font-semibold transition-colors"
+                        >
+                          <DollarSign size={13} /> Request payout
+                        </button>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
