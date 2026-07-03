@@ -2,9 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ArrowRight, ChevronDown, Star, CheckCircle2,
-  Zap, Globe, ShieldCheck, BarChart3, Users, Music, TrendingUp,
+  Zap, Globe, ShieldCheck, BarChart3, Users, Music,
 } from "lucide-react";
 import { PlatformIcon } from "@/components/PlatformIcon";
+import { PlatformIconCell } from "@/components/PlatformIconCell";
 import { AnimateIn } from "@/components/AnimateIn";
 import { CountUp } from "@/components/CountUp";
 import { StreamsChart } from "@/components/StreamsChart";
@@ -245,14 +246,7 @@ function Distribute() {
           {PLATFORM_GRID.map((p, i) => (
             <AnimateIn key={p.key} delay={i * 40} direction="fade">
               <div className="flex flex-col items-center justify-center gap-3 py-7 px-3 bg-[#050505] hover:bg-white/[0.04] transition-all duration-300 group h-full">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                  style={{ background: `${p.color}18`, color: p.color, boxShadow: "none" }}
-                  onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 20px ${p.color}40`)}
-                  onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}
-                >
-                  <PlatformIcon platformKey={p.key} size={22} />
-                </div>
+                <PlatformIconCell platformKey={p.key} color={p.color} size={22} />
                 <span className="text-white/25 group-hover:text-white/60 text-[10px] font-medium transition-colors text-center leading-tight">{p.label}</span>
               </div>
             </AnimateIn>
