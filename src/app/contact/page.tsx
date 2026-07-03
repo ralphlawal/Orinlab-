@@ -1,9 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Mail, MessageCircle, AtSign, MapPin, CheckCircle2, Loader2, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSetting, DEFAULT_CONTACT, type ContactInfo } from "@/lib/siteSettings";
+
+function FadeUp({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setOn(true); io.disconnect(); } }, { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className={`transition-all duration-700 ${on ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
+      {children}
+    </div>
+  );
+}
 
 export default function ContactPage() {
   const [sent, setSent] = useState(false);
@@ -54,18 +71,21 @@ export default function ContactPage() {
     <>
       {/* Header */}
       <section className="relative pt-32 pb-16 px-4 text-center overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[500px] bg-[#007bff]/7 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] bg-teal-400/4 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
-          <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-            Contact Us
-          </p>
-          <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6">
-            Let&apos;s Talk.
-          </h1>
-          <p className="text-white/60 text-lg">
-            Have a question, partnership inquiry, or just want to say hello?
-            We&apos;d love to hear from you.
-          </p>
+          <FadeUp>
+            <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">Contact Us</p>
+          </FadeUp>
+          <FadeUp delay={80}>
+            <h1 className="text-5xl sm:text-6xl font-bold text-white mb-6">Let&apos;s Talk.</h1>
+          </FadeUp>
+          <FadeUp delay={140}>
+            <p className="text-white/60 text-lg">
+              Have a question, partnership inquiry, or just want to say hello?
+              We&apos;d love to hear from you.
+            </p>
+          </FadeUp>
         </div>
       </section>
 
@@ -74,49 +94,31 @@ export default function ContactPage() {
         <div className="max-w-6xl mx-auto grid lg:grid-cols-5 gap-12">
           {/* Left — contact info */}
           <div className="lg:col-span-2 space-y-6">
-            <div>
-              <h2 className="text-white font-bold text-2xl mb-2">
-                Get In Touch
-              </h2>
-              <p className="text-white/50 leading-relaxed">
-                Our team is available {ci.hours}. We typically respond within 24 hours.
-              </p>
-            </div>
+            <FadeUp>
+              <div>
+                <h2 className="text-white font-bold text-2xl mb-2">Get In Touch</h2>
+                <p className="text-white/50 leading-relaxed">
+                  Our team is available {ci.hours}. We typically respond within 24 hours.
+                </p>
+              </div>
+            </FadeUp>
 
             <div className="space-y-4">
-              <ContactDetail
-                icon={<Mail size={20} />}
-                label="Email"
-                value={ci.email}
-                href={`mailto:${ci.email}`}
-              />
-              <ContactDetail
-                icon={<MessageCircle size={20} />}
-                label="WhatsApp / Phone"
-                value={ci.phone}
-                href={ci.whatsapp_url}
-              />
-              <ContactDetail
-                icon={<AtSign size={20} />}
-                label="Instagram"
-                value={ci.instagram}
-                href={ci.instagram_url}
-              />
-              <ContactDetail
-                icon={<X size={20} />}
-                label="X (Twitter)"
-                value={ci.twitter}
-                href={ci.twitter_url}
-              />
-              <ContactDetail
-                icon={<MapPin size={20} />}
-                label="Address"
-                value={ci.address}
-                href={undefined}
-              />
+              {[
+                { icon: <Mail size={20} />, label: "Email", value: ci.email, href: `mailto:${ci.email}` },
+                { icon: <MessageCircle size={20} />, label: "WhatsApp / Phone", value: ci.phone, href: ci.whatsapp_url },
+                { icon: <AtSign size={20} />, label: "Instagram", value: ci.instagram, href: ci.instagram_url },
+                { icon: <X size={20} />, label: "X (Twitter)", value: ci.twitter, href: ci.twitter_url },
+                { icon: <MapPin size={20} />, label: "Address", value: ci.address, href: undefined },
+              ].map((d, i) => (
+                <FadeUp key={d.label} delay={i * 60}>
+                  <ContactDetail icon={d.icon} label={d.label} value={d.value} href={d.href} />
+                </FadeUp>
+              ))}
             </div>
 
             {/* Social buttons */}
+            <FadeUp delay={340}>
             <div className="pt-4">
               <p className="text-white/30 text-xs uppercase tracking-widest mb-4">
                 Follow Us
@@ -148,10 +150,11 @@ export default function ContactPage() {
                 </a>
               </div>
             </div>
+            </FadeUp>
           </div>
 
           {/* Right — form */}
-          <div className="lg:col-span-3">
+          <FadeUp delay={120} className="lg:col-span-3">
             {sent ? (
               <div className="h-full flex items-center justify-center text-center py-20 bg-white/[0.03] border border-white/[0.06] rounded-3xl">
                 <div>
@@ -232,7 +235,7 @@ export default function ContactPage() {
                 </button>
               </form>
             )}
-          </div>
+          </FadeUp>
         </div>
       </section>
     </>

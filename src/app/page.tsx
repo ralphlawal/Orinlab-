@@ -758,6 +758,7 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
 
 /* ── Testimonials ─────────────────────────────────────────────────────────── */
 function Testimonials({ items }: { items: Testimonial[] }) {
+  if (items.length === 0) return null;
   return (
     <section className="py-24 px-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-500/4 rounded-full blur-[160px] pointer-events-none" />

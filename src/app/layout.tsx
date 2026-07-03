@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s – Orinlabí",
   },
   description:
-    "Orinlabí is an invitation-based music distribution platform for independent artists. Release your music on 150+ platforms worldwide — Spotify, Apple Music, TikTok, and more. Keep 100% of your royalties.",
+    "Orinlabí is a curated music distribution platform for independent artists. Release your music on 150+ platforms worldwide — Spotify, Apple Music, TikTok, and more. Keep 100% of your royalties.",
   keywords: [
     "music distribution",
     "independent artist distribution",

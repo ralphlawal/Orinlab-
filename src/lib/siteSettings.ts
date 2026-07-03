@@ -71,26 +71,7 @@ export const DEFAULT_HERO: HeroSettings = {
   ],
 };
 
-export const DEFAULT_TESTIMONIALS: Testimonial[] = [
-  {
-    name: "Temi Adeyemi",
-    role: "Afrobeats Artist",
-    quote:
-      "Orinlabí made my global debut possible. My single was live on Spotify, Apple Music, and TikTok within 48 hours. The support team actually cares.",
-  },
-  {
-    name: "Kwame Asante",
-    role: "Music Producer",
-    quote:
-      "The royalty transparency and playlist promotion are top-tier. I'm hitting new markets every month without a label. I am not going anywhere else.",
-  },
-  {
-    name: "Zara Musa",
-    role: "Independent Vocalist",
-    quote:
-      "The release strategy team helped me plan my EP rollout from start to finish. Streams went up 400% compared to my previous release. Incredible.",
-  },
-];
+export const DEFAULT_TESTIMONIALS: Testimonial[] = [];
 
 export const DEFAULT_ARTISTS_PAGE: ArtistsPageSettings = {
   heading: "Independent artists. Global reach.",

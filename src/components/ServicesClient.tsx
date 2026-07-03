@@ -1,12 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
   Globe, Megaphone, CalendarDays, Headphones, Palette, TrendingUp,
   ArrowRight, CheckCircle2, Loader2, X, Send, User2, Music2,
 } from "lucide-react";
+
+function SlideIn({ children, delay = 0, direction = "up" }: { children: React.ReactNode; delay?: number; direction?: "up" | "left" | "right" | "fade" }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); io.disconnect(); }
+    }, { threshold: 0.12 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const hidden = direction === "left" ? "opacity-0 -translate-x-8" : direction === "right" ? "opacity-0 translate-x-8" : direction === "fade" ? "opacity-0" : "opacity-0 translate-y-7";
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ${visible ? "opacity-100 translate-x-0 translate-y-0" : hidden}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
 
 /* ── Service definitions ───────────────────────────────────── */
 type ServiceDef = {
@@ -61,7 +85,7 @@ export const SERVICES: ServiceDef[] = [
     title: "Playlist Promotion",
     tagline: "Get on the playlists that matter.",
     desc: "Our playlist team pitches your music to editorial and independent curators across Spotify, Apple Music, Audiomack, Boomplay, and more — targeting playlists that match your genre and audience.",
-    features: ["Editorial playlist pitching", "Independent curator network", "Genre-targeted placement", "Africa & global playlists", "Boomplay & Audiomack focus", "Placement reporting"],
+    features: ["Editorial playlist pitching", "Independent curator network", "Genre-targeted placement", "Global & regional playlists", "Boomplay & Audiomack focus", "Placement reporting"],
     team: "Playlist Team",
     teamRole: "Playlist Manager",
   },
@@ -248,7 +272,7 @@ function RequestModal({
                       value={goal}
                       onChange={(e) => setGoal(e.target.value)}
                       rows={2}
-                      placeholder="e.g. Reach 100K streams, get on Spotify editorial, grow my fanbase in Lagos…"
+                      placeholder="e.g. Reach 100K streams, get on Spotify editorial, grow my fanbase worldwide…"
                       className={inp + " resize-none"}
                     />
                   </div>
@@ -260,7 +284,7 @@ function RequestModal({
                       value={audience}
                       onChange={(e) => setAudience(e.target.value)}
                       rows={2}
-                      placeholder="e.g. Afrobeats fans aged 18–30 in Nigeria and the UK, diaspora audiences…"
+                      placeholder="e.g. R&amp;B fans aged 18–30 in the US and UK, streaming audiences globally…"
                       className={inp + " resize-none"}
                     />
                   </div>
@@ -278,7 +302,7 @@ function RequestModal({
                   rows={3}
                   placeholder={
                     service.id === "marketing" ? "e.g. I want to focus on Instagram and Twitter. My release date is March 15…"
-                    : service.id === "playlist" ? "e.g. Looking for Afrobeats playlists with 100K+ followers, targeting Nigeria and Ghana…"
+                    : service.id === "playlist" ? "e.g. Looking for playlists with 100K+ followers that match my genre, targeting global listeners…"
                     : service.id === "brand" ? "e.g. I want a complete rebrand — new bio, new visual direction, more serious tone…"
                     : "Tell us what you need…"
                   }
@@ -353,21 +377,28 @@ export default function ServicesClient() {
     <>
       {/* Hero */}
       <section className="relative pt-32 pb-20 px-4 text-center overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#007bff]/7 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] bg-violet-600/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto">
-          <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">What We Offer</p>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6">
-            Complete Artist Services.
-          </h1>
-          {artist ? (
-            <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-              Welcome back, <span className="text-white font-semibold">{artist.name}</span>. Select a service below — your details are already on file.
-            </p>
-          ) : (
-            <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-              Everything you need to release, promote, and grow your music career — under one roof, built for African artists.
-            </p>
-          )}
+          <SlideIn>
+            <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">What We Offer</p>
+          </SlideIn>
+          <SlideIn delay={80}>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6">
+              Complete Artist<br />Services.
+            </h1>
+          </SlideIn>
+          <SlideIn delay={150}>
+            {artist ? (
+              <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
+                Welcome back, <span className="text-white font-semibold">{artist.name}</span>. Select a service below — your details are already on file.
+              </p>
+            ) : (
+              <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
+                Everything you need to release, promote, and grow your music career — under one roof, built for independent artists everywhere.
+              </p>
+            )}
+          </SlideIn>
         </div>
       </section>
 
@@ -375,12 +406,12 @@ export default function ServicesClient() {
       <section className="py-8 px-4 pb-24">
         <div className="max-w-7xl mx-auto space-y-8">
           {SERVICES.map((s, idx) => (
+            <SlideIn key={s.id} delay={idx * 40} direction={idx % 2 === 0 ? "left" : "right"}>
             <div
-              key={s.id}
-              className={`grid lg:grid-cols-2 gap-10 items-center bg-white/[0.02] border border-white/[0.06] rounded-3xl p-8 sm:p-12`}
+              className="grid lg:grid-cols-2 gap-10 items-center bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.1] rounded-3xl p-8 sm:p-12 transition-all duration-300 group"
             >
               <div className={idx % 2 === 1 ? "lg:order-2" : ""}>
-                <div className="w-14 h-14 bg-[#007bff]/10 rounded-2xl flex items-center justify-center text-[#007bff] mb-6">
+                <div className="w-14 h-14 bg-[#007bff]/10 group-hover:bg-[#007bff]/15 rounded-2xl flex items-center justify-center text-[#007bff] mb-6 transition-colors duration-300">
                   {s.icon}
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">{s.title}</h2>
@@ -436,6 +467,7 @@ export default function ServicesClient() {
                 </ul>
               </div>
             </div>
+            </SlideIn>
           ))}
         </div>
       </section>

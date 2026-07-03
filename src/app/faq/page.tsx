@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { AnimateIn } from "@/components/AnimateIn";
 
 const FAQS = [
   {
@@ -14,7 +15,7 @@ const FAQS = [
       },
       {
         q: "How does the selection process work?",
-        a: "Orinlabí is invitation-based — every application is reviewed by our team personally. We select based on sound quality, artistic vision, and cultural authenticity. If selected, your music goes to 150+ platforms worldwide.",
+        a: "Every application is reviewed by our team personally. We select based on sound quality, artistic vision, and the strength of the music. If selected, your music goes to 150+ platforms worldwide.",
       },
       {
         q: "How long does it take for my music to go live?",
@@ -133,21 +134,27 @@ export default function FAQPage() {
       {/* Hero */}
       <section className="relative pt-32 pb-16 px-4 text-center overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/4 w-[300px] h-[300px] bg-violet-600/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
-          <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">Help</p>
-          <h1 className="text-5xl sm:text-6xl font-bold text-white mb-5">
-            FAQ
-          </h1>
-          <p className="text-white/50 text-lg leading-relaxed">
-            Everything you need to know about distributing your music with Orinlabí.
-          </p>
+          <AnimateIn>
+            <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">Help</p>
+          </AnimateIn>
+          <AnimateIn delay={80}>
+            <h1 className="text-5xl sm:text-6xl font-bold text-white mb-5">FAQ</h1>
+          </AnimateIn>
+          <AnimateIn delay={140}>
+            <p className="text-white/50 text-lg leading-relaxed">
+              Everything you need to know about distributing your music with Orinlabí.
+            </p>
+          </AnimateIn>
         </div>
       </section>
 
       {/* Questions */}
       <section className="max-w-2xl mx-auto px-4 pb-24 space-y-12">
-        {FAQS.map((section) => (
-          <div key={section.category}>
+        {FAQS.map((section, si) => (
+          <AnimateIn key={section.category} delay={si * 60}>
+          <div>
             <h2 className="text-white font-bold text-xs uppercase tracking-widest mb-1 text-[#007bff]">
               {section.category}
             </h2>
@@ -157,6 +164,7 @@ export default function FAQPage() {
               ))}
             </div>
           </div>
+          </AnimateIn>
         ))}
 
         {/* CTA */}
