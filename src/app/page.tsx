@@ -9,13 +9,68 @@ import { PlatformIconCell } from "@/components/PlatformIconCell";
 import { AnimateIn } from "@/components/AnimateIn";
 import { CountUp } from "@/components/CountUp";
 import { StreamsChart } from "@/components/StreamsChart";
+import { supabase } from "@/lib/supabase";
 import {
   getSetting,
-  DEFAULT_HERO, DEFAULT_TESTIMONIALS, DEFAULT_SPOTLIGHT,
+  DEFAULT_HERO, DEFAULT_TESTIMONIALS,
   DEFAULT_FEATURES, DEFAULT_WHY, DEFAULT_FAQ,
-  type HeroSettings, type Testimonial, type SpotlightArtist,
+  type HeroSettings, type Testimonial,
   type FeatureCard, type WhyCard, type FaqItem,
 } from "@/lib/siteSettings";
+
+type RealArtist = {
+  artist_name: string;
+  genre: string | null;
+  country: string | null;
+  song_title: string | null;
+  cover_art_url: string | null;
+  profile_image_url: string | null;
+};
+
+async function getRealSpotlightArtists(): Promise<RealArtist[]> {
+  try {
+    const { data } = await supabase
+      .from("releases")
+      .select("artist_name,genre,country,song_title,cover_art_url,email")
+      .eq("status", "approved")
+      .order("submitted_at", { ascending: false });
+
+    if (!data || data.length === 0) return [];
+
+    // dedupe by artist name, keep newest entry per artist
+    const seen = new Set<string>();
+    const unique = data.filter((r) => {
+      const key = r.artist_name.toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // fetch profile photos
+    const emails = unique.map((a) => a.email).filter(Boolean);
+    let photoMap: Record<string, string | null> = {};
+    if (emails.length) {
+      const { data: profiles } = await supabase
+        .from("artist_profiles")
+        .select("email,artist_image_url")
+        .in("email", emails);
+      if (profiles) {
+        for (const p of profiles) photoMap[p.email] = p.artist_image_url ?? null;
+      }
+    }
+
+    return unique.slice(0, 4).map((a) => ({
+      artist_name: a.artist_name,
+      genre: a.genre ?? null,
+      country: a.country ?? null,
+      song_title: a.song_title ?? null,
+      cover_art_url: a.cover_art_url ?? null,
+      profile_image_url: photoMap[a.email] ?? null,
+    }));
+  } catch {
+    return [];
+  }
+}
 
 /* ── Floating DSP icons ───────────────────────────────────────────────────── */
 const HERO_PLATFORMS = [
@@ -615,7 +670,7 @@ function Why({ items }: { items: WhyCard[] }) {
 }
 
 /* ── Artist Spotlight ─────────────────────────────────────────────────────── */
-function ArtistSpotlight({ items }: { items: SpotlightArtist[] }) {
+function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
   return (
     <section className="py-24 px-6 border-t border-white/[0.05] bg-white/[0.01] relative overflow-hidden">
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#007bff]/4 rounded-full blur-[180px] pointer-events-none" />
@@ -625,12 +680,12 @@ function ArtistSpotlight({ items }: { items: SpotlightArtist[] }) {
             <AnimateIn>
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
-                <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">05  Hall of Fame</span>
+                <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">05  Our Artists</span>
               </div>
             </AnimateIn>
             <AnimateIn delay={80}>
               <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] font-bold text-white leading-[1.05] tracking-tight">
-                From bedroom uploads<br /><span className="text-white/35">to Grammy stages.</span>
+                From your bedroom<br /><span className="text-white/35">to the world.</span>
               </h2>
             </AnimateIn>
           </div>
@@ -641,37 +696,61 @@ function ArtistSpotlight({ items }: { items: SpotlightArtist[] }) {
           </AnimateIn>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {items.map((a, i) => (
-            <AnimateIn key={i} delay={i * 70}>
+        {artists.length === 0 ? (
+          /* Empty state — roster not yet public */
+          <AnimateIn direction="fade" delay={100}>
+            <div className="border border-white/[0.07] rounded-2xl p-12 sm:p-16 text-center bg-white/[0.02]">
+              <div className="w-16 h-16 rounded-2xl bg-[#007bff]/10 border border-[#007bff]/20 flex items-center justify-center mx-auto mb-6">
+                <Music size={28} className="text-[#007bff]/60" />
+              </div>
+              <h3 className="text-white font-bold text-xl mb-2">Roster launching soon</h3>
+              <p className="text-white/35 text-sm max-w-xs mx-auto mb-8 leading-relaxed">
+                We&apos;re reviewing our first wave of applications. Apply now and be among the founding artists on Orinlabí.
+              </p>
               <Link
-                href={`/artists/${encodeURIComponent(a.name.trim())}`}
-                className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 block"
+                href="/submit"
+                className="inline-flex items-center gap-2 text-white font-semibold px-7 py-3.5 rounded-full text-sm transition-all hover:gap-3 group"
+                style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)", boxShadow: "0 0 20px rgba(0,123,255,0.3)" }}
               >
-                <div className="aspect-[3/4] relative bg-gradient-to-br from-[#007bff]/20 to-black overflow-hidden">
-                  {a.image_url ? (
-                    <Image src={a.image_url} alt={a.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Music size={36} className="text-[#007bff]/30" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                  {/* Hover color tint */}
-                  <div className="absolute inset-0 bg-[#007bff]/0 group-hover:bg-[#007bff]/8 transition-colors duration-300" />
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
-                    <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-white/60 text-[9px] font-bold uppercase tracking-widest">Live</span>
-                  </div>
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-white font-bold text-sm leading-tight truncate">{a.name}</p>
-                    {a.streams && <p className="text-[#007bff] text-xs font-semibold">{a.streams}</p>}
-                  </div>
-                </div>
+                Apply Now <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
-            </AnimateIn>
-          ))}
-        </div>
+            </div>
+          </AnimateIn>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {artists.map((a, i) => {
+              const img = a.profile_image_url ?? a.cover_art_url;
+              return (
+                <AnimateIn key={a.artist_name} delay={i * 70}>
+                  <Link
+                    href={`/artists/${encodeURIComponent(a.artist_name.trim())}`}
+                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 block"
+                  >
+                    <div className="aspect-[3/4] relative bg-gradient-to-br from-[#007bff]/20 to-black overflow-hidden">
+                      {img ? (
+                        <Image src={img} alt={a.artist_name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Music size={36} className="text-[#007bff]/30" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-[#007bff]/0 group-hover:bg-[#007bff]/8 transition-colors duration-300" />
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
+                        <span className="text-white/60 text-[9px] font-bold uppercase tracking-widest">Live</span>
+                      </div>
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <p className="text-white font-bold text-sm leading-tight truncate">{a.artist_name}</p>
+                        {a.genre && <p className="text-[#007bff]/80 text-xs">{a.genre}</p>}
+                      </div>
+                    </div>
+                  </Link>
+                </AnimateIn>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -806,13 +885,13 @@ function CTA() {
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 export default async function HomePage() {
-  const [hero, testimonials, spotlight, features, why, faq] = await Promise.all([
+  const [hero, testimonials, features, why, faq, spotlightArtists] = await Promise.all([
     getSetting("hero", DEFAULT_HERO),
     getSetting("testimonials", DEFAULT_TESTIMONIALS),
-    getSetting("spotlight", DEFAULT_SPOTLIGHT),
     getSetting("features", DEFAULT_FEATURES),
     getSetting("why", DEFAULT_WHY),
     getSetting("faq", DEFAULT_FAQ),
+    getRealSpotlightArtists(),
   ]);
 
   return (
@@ -825,7 +904,7 @@ export default async function HomePage() {
       <Monetize />
       <Grow items={features} />
       <Why items={why} />
-      <ArtistSpotlight items={spotlight} />
+      <ArtistSpotlight artists={spotlightArtists} />
       <Testimonials items={testimonials} />
       <FAQ items={faq} />
       <CTA />

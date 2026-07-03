@@ -109,12 +109,7 @@ export const DEFAULT_CONTACT: ContactInfo = {
   hours: "Monday – Friday, 9am – 6pm",
 };
 
-export const DEFAULT_SPOTLIGHT: SpotlightArtist[] = [
-  { name: "Temi Adeyemi",  genre: "Afrobeats",  country: "Nigeria",  streams: "2.4M streams", image_url: "" },
-  { name: "Kwame Asante",  genre: "Highlife",    country: "Ghana",    streams: "1.8M streams", image_url: "" },
-  { name: "Zara Musa",     genre: "R&B",         country: "UK",       streams: "3.1M streams", image_url: "" },
-  { name: "Amara Diallo",  genre: "Afro-soul",   country: "Senegal",  streams: "900K streams", image_url: "" },
-];
+export const DEFAULT_SPOTLIGHT: SpotlightArtist[] = [];
 
 export const DEFAULT_FEATURES: FeatureCard[] = [
   {
