@@ -34,7 +34,8 @@ const ICONS: Record<string, (size: number, cls: string) => React.ReactElement> =
 
   youtube_music: (s, c) => (
     <svg width={s} height={s} viewBox="0 0 24 24" className={c} fill="currentColor">
-      <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm0 19.2c-3.978 0-7.2-3.222-7.2-7.2S8.022 4.8 12 4.8s7.2 3.222 7.2 7.2-3.222 7.2-7.2 7.2zm-1.5-4.65l4.65-2.55-4.65-2.55v5.1z" />
+      {/* YouTube Music — circle + music note mark */}
+      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 2.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15zm1.25 2.5v1h.75a.5.5 0 0 1 .5.5V9h-1.25v-.5H11.5V9h-1v-1a.5.5 0 0 1 .5-.5h.75V7h1.5zm-3 3h5v.5a2.5 2.5 0 0 1-2.5 2.5H11a1 1 0 0 0-1 1v.5h4.5V15H9.5v-1.5a2.5 2.5 0 0 1 2.5-2.5H13A1 1 0 0 0 14 10v-.5h-3.75V10z" />
     </svg>
   ),
 
@@ -64,13 +65,15 @@ const ICONS: Record<string, (size: number, cls: string) => React.ReactElement> =
 
   audiomack: (s, c) => (
     <svg width={s} height={s} viewBox="0 0 24 24" className={c} fill="currentColor">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4c.69 0 1.25.56 1.25 1.25V12a2.75 2.75 0 1 1-2.5-2.739V5.25C10.75 4.56 11.31 4 12 4zm0 14a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11zm0-9a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z" />
+      {/* Audiomack — diamond/gem prism shape (their actual brand mark) */}
+      <path d="M12 1.5 1.5 7.25v9.5L12 22.5l10.5-5.75v-9.5L12 1.5zm0 2.31 8.5 4.66v8.06L12 20.19l-8.5-4.66V8.47L12 3.81zm0 2.5L5.5 10v4l6.5 3.5 6.5-3.5v-4L12 6.31zm0 2 4 2.19v2.81l-4 2.19-4-2.19V10.5l4-2.19z" />
     </svg>
   ),
 
   boomplay: (s, c) => (
     <svg width={s} height={s} viewBox="0 0 24 24" className={c} fill="currentColor">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm-1 16.5V7.5l7 4.5-7 4.5z" />
+      {/* Boomplay — circular B + play mark (their combined brand icon) */}
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.5 5H13c1.38 0 2.5 1.12 2.5 2.5 0 .74-.32 1.4-.83 1.87.77.47 1.33 1.3 1.33 2.26 0 1.47-1.19 2.37-2.5 2.37H10.5V7zm1.5 1.2v2.3H13a1.15 1.15 0 0 0 0-2.3h-1zm0 3.5v2.5H13.5a1.25 1.25 0 0 0 0-2.5H12zm5.5 1.3-5 2.9V9l5 2.9-.03.1z" />
     </svg>
   ),
 
@@ -82,7 +85,8 @@ const ICONS: Record<string, (size: number, cls: string) => React.ReactElement> =
 
   anghami: (s, c) => (
     <svg width={s} height={s} viewBox="0 0 24 24" className={c} fill="currentColor">
-      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 6a6 6 0 0 1 0 12 6 6 0 0 1 0-12zm0 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 1.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" />
+      {/* Anghami — stylised 'A' with ascending bars (their brand identity) */}
+      <path d="M12 2 4 20h3.5l1.2-2.8h6.6L16.5 20H20L12 2zm0 4.4 2.4 6.6H9.6L12 6.4zM3 13h2v2H3zm0 3h2v2H3zm3-1h2v2H6zm0 2.5h2V20H6zm3-1.5h2v2H9zm0 2h2V20H9zm3-3h2v2h-2zm0 2.5h2V20h-2zm3-1.5h2v2h-2zm0 2h2V20h-2zm3-3h2v2h-2zm0 3h2v2h-2z" />
     </svg>
   ),
 
