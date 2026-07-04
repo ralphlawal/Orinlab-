@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -82,10 +83,10 @@ export const DEFAULT_CONTACT: ContactInfo = {
   email: "info@orinlabi.com",
   phone: "+234 811 469 1172",
   whatsapp_url: "https://wa.me/2348114691172",
-  instagram: "@orinlabimusic",
-  instagram_url: "https://instagram.com/orinlabimusic",
-  twitter: "@orinlabimusic",
-  twitter_url: "https://x.com/orinlabimusic",
+  instagram: "@orinlabi_record",
+  instagram_url: "https://instagram.com/orinlabi_record",
+  twitter: "@orinlabirecords",
+  twitter_url: "https://x.com/orinlabirecords",
   address: "Ralph Lawal Group",
   hours: "Monday – Friday, 9am – 6pm",
 };
@@ -165,16 +166,25 @@ export const DEFAULT_FAQ: FaqItem[] = [
   },
 ];
 
-// ─── Fetch helper (works in both server and client components) ─────────────────
+// ─── Fetch helper — cached per key for 1 hour ─────────────────────────────────
 
-export async function getSetting<T>(key: string, fallback: T): Promise<T> {
-  try {
+const fetchSettingCached = unstable_cache(
+  async (key: string) => {
     const { data } = await supabase
       .from("site_settings")
       .select("value")
       .eq("key", key)
       .maybeSingle();
-    return (data?.value as T) ?? fallback;
+    return data?.value ?? null;
+  },
+  ["site-settings"],
+  { revalidate: 3600, tags: ["site-settings"] }
+);
+
+export async function getSetting<T>(key: string, fallback: T): Promise<T> {
+  try {
+    const value = await fetchSettingCached(key);
+    return (value as T) ?? fallback;
   } catch {
     return fallback;
   }

@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -27,50 +28,52 @@ type RealArtist = {
   profile_image_url: string | null;
 };
 
-async function getRealSpotlightArtists(): Promise<RealArtist[]> {
-  try {
-    const { data } = await supabase
-      .from("releases")
-      .select("artist_name,genre,country,song_title,cover_art_url,email")
-      .eq("status", "approved")
-      .order("submitted_at", { ascending: false });
+const getRealSpotlightArtists = unstable_cache(
+  async (): Promise<RealArtist[]> => {
+    try {
+      const { data } = await supabase
+        .from("releases")
+        .select("artist_name,genre,country,song_title,cover_art_url,email")
+        .eq("status", "approved")
+        .order("submitted_at", { ascending: false });
 
-    if (!data || data.length === 0) return [];
+      if (!data || data.length === 0) return [];
 
-    // dedupe by artist name, keep newest entry per artist
-    const seen = new Set<string>();
-    const unique = data.filter((r) => {
-      const key = r.artist_name.toLowerCase().trim();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+      const seen = new Set<string>();
+      const unique = data.filter((r) => {
+        const key = r.artist_name.toLowerCase().trim();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
 
-    // fetch profile photos
-    const emails = unique.map((a) => a.email).filter(Boolean);
-    let photoMap: Record<string, string | null> = {};
-    if (emails.length) {
-      const { data: profiles } = await supabase
-        .from("artist_profiles")
-        .select("email,artist_image_url")
-        .in("email", emails);
-      if (profiles) {
-        for (const p of profiles) photoMap[p.email] = p.artist_image_url ?? null;
+      const emails = unique.map((a) => a.email).filter(Boolean);
+      let photoMap: Record<string, string | null> = {};
+      if (emails.length) {
+        const { data: profiles } = await supabase
+          .from("artist_profiles")
+          .select("email,artist_image_url")
+          .in("email", emails);
+        if (profiles) {
+          for (const p of profiles) photoMap[p.email] = p.artist_image_url ?? null;
+        }
       }
-    }
 
-    return unique.slice(0, 4).map((a) => ({
-      artist_name: a.artist_name,
-      genre: a.genre ?? null,
-      country: a.country ?? null,
-      song_title: a.song_title ?? null,
-      cover_art_url: a.cover_art_url ?? null,
-      profile_image_url: photoMap[a.email] ?? null,
-    }));
-  } catch {
-    return [];
-  }
-}
+      return unique.slice(0, 4).map((a) => ({
+        artist_name: a.artist_name,
+        genre: a.genre ?? null,
+        country: a.country ?? null,
+        song_title: a.song_title ?? null,
+        cover_art_url: a.cover_art_url ?? null,
+        profile_image_url: photoMap[a.email] ?? null,
+      }));
+    } catch {
+      return [];
+    }
+  },
+  ["spotlight-artists"],
+  { revalidate: 300, tags: ["releases"] }
+);
 
 /* ── Floating DSP icons ───────────────────────────────────────────────────── */
 const HERO_PLATFORMS = [
@@ -92,11 +95,9 @@ const HERO_PLATFORMS = [
 function Hero({ s }: { s: HeroSettings }) {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050505]">
-      {/* Multi-color ambient background */}
-      <div className="absolute top-1/3 left-1/4 w-[700px] h-[700px] bg-[#007bff]/8 rounded-full blur-[200px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-violet-600/6 rounded-full blur-[180px] pointer-events-none" />
-      <div className="absolute top-2/3 left-1/2 w-[350px] h-[350px] bg-pink-500/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/4 right-1/3 w-[280px] h-[280px] bg-teal-400/4 rounded-full blur-[120px] pointer-events-none" />
+      {/* Ambient background — kept small for GPU performance */}
+      <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-[#007bff]/12 rounded-full blur-[70px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[320px] h-[320px] bg-violet-600/10 rounded-full blur-[60px] pointer-events-none" />
 
       {/* Subtle grid */}
       <div
@@ -118,13 +119,12 @@ function Hero({ s }: { s: HeroSettings }) {
               width: p.size + 28, height: p.size + 28,
               background: `${p.color}16`,
               border: `1px solid ${p.color}30`,
-              backdropFilter: "blur(10px)",
-              animation: `platformFloat ${3.5 + (i % 3) * 0.8}s ease-in-out infinite`,
-              animationDelay: `${i * 0.3}s`,
-              boxShadow: `0 0 20px ${p.color}20`,
+              willChange: "transform",
+              animation: i % 2 === 0 ? `platformFloat ${3.5 + (i % 3) * 0.8}s ease-in-out infinite` : undefined,
+              animationDelay: i % 2 === 0 ? `${i * 0.4}s` : undefined,
             }}
           >
-            <span style={{ color: p.color, filter: `drop-shadow(0 0 6px ${p.color}60)` }}>
+            <span style={{ color: p.color }}>
               <PlatformIcon platformKey={p.key} size={p.size} />
             </span>
           </div>
@@ -206,7 +206,7 @@ function Hero({ s }: { s: HeroSettings }) {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/20 animate-bounce">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/20">
         <ChevronDown size={22} />
       </div>
 
@@ -337,8 +337,7 @@ function Stats() {
   return (
     <section className="py-20 px-6 border-y border-white/[0.05] relative overflow-hidden">
       {/* Color pop */}
-      <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-violet-600/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute right-1/4 top-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-pink-500/4 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-violet-600/8 rounded-full blur-[60px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 relative z-10">
         {items.map((s, i) => (
@@ -359,9 +358,8 @@ function Stats() {
 function LiveGrowth() {
   return (
     <section className="py-24 px-6 border-b border-white/[0.05] relative overflow-hidden">
-      {/* Multi-color ambient */}
-      <div className="absolute top-1/2 left-0 w-[400px] h-[400px] bg-green-500/5 rounded-full blur-[140px] pointer-events-none -translate-y-1/2" />
-      <div className="absolute top-1/2 right-0 w-[400px] h-[400px] bg-[#007bff]/5 rounded-full blur-[140px] pointer-events-none -translate-y-1/2" />
+      {/* Ambient */}
+      <div className="absolute top-1/2 right-0 w-[280px] h-[280px] bg-[#007bff]/8 rounded-full blur-[60px] pointer-events-none -translate-y-1/2" />
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">
@@ -410,7 +408,6 @@ function LiveGrowth() {
             className="rounded-2xl p-6 sm:p-8 relative overflow-hidden"
             style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01))", border: "1px solid rgba(255,255,255,0.07)" }}
           >
-            <div className="absolute inset-0 bg-[#007bff]/3 blur-3xl pointer-events-none" />
             <div className="relative z-10">
               <StreamsChart />
             </div>
@@ -454,9 +451,8 @@ const EARNINGS_ROWS = [
 function Monetize() {
   return (
     <section className="py-24 px-6 relative overflow-hidden">
-      {/* Color pops */}
-      <div className="absolute top-1/3 right-1/4 w-[450px] h-[450px] bg-violet-600/6 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-1/3 left-1/4 w-[350px] h-[350px] bg-pink-500/5 rounded-full blur-[130px] pointer-events-none" />
+      {/* Color pop */}
+      <div className="absolute top-1/3 right-1/4 w-[260px] h-[260px] bg-violet-600/8 rounded-full blur-[55px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center relative z-10">
         <div>
@@ -524,7 +520,7 @@ function Monetize() {
                       <span className="text-white font-semibold text-xs">{r.value}</span>
                     </div>
                     <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: r.color, boxShadow: `0 0 8px ${r.color}60`, animation: "barFill 1.4s ease-out both", animationDelay: `${600 + i * 100}ms` }} />
+                      <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: r.color, animation: "barFill 1.4s ease-out both", animationDelay: `${600 + i * 100}ms` }} />
                     </div>
                   </div>
                 ))}
@@ -562,7 +558,7 @@ function Grow({ items }: { items: FeatureCard[] }) {
   return (
     <section className="py-24 px-6 border-t border-white/[0.05] bg-white/[0.01] relative overflow-hidden">
       {/* Color pop */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-amber-500/4 rounded-full blur-[200px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-amber-500/8 rounded-full blur-[70px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
         <AnimateIn>
           <div className="flex items-center gap-2 mb-4">
@@ -673,7 +669,7 @@ function Why({ items }: { items: WhyCard[] }) {
 function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
   return (
     <section className="py-24 px-6 border-t border-white/[0.05] bg-white/[0.01] relative overflow-hidden">
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#007bff]/4 rounded-full blur-[180px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[350px] h-[180px] bg-[#007bff]/8 rounded-full blur-[60px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex items-center justify-between flex-wrap gap-4 mb-14">
           <div>
@@ -761,8 +757,7 @@ function Testimonials({ items }: { items: Testimonial[] }) {
   if (items.length === 0) return null;
   return (
     <section className="py-24 px-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-pink-500/4 rounded-full blur-[160px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-violet-500/4 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[250px] h-[250px] bg-pink-500/8 rounded-full blur-[60px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-14">
           <AnimateIn>
@@ -848,9 +843,7 @@ function CTA() {
   return (
     <section className="py-24 px-6 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#007bff]/6 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[400px] h-[300px] bg-violet-600/5 rounded-full blur-[100px]" />
-        <div className="absolute top-1/2 right-1/3 -translate-y-1/2 w-[400px] h-[300px] bg-pink-500/4 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[200px] bg-[#007bff]/10 rounded-full blur-[70px]" />
       </div>
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <AnimateIn className="py-16 sm:py-24">
