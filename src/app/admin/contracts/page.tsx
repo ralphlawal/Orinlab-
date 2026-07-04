@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { FileText, RefreshCw, CheckCircle2, AlertTriangle, Loader2, Search, Download } from "lucide-react";
+import { FileText, RefreshCw, CheckCircle2, AlertTriangle, Loader2, Search } from "lucide-react";
 
 type Contract = {
   id: string;
@@ -161,15 +161,6 @@ export default function AdminContractsPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <a
-                    href={`/portal/contract/${c.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-white/40 hover:text-white border border-white/[0.08] hover:border-white/20 rounded-xl px-3 py-2 text-xs font-medium transition-all"
-                    title="View contract page"
-                  >
-                    <Download size={13} /> View
-                  </a>
                   <button
                     onClick={() => handleResend(c)}
                     disabled={resending === c.id}
@@ -190,9 +181,7 @@ export default function AdminContractsPage() {
       {/* Legend */}
       <div className="border-t border-white/[0.05] pt-5">
         <p className="text-white/20 text-xs leading-relaxed">
-          <strong className="text-white/35">Resend Email</strong> — regenerates the contract PDF using the data at the time of signing and sends it to both admin inboxes (ralphlawal2003@gmail.com and ibatwtc@gmail.com). The artist is not re-notified.
-          <br />
-          <strong className="text-white/35">View</strong> — opens the contract signing page (the signed state is shown if the contract is already signed).
+          <strong className="text-white/35">Resend Email</strong> — regenerates the contract PDF using the data at the time of signing and sends it to both admin inboxes (ralphlawal2003@gmail.com and ibatwtc@gmail.com) with the PDF attached. The artist is not re-notified.
         </p>
       </div>
     </div>

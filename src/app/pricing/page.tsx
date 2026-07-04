@@ -109,6 +109,16 @@ export default function PricingPage() {
               </Link>
             </div>
           </AnimateIn>
+          <AnimateIn delay={300}>
+            <p className="text-white/20 text-[11px] mt-6">
+              OrinlabÍ Records is a{" "}
+              <a href="https://ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors underline">
+                Ralph Lawal Group
+              </a>{" "}
+              Company · Terms &amp; conditions apply to all distribution plans.{" "}
+              <Link href="/terms" className="underline hover:text-white/40 transition-colors">View terms →</Link>
+            </p>
+          </AnimateIn>
         </div>
       </section>
 

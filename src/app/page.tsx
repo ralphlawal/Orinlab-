@@ -190,7 +190,7 @@ function Hero({ s }: { s: HeroSettings }) {
 
         {/* Stats */}
         <div
-          className="flex items-center gap-10 flex-wrap"
+          className="flex items-center gap-10 flex-wrap mb-10"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.4s both" }}
         >
           {[
@@ -203,6 +203,20 @@ function Hero({ s }: { s: HeroSettings }) {
               <div className="text-white/25 text-xs uppercase tracking-widest mt-0.5">{stat.label}</div>
             </div>
           ))}
+        </div>
+
+        {/* Trust badge */}
+        <div style={{ animation: "fadeSlideUp 0.7s ease-out 0.5s both" }}>
+          <a
+            href="https://ralphlawalgroup.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-white/20 hover:text-white/40 text-[11px] transition-colors"
+          >
+            <span className="w-px h-3 bg-white/15 rounded-full" />
+            A Ralph Lawal Group Company
+            <span className="w-px h-3 bg-white/15 rounded-full" />
+          </a>
         </div>
       </div>
 
@@ -290,11 +304,12 @@ function Distribute() {
 
         {/* FREE FIRST RELEASE badge */}
         <AnimateIn delay={180}>
-          <div className="inline-flex items-center gap-3 mb-8 bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/25 rounded-2xl px-5 py-3">
+          <div className="inline-flex items-center gap-3 mb-3 bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/25 rounded-2xl px-5 py-3">
             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
             <span className="text-green-400 text-sm font-bold">First release completely FREE</span>
             <span className="text-white/30 text-xs">· 15% fee on subsequent releases only</span>
           </div>
+          <p className="text-white/20 text-[11px] mb-8">Terms &amp; conditions apply. <Link href="/terms" className="underline hover:text-white/40 transition-colors">See full terms →</Link></p>
         </AnimateIn>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-px bg-white/[0.05] rounded-2xl overflow-hidden border border-white/[0.05]">
@@ -330,8 +345,8 @@ function Distribute() {
 function Stats() {
   const items = [
     { to: 150,  suffix: "+", label: "Stores & Platforms",  sub: "All the big names plus hidden gems you haven't discovered yet." },
-    { to: 100,  suffix: "%", label: "Royalty Payouts",      sub: "No deductions on your first release. Flat 85% on everything after." },
-    { to: 0,    suffix: "",  label: "Cost to Start",        sub: "Your first distribution is completely free. No credit card needed.", prefix: "$" },
+    { to: 100,  suffix: "%", label: "Royalty Payouts",      sub: "No deductions on your first release. 85% on everything after. T&Cs apply." },
+    { to: 0,    suffix: "",  label: "Cost to Start",        sub: "Your first distribution is completely free. No credit card needed. T&Cs apply.", prefix: "$" },
     { to: 48,   suffix: "h", label: "Average Go-Live Time", sub: "Most releases are live on all platforms within two business days." },
   ];
   return (
@@ -860,7 +875,7 @@ function CTA() {
           <p className="text-white/35 text-base max-w-sm mx-auto mb-3">
             First release is completely free. No credit card required.
           </p>
-          <p className="text-white/20 text-xs mb-10">From second release onwards: 85% to you, 15% to us.</p>
+          <p className="text-white/20 text-xs mb-10">From second release onwards: 85% to you, 15% to us. <Link href="/terms" className="underline hover:text-white/40 transition-colors">T&amp;Cs apply.</Link></p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/submit"
               className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group"
