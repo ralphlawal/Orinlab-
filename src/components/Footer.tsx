@@ -53,7 +53,7 @@ export default function Footer() {
               {[
                 { href: "mailto:info@orinlabi.com", icon: <Mail size={15} />, label: "Email" },
                 { href: "https://wa.me/2348114691172", icon: <MessageCircle size={15} />, label: "WhatsApp" },
-                { href: "https://instagram.com/orinlabi_record", icon: <AtSign size={15} />, label: "Instagram" },
+                { href: "https://instagram.com/orinlabi_records", icon: <AtSign size={15} />, label: "Instagram" },
                 { href: "https://x.com/orinlabirecords", icon: <X size={15} />, label: "X" },
               ].map((s) => (
                 <a

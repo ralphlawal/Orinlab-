@@ -83,7 +83,7 @@ export const DEFAULT_CONTACT: ContactInfo = {
   email: "info@orinlabi.com",
   phone: "+234 811 469 1172",
   whatsapp_url: "https://wa.me/2348114691172",
-  instagram: "@orinlabi_record",
+  instagram: "@orinlabi_records",
   instagram_url: "https://instagram.com/orinlabi_record",
   twitter: "@orinlabirecords",
   twitter_url: "https://x.com/orinlabirecords",

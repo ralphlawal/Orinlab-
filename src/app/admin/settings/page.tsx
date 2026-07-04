@@ -710,7 +710,7 @@ function ContactTab() {
 
       <Section title="Social Media">
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Instagram Handle" hint="e.g. @orinlabi_record">
+          <Field label="Instagram Handle" hint="e.g. @orinlabi_records">
             <input className={input} value={info.instagram} onChange={(e) => set("instagram", e.target.value)} />
           </Field>
           <Field label="Instagram URL">
