@@ -10,6 +10,7 @@ import { PlatformIconCell } from "@/components/PlatformIconCell";
 import { AnimateIn } from "@/components/AnimateIn";
 import { CountUp } from "@/components/CountUp";
 import { StreamsChart } from "@/components/StreamsChart";
+import { EarningsCard } from "@/components/EarningsCard";
 import { supabase } from "@/lib/supabase";
 import {
   getSetting,
@@ -455,13 +456,6 @@ function LiveGrowth() {
 }
 
 /* ── Monetize ─────────────────────────────────────────────────────────────── */
-const EARNINGS_ROWS = [
-  { label: "Streaming royalties",  value: "$842",  pct: 88, color: "#007bff" },
-  { label: "TikTok & Reels",       value: "$164",  pct: 54, color: "#69C9D0" },
-  { label: "YouTube Content ID",   value: "$127",  pct: 40, color: "#FF0000" },
-  { label: "Publishing · PRS…",    value: "$74",   pct: 26, color: "#A238FF" },
-  { label: "Mechanical splits",    value: "$48",   pct: 18, color: "#FFA500" },
-];
 
 function Monetize() {
   return (
@@ -512,49 +506,9 @@ function Monetize() {
         </div>
 
         <AnimateIn direction="right" delay={100}>
-          <div className="bg-[#0c0c10] border border-white/[0.08] rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#007bff]/5 via-violet-500/3 to-transparent pointer-events-none" />
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-                  <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                  <div className="w-3 h-3 rounded-full bg-[#28c840]" />
-                </div>
-                <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-full px-3 py-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-green-400 text-[10px] font-bold uppercase tracking-widest">Live</span>
-                </div>
-              </div>
-              <p className="text-white/25 text-[11px] uppercase tracking-widest mb-5">Your earnings · this month</p>
-              <div className="space-y-4 mb-6">
-                {EARNINGS_ROWS.map((r, i) => (
-                  <div key={r.label} style={{ animation: `fadeSlideUp 0.5s ease-out ${300 + i * 80}ms both` }}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-white/50 text-xs">{r.label}</span>
-                      <span className="text-white font-semibold text-xs">{r.value}</span>
-                    </div>
-                    <div className="h-1 bg-white/[0.05] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${r.pct}%`, background: r.color, animation: "barFill 1.4s ease-out both", animationDelay: `${600 + i * 100}ms` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-white/[0.06] pt-5">
-                <p className="text-white/20 text-[11px] uppercase tracking-widest mb-1">Paid this month</p>
-                <p className="text-3xl font-bold text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(90deg, #007bff, #a855f7)" }}>
-                  $1,255.00
-                </p>
-              </div>
-            </div>
-          </div>
+          <EarningsCard />
         </AnimateIn>
       </div>
-
-      <style>{`
-        @keyframes barFill { from { width: 0 } }
-        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:none } }
-      `}</style>
     </section>
   );
 }
