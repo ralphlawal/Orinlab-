@@ -6,9 +6,9 @@ import { getSetting, DEFAULT_ARTISTS_PAGE, type ArtistsPageSettings } from "@/li
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Artists – Orinlabí",
+  title: "Artists – OrinlabÍ Records",
   description:
-    "Meet the independent artists distributed and supported worldwide by Orinlabí.",
+    "Meet the independent artists distributed and supported worldwide by OrinlabÍ Records.",
 };
 
 function slugify(name: string) {
@@ -204,7 +204,7 @@ export default async function ArtistsPage() {
             Are You Next?
           </h2>
           <p className="text-white/50 text-lg mb-10">
-            Orinlabí is invitation-based. If you believe your music deserves
+            OrinlabÍ Records is invitation-based. If you believe your music deserves
             a global audience, apply — every submission is reviewed by our team.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

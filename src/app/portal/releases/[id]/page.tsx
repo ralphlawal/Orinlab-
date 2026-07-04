@@ -295,7 +295,7 @@ export default function ReleaseDetailPage() {
                 {featuredArtists.length > 0 && ` (feat. ${featuredArtists.map(f => f.name).join(", ")})`}
               </p>
               <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1.5">
-                <MetaRow label="Label" value="Orinlabí" />
+                <MetaRow label="Label" value="OrinlabÍ Records" />
                 <MetaRow label="Language" value={release.language ?? "English"} />
                 <MetaRow label="Copyright" value={`© ${release.copyright_year} ${release.copyright_owner}`} />
                 <MetaRow label="Release Date" value={release.release_date ? new Date(release.release_date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—"} />
@@ -358,7 +358,7 @@ export default function ReleaseDetailPage() {
             </div>
             {release.review_notes && (
               <div className="mt-4 pt-4 border-t border-white/[0.08]">
-                <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Note from Orinlabí</p>
+                <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Note from OrinlabÍ Records</p>
                 <p className="text-white/80 text-sm leading-relaxed">{release.review_notes}</p>
               </div>
             )}
@@ -547,7 +547,7 @@ export default function ReleaseDetailPage() {
               {
                 label: "Instagram / TikTok",
                 key: "ig",
-                text: `🎵 "${release.song_title}" by ${release.artist_name} is OUT NOW!\n\nStream on all platforms 👇\n${smartLink}\n\n#${release.artist_name.replace(/\s+/g, "")} #NewMusic #Orinlabi`,
+                text: `🎵 "${release.song_title}" by ${release.artist_name} is OUT NOW!\n\nStream on all platforms 👇\n${smartLink}\n\n#${release.artist_name.replace(/\s+/g, "")} #NewMusic #OrinlabiRecords`,
               },
               {
                 label: "Twitter / X",
@@ -723,7 +723,7 @@ export default function ReleaseDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-white font-bold text-xl">Selected Stores</h2>
-              <p className="text-white/40 text-sm mt-1">Your music is distributed to all supported platforms through Orinlabí.</p>
+              <p className="text-white/40 text-sm mt-1">Your music is distributed to all supported platforms through OrinlabÍ Records.</p>
             </div>
             {release.status === "approved" && (
               <button onClick={() => setEditingLinks(!editingLinks)} className="flex items-center gap-2 text-[#007bff] hover:text-white text-sm font-medium transition-colors">
@@ -817,7 +817,7 @@ export default function ReleaseDetailPage() {
               status: release.status === "approved" ? "Available" : "Requires Approval",
               statusColor: release.status === "approved" ? "text-[#007bff]" : "text-white/30",
               dot: release.status === "approved" ? "bg-[#007bff]" : "bg-white/20",
-              desc: "Submit your release to Orinlabí's playlist network for curator consideration.",
+              desc: "Submit your release to OrinlabÍ Records's playlist network for curator consideration.",
               action: release.status === "approved" ? <Link href="/portal/pitch" className="text-xs font-semibold text-[#007bff] hover:text-white transition-colors">Submit Pitch →</Link> : null,
             },
             {
@@ -922,7 +922,7 @@ export default function ReleaseDetailPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-base leading-tight">{release.song_title}</p>
-                <p className="text-white/40 text-xs mt-0.5">Account Owner · Orinlabí (me)</p>
+                <p className="text-white/40 text-xs mt-0.5">Account Owner · OrinlabÍ Records (me)</p>
               </div>
             </div>
 

@@ -138,7 +138,7 @@ export default function LabelApplyPage() {
           <Link href="/">
             <Image
               src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-              alt="Orinlabí"
+              alt="OrinlabÍ Records"
               width={130}
               height={35}
               className="object-contain"
@@ -154,7 +154,7 @@ export default function LabelApplyPage() {
           <p className="text-[#007bff] text-xs font-semibold uppercase tracking-widest mb-2">Label Partnership</p>
           <h1 className="text-white font-bold text-3xl mb-3">Register Your Label</h1>
           <p className="text-white/50 text-sm leading-relaxed">
-            Apply to distribute your label&apos;s entire roster through Orinlabí. Each application is reviewed by our team.
+            Apply to distribute your label&apos;s entire roster through OrinlabÍ Records. Each application is reviewed by our team.
           </p>
         </div>
 

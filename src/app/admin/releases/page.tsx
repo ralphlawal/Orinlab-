@@ -244,7 +244,7 @@ export default function ReleasesPage() {
         email: selected.email,
         type:  "smartlink",
         title: `Your smart link is ready — ${selected.song_title}`,
-        body:  "Your Orinlabí smart link is live. Share it with your fans and they can listen on their favourite platform.",
+        body:  "Your OrinlabÍ Records smart link is live. Share it with your fans and they can listen on their favourite platform.",
         link:  `/portal/releases/${selected.id}`,
       }).then(() => {}).then(undefined, () => {});
     }
@@ -1074,10 +1074,10 @@ export default function ReleasesPage() {
                       {liveNotified ? "Artist Notified ✓" : "Email Artist: Music is Live"}
                     </button>
                   </div>
-                  {/* Orinlabí smart link */}
+                  {/* OrinlabÍ Records smart link */}
                   <div className="mt-4 pt-4 border-t border-white/[0.06]">
                     <p className="text-white/30 text-xs mb-2 flex items-center gap-1.5">
-                      <Share2 size={11} /> Orinlabí Smart Link
+                      <Share2 size={11} /> OrinlabÍ Records Smart Link
                     </p>
                     <div className="flex items-center gap-2 bg-[#007bff]/[0.06] border border-[#007bff]/20 rounded-xl px-3 py-2.5">
                       <span className="text-[#007bff]/80 text-xs font-mono flex-1 truncate">

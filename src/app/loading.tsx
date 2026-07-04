@@ -7,7 +7,7 @@ export default function Loading() {
       <div className="flex flex-col items-center gap-6">
         <Image
           src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-          alt="Orinlabí"
+          alt="OrinlabÍ Records"
           width={150}
           height={40}
           className="object-contain"

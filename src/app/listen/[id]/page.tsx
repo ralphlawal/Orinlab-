@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!release) return { title: "Not Found" };
 
   const title = `${release.song_title} — ${release.artist_name}`;
-  const description = `Stream "${release.song_title}" by ${release.artist_name} on all platforms. Distributed by Orinlabí.`;
+  const description = `Stream "${release.song_title}" by ${release.artist_name} on all platforms. Distributed by OrinlabÍ Records.`;
 
   return {
     title,
@@ -163,7 +163,7 @@ export default async function ListenPage({ params }: { params: Promise<{ id: str
           {/* Info + links card */}
           <div className="bg-[#111] px-6 pt-2 pb-8 w-full">
 
-            {/* Orinlabí branding */}
+            {/* OrinlabÍ Records branding */}
             <div className="flex items-center justify-center gap-2 mb-5">
               <span className="text-white/25 text-[10px] uppercase tracking-[0.2em]">Distributed by</span>
               <Link href="/" className="text-white/50 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-colors">

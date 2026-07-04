@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <div className="space-y-10">
           <Section title="1. Introduction">
             <p>
-              Orinlabí ("we," "us," or "our") operates orinlabi.com and provides
+              OrinlabÍ Records ("we," "us," or "our") operates orinlabi.com and provides
               invitation-based music distribution services for independent artists worldwide.
               This Privacy Policy explains how we collect, use, and protect your personal
               information when you interact with our platform.
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
               <li>
                 <span className="text-white/80 font-medium">Legal requirements</span> —
                 when required by law, court order, or to protect the rights and safety of
-                Orinlabí or others.
+                OrinlabÍ Records or others.
               </li>
             </ul>
           </Section>
@@ -179,7 +179,7 @@ export default function PrivacyPage() {
               <a href="mailto:privacy@orinlabi.com" className="text-[#007bff] hover:underline">
                 privacy@orinlabi.com
               </a>
-              . Orinlabí is operated by the{" "}
+              . OrinlabÍ Records is operated by the{" "}
               <a
                 href="https://ralphlawalgroup.com"
                 target="_blank"

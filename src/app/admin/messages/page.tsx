@@ -649,7 +649,7 @@ function ContactForms() {
                 Close
               </button>
               <a
-                href={`mailto:${selected.email}?subject=Re: ${selected.subject ?? "Your message to Orinlabí"}`}
+                href={`mailto:${selected.email}?subject=Re: ${selected.subject ?? "Your message to OrinlabÍ Records"}`}
                 className="flex-1 text-sm font-semibold bg-[#007bff] hover:bg-[#0069d9] text-white py-3 rounded-xl transition-colors text-center flex items-center justify-center gap-2"
               >
                 <Mail size={15} /> Reply via Email

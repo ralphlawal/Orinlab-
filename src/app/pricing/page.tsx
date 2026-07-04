@@ -6,7 +6,7 @@ import {
 import { AnimateIn } from "@/components/AnimateIn";
 
 export const metadata = {
-  title: "How It Works – Orinlabí",
+  title: "How It Works – OrinlabÍ Records",
   description:
     "Simple process. Global reach. Full ownership. Apply, get reviewed by our team, and release your music to 150+ platforms worldwide.",
 };
@@ -62,7 +62,7 @@ const faqs = [
   },
   {
     q: "Do I keep ownership of my music?",
-    a: "Absolutely. Orinlabí does not claim any ownership of your masters or publishing. You retain 100% of your intellectual property.",
+    a: "Absolutely. OrinlabÍ Records does not claim any ownership of your masters or publishing. You retain 100% of your intellectual property.",
   },
   {
     q: "How do royalties work?",
@@ -162,7 +162,7 @@ export default function PricingPage() {
             </AnimateIn>
             <AnimateIn delay={140}>
               <p className="text-white/40 max-w-lg mx-auto leading-relaxed">
-                Every selected artist gets the full Orinlabí experience — the same tools major labels use, with no price tag attached.
+                Every selected artist gets the full OrinlabÍ Records experience — the same tools major labels use, with no price tag attached.
               </p>
             </AnimateIn>
           </div>
@@ -195,7 +195,7 @@ export default function PricingPage() {
                 Why Invitation-Based?
               </h2>
               <p className="text-white/55 leading-relaxed text-base sm:text-lg mb-5">
-                We believe distribution should be earned, not purchased. The internet is saturated with music. Rather than being a pipeline that accepts everything for a fee, Orinlabí acts as a curator — surfacing voices that deserve to be heard.
+                We believe distribution should be earned, not purchased. The internet is saturated with music. Rather than being a pipeline that accepts everything for a fee, OrinlabÍ Records acts as a curator — surfacing voices that deserve to be heard.
               </p>
               <p className="text-white/55 leading-relaxed text-base sm:text-lg">
                 We invest our platform, our team, and our relationships directly into the artists we select. That means we can only work with artists we genuinely believe in — and for those we do select, we go all the way.

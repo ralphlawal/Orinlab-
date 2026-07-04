@@ -111,7 +111,7 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
           <Image
             src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-            alt="Orinlabí" width={88} height={24} className="object-contain"
+            alt="OrinlabÍ Records" width={88} height={24} className="object-contain"
           />
           <p className="text-white/25 text-[11px] mt-1.5 font-medium tracking-wide uppercase">Label Portal</p>
           {labelName && (

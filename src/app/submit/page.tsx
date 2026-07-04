@@ -193,7 +193,7 @@ export default function SubmitPage() {
           </div>
           <h2 className="text-3xl font-bold text-white mb-4">Application Received!</h2>
           <p className="text-white/60 leading-relaxed">
-            Thank you for applying to distribute with Orinlabí. We review every
+            Thank you for applying to distribute with OrinlabÍ Records. We review every
             application carefully and reach out to selected artists within
             <strong className="text-white"> 3–5 business days</strong>.
           </p>
@@ -480,7 +480,7 @@ export default function SubmitPage() {
                     <div className="mt-3 space-y-3">
                       <div className="bg-blue-400/8 border border-blue-400/20 rounded-xl px-4 py-3">
                         <p className="text-blue-400 text-xs font-semibold mb-1">Cover song licensing</p>
-                        <p className="text-white/50 text-xs">Orinlabí will obtain a mechanical licence on your behalf through Ditto. Provide the original song details below.</p>
+                        <p className="text-white/50 text-xs">OrinlabÍ Records will obtain a mechanical licence on your behalf through Ditto. Provide the original song details below.</p>
                       </div>
                       <TextArea label="" name="coverSongDetails" placeholder="Original song title, original artist/writer name" rows={2} />
                     </div>
@@ -506,9 +506,9 @@ export default function SubmitPage() {
                 <span className="text-white/60 text-sm leading-relaxed">
                   I confirm that I own or control all rights to the music and artwork
                   submitted. I understand this is an application and selection is at
-                  Orinlabí&apos;s discretion. If selected, I authorize Orinlabí to
+                  OrinlabÍ Records&apos;s discretion. If selected, I authorize OrinlabÍ Records to
                   distribute this content globally on my behalf, with public credits
-                  appearing as ℗ 2026 Orinlabí / © 2026 Orinlabí as agreed.
+                  appearing as ℗ 2026 OrinlabÍ Records / © 2026 OrinlabÍ Records as agreed.
                 </span>
               </label>
             </div>

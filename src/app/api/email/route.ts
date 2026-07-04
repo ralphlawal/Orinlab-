@@ -7,7 +7,7 @@ import {
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
-const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM ?? "OrinlabÍ Records <onboarding@resend.dev>";
 
 export async function POST(req: NextRequest) {
   const limited = rateLimitResponse(req, 15, 60_000);

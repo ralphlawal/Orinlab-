@@ -44,7 +44,7 @@ const SERVICES = [
     items: [
       { icon: Wand2,      key: "converter",      label: "Audio Format Converter",     desc: "Convert MP3, WAV, FLAC, AAC, OGG and more — runs free in your browser.",               cta: "Open Tool",          href: "/portal/tools",        color: "#007bff" },
       { icon: Music2,     key: "smartlink",      label: "Smart Link Page",            desc: "Share one link for all platforms. Your fans pick their preferred streaming app.",       cta: "View Releases",      href: "/portal",              color: "#10b981" },
-      { icon: FileText,   key: "contract",       label: "Artist Agreement",           desc: "View and sign your distribution agreement with Orinlabí.",                             cta: "View Contract",      href: "/portal",              color: "#8b5cf6" },
+      { icon: FileText,   key: "contract",       label: "Artist Agreement",           desc: "View and sign your distribution agreement with OrinlabÍ Records.",                             cta: "View Contract",      href: "/portal",              color: "#8b5cf6" },
     ],
   },
 ];

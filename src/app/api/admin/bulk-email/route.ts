@@ -7,7 +7,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM ?? "Orinlabí <info@orinlabi.com>";
+const FROM = process.env.EMAIL_FROM ?? "OrinlabÍ Records <info@orinlabi.com>";
 const ADMIN_PIN = process.env.ADMIN_PIN ?? "";
 
 function esc(s: string) {
@@ -41,10 +41,10 @@ export async function POST(req: NextRequest) {
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="background:#0a0a0a;color:#ffffff;font-family:Arial,sans-serif;margin:0;padding:0;">
   <div style="max-width:600px;margin:0 auto;padding:40px 24px;">
-    <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" height="28" style="margin-bottom:32px;filter:brightness(1.1);" alt="Orinlabí" />
+    <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" height="28" style="margin-bottom:32px;filter:brightness(1.1);" alt="OrinlabÍ Records" />
     <div style="white-space:pre-line;color:#cccccc;font-size:15px;line-height:1.7;">${esc(body)}</div>
     <hr style="border:none;border-top:1px solid #1e1e1e;margin:32px 0;" />
-    <p style="color:#555555;font-size:12px;">You're receiving this because you're part of the Orinlabí artist/label community. <a href="https://orinlabi.com/portal" style="color:#007bff;">Log into your portal →</a></p>
+    <p style="color:#555555;font-size:12px;">You're receiving this because you're part of the OrinlabÍ Records artist/label community. <a href="https://orinlabi.com/portal" style="color:#007bff;">Log into your portal →</a></p>
   </div>
 </body></html>`;
 

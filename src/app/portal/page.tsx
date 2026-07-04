@@ -468,7 +468,7 @@ export default function PortalDashboard() {
       icon: ImageIcon,
       iconColor: "#F59E0B",
       title: "Add your artist photo",
-      body: "Artists with a profile photo get 3× more visibility on Orinlabí.",
+      body: "Artists with a profile photo get 3× more visibility on OrinlabÍ Records.",
       href: "/portal/profile",
       cta: "Upload Photo",
       gradient: "linear-gradient(180deg, #F59E0B, #EF4444)",
@@ -683,7 +683,7 @@ export default function PortalDashboard() {
               className="relative overflow-hidden rounded-2xl p-6 border"
               style={{ background: "linear-gradient(135deg, #0a0820, #080f20)", borderColor: "#007bff20" }}
             >
-              <p className="text-white font-bold text-lg mb-1">Welcome to Orinlabí</p>
+              <p className="text-white font-bold text-lg mb-1">Welcome to OrinlabÍ Records</p>
               <p className="text-white/50 text-sm mb-6">Get your music to every streaming platform in 3 steps.</p>
               <div className="space-y-3">
                 {[
@@ -716,7 +716,7 @@ export default function PortalDashboard() {
               <Music2 size={28} className="text-[#007bff]/60" />
             </div>
             <p className="text-white/50 font-medium mb-2">No submissions yet</p>
-            <p className="text-white/30 text-sm mb-8">Apply to distribute your music with Orinlabí.</p>
+            <p className="text-white/30 text-sm mb-8">Apply to distribute your music with OrinlabÍ Records.</p>
             <Link href="/submit" className="inline-flex items-center gap-2 text-white font-semibold px-6 py-3 rounded-full text-sm animate-glow"
               style={{ background: "linear-gradient(135deg, #007bff, #8B5CF6)" }}>
               Submit Application <ArrowRight size={16} />

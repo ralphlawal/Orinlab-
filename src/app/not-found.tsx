@@ -8,7 +8,7 @@ export default function NotFound() {
         <Link href="/" className="inline-flex justify-center">
           <Image
             src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-            alt="Orinlabí"
+            alt="OrinlabÍ Records"
             width={110}
             height={30}
             className="object-contain"

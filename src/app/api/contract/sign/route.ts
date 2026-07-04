@@ -9,7 +9,7 @@ import { rateLimitResponse } from "@/lib/rateLimit";
 // Anon client used only for auth token verification
 import { supabase } from "@/lib/supabase";
 
-const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
+const FROM   = process.env.EMAIL_FROM  ?? "OrinlabÍ Records <onboarding@resend.dev>";
 const ADMINS = [process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com", "ibatwtc@gmail.com"];
 
 export async function POST(req: NextRequest) {
@@ -110,14 +110,14 @@ export async function POST(req: NextRequest) {
 
   const artistHtml = `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="UTF-8"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><title>Orinlabí</title></head>
+<head><meta charset="UTF-8"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><title>OrinlabÍ Records</title></head>
 <body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0" style="background:#f0f0f0;">
     <tr><td align="center" style="padding:32px 16px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
           <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:14px 14px 0 0;" align="left">
-            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="Orinlabí" width="120" height="33" style="display:block;border:0;" />
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
           </td>
         </tr>
         <tr><td bgcolor="#007bff" style="background:#007bff;height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
@@ -145,13 +145,13 @@ export async function POST(req: NextRequest) {
               </tr>
             </table>
             <p style="margin:24px 0 0;color:#555555;font-size:14px;line-height:1.7;font-family:Arial,sans-serif;">
-              Your release is now covered under the Orinlabí Distribution Agreement. If you have any questions, contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>.
+              Your release is now covered under the OrinlabÍ Records Distribution Agreement. If you have any questions, contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>.
             </p>
           </td>
         </tr>
         <tr>
           <td bgcolor="#f0f0f0" style="background:#f0f0f0;padding:20px 32px;text-align:center;">
-            <p style="margin:0;color:#aaaaaa;font-size:12px;font-family:Arial,sans-serif;">℗ 2026 Orinlabí · <a href="https://orinlabi.com" style="color:#007bff;text-decoration:none;">orinlabi.com</a></p>
+            <p style="margin:0;color:#aaaaaa;font-size:12px;font-family:Arial,sans-serif;">℗ 2026 OrinlabÍ Records · <a href="https://orinlabi.com" style="color:#007bff;text-decoration:none;">orinlabi.com</a></p>
           </td>
         </tr>
       </table>
@@ -160,13 +160,13 @@ export async function POST(req: NextRequest) {
 </body></html>`;
 
   const adminHtml = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><title>Orinlabí Admin</title></head>
+<html lang="en"><head><meta charset="UTF-8"/><title>OrinlabÍ Records Admin</title></head>
 <body style="margin:0;padding:0;background:#1a1a1a;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a1a;">
     <tr><td align="center" style="padding:32px 16px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr><td bgcolor="#050505" style="padding:24px 32px;border-radius:14px 14px 0 0;">
-          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="Orinlabí" width="120" height="33" style="display:block;border:0;" />
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
         </td></tr>
         <tr><td bgcolor="#007bff" style="height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
         <tr><td bgcolor="#181818" style="padding:32px 32px 36px;border-radius:0 0 14px 14px;">
@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
       resend.emails.send({
         from: FROM,
         to: release.email,
-        subject: `Your Orinlabí Distribution Agreement — ${release.song_title}`,
+        subject: `Your OrinlabÍ Records Distribution Agreement — ${release.song_title}`,
         html: artistHtml,
         attachments: [{ filename, content: pdfBuffer }],
       }),

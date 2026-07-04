@@ -75,7 +75,7 @@ export const DEFAULT_TESTIMONIALS: Testimonial[] = [];
 
 export const DEFAULT_ARTISTS_PAGE: ArtistsPageSettings = {
   heading: "Independent artists. Global reach.",
-  body: "Independent artists who are reaching the world through Orinlabí. Selected. Supported. Global.",
+  body: "Independent artists who are reaching the world through OrinlabÍ Records. Selected. Supported. Global.",
 };
 
 export const DEFAULT_CONTACT: ContactInfo = {
@@ -140,12 +140,12 @@ export const DEFAULT_WHY: WhyCard[] = [
 
 export const DEFAULT_FAQ: FaqItem[] = [
   {
-    q: "How does Orinlabí distribute my music?",
+    q: "How does OrinlabÍ Records distribute my music?",
     a: "You submit an application with your release details. Our team reviews it personally and if selected, we deliver your music to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, Audiomack, and more.",
   },
   {
     q: "Do I keep ownership of my music?",
-    a: "Absolutely. You retain 100% ownership of your masters and copyright. Orinlabí only facilitates distribution and services — your music always belongs to you.",
+    a: "Absolutely. You retain 100% ownership of your masters and copyright. OrinlabÍ Records only facilitates distribution and services — your music always belongs to you.",
   },
   {
     q: "How long does it take for my music to go live?",

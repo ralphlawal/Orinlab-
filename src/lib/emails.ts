@@ -1,4 +1,4 @@
-/* ── Orinlabí branded email templates ── */
+/* ── OrinlabÍ Records branded email templates ── */
 
 /*
  * Design rules:
@@ -7,7 +7,7 @@
  * - Header band: brand navy (#0b1120) with white logo — dark enough to show
  *   white logo; NOT pure black so email clients don't auto-invert it
  * - Forced light color-scheme meta + inline [data-ogsc] overrides for Outlook dark
- * - Logo alt="" (decorative) — prevents "Orinlabí" text from appearing on load fail
+ * - Logo alt="" (decorative) — prevents "OrinlabÍ Records" text from appearing on load fail
  * - Footer: single copyright line, no duplicate brand name
  */
 
@@ -23,7 +23,7 @@ const base = (content: string, accentColor = "#007bff") => `
   <meta name="color-scheme" content="light" />
   <meta name="supported-color-schemes" content="light" />
   <meta name="format-detection" content="telephone=no,date=no,address=no,email=no" />
-  <title>Orinlabí</title>
+  <title>OrinlabÍ Records</title>
   <style>
     /* Force light mode — prevent Gmail / Outlook dark-mode inversion */
     :root { color-scheme: light only; }
@@ -83,7 +83,7 @@ const base = (content: string, accentColor = "#007bff") => `
         <tr>
           <td class="email-footer" bgcolor="#f2f2f2" style="background-color:#f2f2f2;padding:24px 40px;text-align:center;">
             <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;line-height:1.5;">
-              © 2026 Orinlabí Music Distribution Ltd.&nbsp;&nbsp;·&nbsp;&nbsp;A Ralph Lawal Group Company
+              © 2026 OrinlabÍ Records Music Distribution Ltd.&nbsp;&nbsp;·&nbsp;&nbsp;A Ralph Lawal Group Company
             </p>
             <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;">
               <a href="https://orinlabi.com" style="color:#007bff;text-decoration:none;">orinlabi.com</a>
@@ -158,7 +158,7 @@ export function submissionEmail(data: {
   return base(`
     ${label("Submission Received", "#1d6ae5", "#e8f0fe")}
     ${h1(`We got your release, ${data.artistName}.`)}
-    ${p(`Thanks for submitting to Orinlabí. Our team will review your release within <strong style="color:#0d0d0d;">24–48 hours</strong> and notify you with a decision.`)}
+    ${p(`Thanks for submitting to OrinlabÍ Records. Our team will review your release within <strong style="color:#0d0d0d;">24–48 hours</strong> and notify you with a decision.`)}
     ${divider()}
     ${sectionLabel("Your Submission")}
     ${infoTable([
@@ -402,7 +402,7 @@ export function adminNotificationEmail(data: {
     error:   { labelColor: "#991b1b", labelBg: "#fee2e2", accent: "#ef4444", btnColor: "#dc2626" },
   }[data.type];
 
-  const categoryText = data.categoryLabel ?? "Message from Orinlabí";
+  const categoryText = data.categoryLabel ?? "Message from OrinlabÍ Records";
 
   return base(`
     ${label(categoryText, styles.labelColor, styles.labelBg)}
@@ -410,8 +410,8 @@ export function adminNotificationEmail(data: {
     ${p(`Hi ${data.recipientName},`)}
     <p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.8;color:#333333;white-space:pre-line;">${data.body}</p>
     ${divider()}
-    ${p("Log in to your Orinlabí portal to view this notification and take any required action.")}
+    ${p("Log in to your OrinlabÍ Records portal to view this notification and take any required action.")}
     ${btn(data.ctaLabel, data.ctaUrl, styles.btnColor)}
-    ${muted(`This message was sent by the Orinlabí team. Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+    ${muted(`This message was sent by the OrinlabÍ Records team. Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
   `, styles.accent);
 }

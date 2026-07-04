@@ -67,8 +67,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!data) return { title: "Artist Not Found" };
   const { profile } = data;
   return {
-    title: `${profile.artist_name} — Orinlabí`,
-    description: profile.bio ?? `${profile.artist_name} on Orinlabí Music Distribution.`,
+    title: `${profile.artist_name} — OrinlabÍ Records`,
+    description: profile.bio ?? `${profile.artist_name} on OrinlabÍ Records Music Distribution.`,
     openGraph: {
       title: profile.artist_name,
       description: profile.bio ?? undefined,
@@ -254,19 +254,19 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
           )}
         </div>
 
-        {/* Orinlabí footer */}
+        {/* OrinlabÍ Records footer */}
         <div className="mt-14 pt-8 border-t border-white/[0.06] text-center">
           <Link href="/" className="inline-flex items-center gap-2 text-white/20 hover:text-white/40 text-xs transition-colors">
             Distributed by{" "}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548295/IMG_1637_fbxmfe.png"
-              alt="Orinlabí"
+              alt="OrinlabÍ Records"
               width={14}
               height={14}
               className="opacity-30"
             />
-            <span className="font-semibold">Orinlabí</span>
+            <span className="font-semibold">OrinlabÍ Records</span>
           </Link>
         </div>
       </div>

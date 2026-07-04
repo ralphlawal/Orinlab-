@@ -21,12 +21,12 @@ export default function TermsPage() {
         <div className="space-y-10">
           <Section title="1. Agreement to Terms">
             <p>
-              By accessing or using Orinlabí services — including our website, artist portal,
+              By accessing or using OrinlabÍ Records services — including our website, artist portal,
               and distribution platform — you agree to be bound by these Terms of Service.
               If you do not agree, please do not use our services.
             </p>
             <p>
-              Orinlabí is operated by the{" "}
+              OrinlabÍ Records is operated by the{" "}
               <a
                 href="https://ralphlawalgroup.com"
                 target="_blank"
@@ -35,13 +35,13 @@ export default function TermsPage() {
               >
                 Ralph Lawal Group
               </a>
-              . These terms govern your use of all Orinlabí services.
+              . These terms govern your use of all OrinlabÍ Records services.
             </p>
           </Section>
 
           <Section title="2. Eligibility & Invitation">
             <p>
-              Orinlabí operates an invitation-based model. Distribution services are available
+              OrinlabÍ Records operates an invitation-based model. Distribution services are available
               only to artists who have applied and been selected by our team. Submitting an
               application does not guarantee acceptance.
             </p>
@@ -54,7 +54,7 @@ export default function TermsPage() {
           <Section title="3. Artist Rights & Ownership">
             <p>
               Artists retain full ownership of their masters and copyrights. By submitting
-              your music for distribution, you grant Orinlabí a non-exclusive, worldwide,
+              your music for distribution, you grant OrinlabÍ Records a non-exclusive, worldwide,
               royalty-free licence to distribute, reproduce, and make available your music
               on streaming platforms solely for the purpose of fulfilling distribution.
             </p>
@@ -76,20 +76,20 @@ export default function TermsPage() {
               <li>Accurately reflects the metadata and credits you provide</li>
             </ul>
             <p>
-              Orinlabí reserves the right to reject or remove content that violates these
+              OrinlabÍ Records reserves the right to reject or remove content that violates these
               standards or the policies of partner streaming platforms, without liability.
             </p>
           </Section>
 
           <Section title="5. Distribution & Royalties">
             <p>
-              Distribution through Orinlabí is provided to selected artists under terms
+              Distribution through OrinlabÍ Records is provided to selected artists under terms
               agreed in your individual artist agreement. We do not take a commission on your streaming royalties.
             </p>
             <p>
               Royalties are collected from streaming platforms and disbursed to artists
               according to the specific terms agreed upon in your individual artist agreement.
-              Orinlabí does not guarantee specific royalty amounts, as these depend on
+              OrinlabÍ Records does not guarantee specific royalty amounts, as these depend on
               platform payment structures beyond our control.
             </p>
           </Section>
@@ -105,11 +105,11 @@ export default function TermsPage() {
 
           <Section title="7. Limitation of Liability">
             <p>
-              Orinlabí is not liable for any indirect, incidental, or consequential damages
+              OrinlabÍ Records is not liable for any indirect, incidental, or consequential damages
               arising from your use of our services, including but not limited to loss of
               revenue, data, or business opportunities. Our total liability for any claim
-              shall not exceed the amount paid by you to Orinlabí in the preceding 12 months
-              (which shall not exceed the amount paid by you to Orinlabí under your artist agreement).
+              shall not exceed the amount paid by you to OrinlabÍ Records in the preceding 12 months
+              (which shall not exceed the amount paid by you to OrinlabÍ Records under your artist agreement).
             </p>
           </Section>
 

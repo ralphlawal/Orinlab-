@@ -38,11 +38,11 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: email,
-      subject: "Welcome to the Orinlabí Blog",
+      subject: "Welcome to the OrinlabÍ Records Blog",
       html: `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="color-scheme" content="dark"/><meta name="supported-color-schemes" content="dark"/><title>Orinlabí</title></head>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="color-scheme" content="dark"/><meta name="supported-color-schemes" content="dark"/><title>OrinlabÍ Records</title></head>
 <body style="margin:0;padding:0;background:#0a0a0a;" bgcolor="#0a0a0a">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0a0a0a" style="background:#0a0a0a;padding:0;">
     <tr><td align="center" style="padding:32px 16px;">
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
             <a href="https://orinlabi.com/unsubscribe?email=${encodeURIComponent(email)}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
             &nbsp;·&nbsp;
             <a href="https://orinlabi.com" style="color:#999999;text-decoration:none;">orinlabi.com</a><br/>
-            ℗ 2026 Orinlabí &nbsp;·&nbsp; A Ralph Lawal Group Company
+            ℗ 2026 OrinlabÍ Records &nbsp;·&nbsp; A Ralph Lawal Group Company
           </td>
         </tr>
       </table>

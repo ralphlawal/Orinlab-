@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
-const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
+const FROM   = process.env.EMAIL_FROM  ?? "OrinlabÍ Records <onboarding@resend.dev>";
 const ADMIN  = [process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com", "ibatwtc@gmail.com"];
 const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
 
@@ -52,7 +52,7 @@ function wrap(accentColor: string, badge: string, heading: string, subheading: s
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta name="color-scheme" content="light"/>
   <meta name="supported-color-schemes" content="light"/>
-  <title>Orinlabí</title>
+  <title>OrinlabÍ Records</title>
 </head>
 <body style="margin:0;padding:0;background:#1a1a1a;" bgcolor="#1a1a1a">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#1a1a1a" style="background:#1a1a1a;">
@@ -63,7 +63,7 @@ function wrap(accentColor: string, badge: string, heading: string, subheading: s
           <!-- Logo header -->
           <tr>
             <td bgcolor="#050505" style="background:#050505 !important;padding:24px 32px;border-radius:14px 14px 0 0;" align="left">
-              <img src="${LOGO}" alt="Orinlabí" width="120" height="32"
+              <img src="${LOGO}" alt="OrinlabÍ Records" width="120" height="32"
                 style="display:block;border:0;outline:none;text-decoration:none;max-width:120px;height:auto;" />
             </td>
           </tr>
@@ -319,7 +319,7 @@ export async function POST(req: NextRequest) {
             .map(([k, url]) => btn(k.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase()), url))
             .join("")
         : "";
-      subject = "Your requested assets are ready — Orinlabí";
+      subject = "Your requested assets are ready — OrinlabÍ Records";
       html = wrap(
         "#007bff",
         "Assets Ready",
@@ -393,11 +393,11 @@ export async function POST(req: NextRequest) {
       );
 
     } else if (type === "admin-message") {
-      subject = `New message from Orinlabí`;
+      subject = `New message from OrinlabÍ Records`;
       html = wrap(
         "#007bff",
         "New Message",
-        "You have a new message from Orinlabí",
+        "You have a new message from OrinlabÍ Records",
         "Log in to your artist portal to reply.",
         `${quote(data.content)}
         ${btn("View & Reply in Portal", "https://orinlabi.com/portal/messages")}`
@@ -413,7 +413,7 @@ export async function POST(req: NextRequest) {
         "#007bff",
         "Portal Activity",
         "Artist Logged In",
-        `An artist just signed in to their Orinlabí portal.`,
+        `An artist just signed in to their OrinlabÍ Records portal.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Email",        data.email)}
           ${data.artist_name ? row("Artist Name", data.artist_name) : ""}
@@ -429,7 +429,7 @@ export async function POST(req: NextRequest) {
         "#007bff",
         "Newsletter",
         "New Subscriber",
-        `Someone just subscribed to the Orinlabí newsletter.`,
+        `Someone just subscribed to the OrinlabÍ Records newsletter.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Email", data.email)}
           ${row("Time",  signupTime + " UTC")}
@@ -478,7 +478,7 @@ export async function POST(req: NextRequest) {
         "#007bff",
         "Security Alert",
         "Admin Panel Login",
-        `Someone just signed in to the Orinlabí admin panel.`,
+        `Someone just signed in to the OrinlabÍ Records admin panel.`,
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Admin",     data.email)}
           ${row("Time",      loginTime + " UTC")}
@@ -589,7 +589,7 @@ export async function POST(req: NextRequest) {
         "#007bff",
         "New Application",
         `Label Application: ${esc(data.name)}`,
-        "A record label has applied to distribute through Orinlabí.",
+        "A record label has applied to distribute through OrinlabÍ Records.",
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Label Name",   data.name)}
           ${row("Email",        data.email)}
@@ -608,7 +608,7 @@ export async function POST(req: NextRequest) {
       html = wrap(
         "#16a34a",
         "Approved",
-        `Welcome to Orinlabí, ${esc(data.name)}!`,
+        `Welcome to OrinlabÍ Records, ${esc(data.name)}!`,
         "Your label application has been approved. Log in to your Label Portal to manage your profile and view your roster.",
         `<table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
           ${row("Label", data.name)}
@@ -628,12 +628,12 @@ export async function POST(req: NextRequest) {
 
     } else if (type === "label-rejected") {
       // Notify the label
-      subject = `Update on your Orinlabí label application`;
+      subject = `Update on your OrinlabÍ Records label application`;
       html = wrap(
         "#dc2626",
         "Application Update",
         `Regarding Your Label Application`,
-        `Thank you for applying to distribute through Orinlabí. After reviewing your application, we&apos;re unable to move forward at this time.`,
+        `Thank you for applying to distribute through OrinlabÍ Records. After reviewing your application, we&apos;re unable to move forward at this time.`,
         `${data.reason ? `<p style="margin:20px 0 8px;color:#999999;font-size:12px;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:1px;">Feedback</p>${quote(data.reason)}` : ""}
         <p style="margin:20px 0 0;color:#666666;font-size:13px;font-family:Arial,sans-serif;">Questions? Reply to this email or contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>.</p>`
       );

@@ -39,9 +39,9 @@ async function getRelated(category: string, currentSlug: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPost(slug);
-  if (!post) return { title: "Post Not Found – Orinlabí" };
+  if (!post) return { title: "Post Not Found – OrinlabÍ Records" };
   return {
-    title: `${post.title} – Orinlabí Blog`,
+    title: `${post.title} – OrinlabÍ Records Blog`,
     description: post.excerpt,
   };
 }
@@ -150,7 +150,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <section className="py-16 px-4">
         <div className="max-w-xl mx-auto text-center">
           <h3 className="text-white font-bold text-2xl mb-3">Ready to Release?</h3>
-          <p className="text-white/50 mb-6">Apply to distribute your music through Orinlabí.</p>
+          <p className="text-white/50 mb-6">Apply to distribute your music through OrinlabÍ Records.</p>
           <Link
             href="/submit"
             className="inline-block bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3.5 rounded-full transition-colors"

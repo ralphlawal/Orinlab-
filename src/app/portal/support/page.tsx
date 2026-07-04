@@ -182,7 +182,7 @@ export default function SupportPage() {
                     </div>
                     {t.admin_response && (
                       <div className="bg-[#007bff]/8 border border-[#007bff]/20 rounded-xl px-4 py-4">
-                        <p className="text-[#007bff] text-xs font-semibold mb-2 uppercase tracking-widest">Response from Orinlabí</p>
+                        <p className="text-[#007bff] text-xs font-semibold mb-2 uppercase tracking-widest">Response from OrinlabÍ Records</p>
                         <p className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{t.admin_response}</p>
                       </div>
                     )}

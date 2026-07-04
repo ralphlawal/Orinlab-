@@ -242,7 +242,7 @@ export default function PortalMessagesPage() {
       <div className="mb-5 flex-shrink-0">
         <h1 className="text-white font-bold text-2xl">Messages</h1>
         <p className="text-white/40 text-sm mt-1">
-          Chat directly with the Orinlabí team.
+          Chat directly with the OrinlabÍ Records team.
           {email && <span className="ml-2 text-white/20 text-xs">({email})</span>}
         </p>
       </div>
@@ -263,7 +263,7 @@ export default function PortalMessagesPage() {
                 : "bg-white/[0.07] text-white/85 rounded-bl-sm"
             }`}>
               {m.sender === "admin" && (
-                <p className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest mb-1">Orinlabí</p>
+                <p className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest mb-1">OrinlabÍ Records</p>
               )}
               {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
               {m.attachment_url && m.attachment_type && (

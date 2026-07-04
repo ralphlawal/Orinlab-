@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
 const ADMIN_PIN = process.env.ADMIN_PIN ?? "";
-const FROM      = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
+const FROM      = process.env.EMAIL_FROM ?? "OrinlabÍ Records <onboarding@resend.dev>";
 const LOGO      = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
 
 function wrap(heading: string, body: string) {
@@ -16,7 +16,7 @@ function wrap(heading: string, body: string) {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
           <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:14px 14px 0 0;" align="left">
-            <img src="${LOGO}" alt="Orinlabí" width="120" height="32"
+            <img src="${LOGO}" alt="OrinlabÍ Records" width="120" height="32"
               style="display:block;border:0;outline:none;text-decoration:none;max-width:120px;height:auto;" />
           </td>
         </tr>
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
 
     const body = `
       <p style="color:#cccccc;font-size:14px;line-height:1.7;font-family:Arial,sans-serif;margin:0 0 16px;">
-        Hi ${name}, your Orinlabí artist profile is missing a few things. A complete profile helps fans and labels discover you.
+        Hi ${name}, your OrinlabÍ Records artist profile is missing a few things. A complete profile helps fans and labels discover you.
       </p>
       <p style="color:#999999;font-size:13px;font-family:Arial,sans-serif;margin:0 0 8px;">Missing:</p>
       <ul style="margin:0 0 24px;padding-left:20px;">${listItems}</ul>
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
     const { error } = await resend.emails.send({
       from: FROM,
       to: a.email,
-      subject: "Your Orinlabí artist profile is incomplete",
+      subject: "Your OrinlabÍ Records artist profile is incomplete",
       html: wrap(`Complete your profile, ${name}`, body),
     });
 
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
 
     const body = `
       <p style="color:#cccccc;font-size:14px;line-height:1.7;font-family:Arial,sans-serif;margin:0 0 16px;">
-        Hi ${name}, your Orinlabí label profile is incomplete. Finish it so artists and fans can find your label on the platform.
+        Hi ${name}, your OrinlabÍ Records label profile is incomplete. Finish it so artists and fans can find your label on the platform.
       </p>
       <p style="color:#999999;font-size:13px;font-family:Arial,sans-serif;margin:0 0 8px;">Missing:</p>
       <ul style="margin:0 0 24px;padding-left:20px;">${listItems}</ul>
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
     const { error } = await resend.emails.send({
       from: FROM,
       to: l.email,
-      subject: "Your Orinlabí label profile is incomplete",
+      subject: "Your OrinlabÍ Records label profile is incomplete",
       html: wrap(`Complete your label profile, ${name}`, body),
     });
 

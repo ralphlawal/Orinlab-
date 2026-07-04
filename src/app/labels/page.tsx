@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Labels – Orinlabí",
-  description: "Record labels distributed globally by Orinlabí.",
+  title: "Labels – OrinlabÍ Records",
+  description: "Record labels distributed globally by OrinlabÍ Records.",
 };
 
 function slugify(name: string) {
@@ -60,7 +60,7 @@ export default async function LabelsPage() {
             Record Labels
           </h1>
           <p className="text-white/60 text-lg sm:text-xl leading-relaxed">
-            Independent labels trusting Orinlabí to distribute their artists to the world.
+            Independent labels trusting OrinlabÍ Records to distribute their artists to the world.
           </p>
         </div>
       </section>
@@ -94,7 +94,7 @@ export default async function LabelsPage() {
                   Distribute Your Entire Roster
                 </h2>
                 <p className="text-white/50 text-lg max-w-2xl mx-auto leading-relaxed">
-                  Orinlabí works with record labels to get every artist on their roster onto 150+ streaming platforms worldwide — from Spotify and Apple Music to Boomplay and Audiomack.
+                  OrinlabÍ Records works with record labels to get every artist on their roster onto 150+ streaming platforms worldwide — from Spotify and Apple Music to Boomplay and Audiomack.
                 </p>
               </div>
 
@@ -214,7 +214,7 @@ export default async function LabelsPage() {
             Distribute Your Label&apos;s Roster
           </h2>
           <p className="text-white/50 text-lg mb-10">
-            Orinlabí offers label-level distribution services — get all your artists on 150+ platforms worldwide.
+            OrinlabÍ Records offers label-level distribution services — get all your artists on 150+ platforms worldwide.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link

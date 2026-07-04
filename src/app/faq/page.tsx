@@ -10,7 +10,7 @@ const FAQS = [
     category: "Distribution",
     items: [
       {
-        q: "How does Orinlabí distribution work?",
+        q: "How does OrinlabÍ Records distribution work?",
         a: "You submit your release through our application form. Our team reviews it within 24–48 hours. If approved, we distribute your music to 150+ streaming platforms worldwide — including Spotify, Apple Music, Boomplay, Audiomack, Deezer, TIDAL, and more.",
       },
       {
@@ -36,11 +36,11 @@ const FAQS = [
     items: [
       {
         q: "Do I keep ownership of my music?",
-        a: "Absolutely. Orinlabí never takes ownership of your masters, publishing rights, or any intellectual property. You retain 100% of your copyright.",
+        a: "Absolutely. OrinlabÍ Records never takes ownership of your masters, publishing rights, or any intellectual property. You retain 100% of your copyright.",
       },
       {
         q: "Who collects my streaming royalties?",
-        a: "Royalties from streaming platforms are collected and paid directly to you. Orinlabí facilitates distribution — we do not take a percentage of your royalty income.",
+        a: "Royalties from streaming platforms are collected and paid directly to you. OrinlabÍ Records facilitates distribution — we do not take a percentage of your royalty income.",
       },
       {
         q: "Do I need an ISRC code?",
@@ -69,7 +69,7 @@ const FAQS = [
       },
       {
         q: "Can I submit more than one release?",
-        a: "Yes. Once approved as an Orinlabí artist, you can submit future releases through your Artist Portal.",
+        a: "Yes. Once approved as an OrinlabÍ Records artist, you can submit future releases through your Artist Portal.",
       },
     ],
   },
@@ -94,7 +94,7 @@ const FAQS = [
     category: "Contact & Support",
     items: [
       {
-        q: "How do I contact Orinlabí?",
+        q: "How do I contact OrinlabÍ Records?",
         a: "You can reach us at info@orinlabi.com, via WhatsApp at +234 811 469 1172, or through the contact form at orinlabi.com/contact. We respond to all enquiries within 1 business day.",
       },
       {
@@ -144,7 +144,7 @@ export default function FAQPage() {
           </AnimateIn>
           <AnimateIn delay={140}>
             <p className="text-white/50 text-lg leading-relaxed">
-              Everything you need to know about distributing your music with Orinlabí.
+              Everything you need to know about distributing your music with OrinlabÍ Records.
             </p>
           </AnimateIn>
         </div>

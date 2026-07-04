@@ -341,7 +341,7 @@ export default function AssetsPage() {
 
                 {req.admin_notes && (
                   <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3">
-                    <p className="text-white/30 text-xs uppercase tracking-widest mb-1">Note from Orinlabí</p>
+                    <p className="text-white/30 text-xs uppercase tracking-widest mb-1">Note from OrinlabÍ Records</p>
                     <p className="text-white/70 text-sm leading-relaxed">{req.admin_notes}</p>
                   </div>
                 )}

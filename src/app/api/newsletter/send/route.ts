@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { supabase } from "@/lib/supabase";
 
-const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM ?? "OrinlabÍ Records <onboarding@resend.dev>";
 
 function esc(s: unknown): string {
   return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     const html = `
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><title>Orinlabí</title></head>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><title>OrinlabÍ Records</title></head>
 <body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f0f0f0" style="background:#f0f0f0;padding:0;">
     <tr><td align="center" bgcolor="#f0f0f0" style="background:#f0f0f0;">
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         <tr>
           <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:16px 16px 0 0;" align="left">
             <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-              alt="Orinlabí" width="130" height="35" style="display:block;border:0;outline:none;" />
+              alt="OrinlabÍ Records" width="130" height="35" style="display:block;border:0;outline:none;" />
           </td>
         </tr>
         <tr><td bgcolor="#007bff" style="background:#007bff;height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
             ${paragraphs}
             <hr style="border:none;border-top:1px solid #eeeeee;margin:28px 0;" />
             <p style="margin:0;color:#999999;font-size:12px;font-family:Arial,sans-serif;line-height:1.6;">
-              You received this because you subscribed to the Orinlabí Blog.<br/>
+              You received this because you subscribed to the OrinlabÍ Records Blog.<br/>
               <a href="${unsubUrl}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
               &nbsp;·&nbsp;
               <a href="https://orinlabi.com" style="color:#999999;text-decoration:none;">orinlabi.com</a>
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         </tr>
         <tr>
           <td bgcolor="#f0f0f0" style="background:#f0f0f0;padding:20px 32px;text-align:center;color:#999999;font-size:12px;font-family:Arial,sans-serif;">
-            ℗ 2026 Orinlabí &nbsp;·&nbsp; A Ralph Lawal Group Company
+            ℗ 2026 OrinlabÍ Records &nbsp;·&nbsp; A Ralph Lawal Group Company
           </td>
         </tr>
       </table>

@@ -492,7 +492,7 @@ export default function ServicesClient() {
             <>
               <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6">Ready to Get Started?</h2>
               <p className="text-white/50 text-lg mb-10">
-                Apply to join Orinlabí. Selected artists receive all of these services.
+                Apply to join OrinlabÍ Records. Selected artists receive all of these services.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/submit" className="bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-4 rounded-full transition-all">

@@ -183,7 +183,7 @@ export function ContractDocument({ data }: { data: ContractData }) {
           <View style={s.partyRow}>
             <Text style={s.partyLabel}>Distributor:</Text>
             <Text style={s.partyValue}>
-              Orinlabí Distribution Ltd ("Orinlabí" or "Distributor")
+              OrinlabÍ Records Distribution Ltd ("OrinlabÍ Records" or "Distributor")
             </Text>
           </View>
           <View style={s.partyRow}>
@@ -227,7 +227,7 @@ export function ContractDocument({ data }: { data: ContractData }) {
               <Text style={s.sigMeta}>Date: {dateStr}</Text>
             </View>
             <View style={s.sigBox}>
-              <Text style={s.sigName}>Orinlabí Distribution Ltd</Text>
+              <Text style={s.sigName}>OrinlabÍ Records Distribution Ltd</Text>
               <Text style={s.sigMeta}>Distributor — Authorised Representative</Text>
               <Text style={s.sigMeta}>Date: {dateStr}</Text>
             </View>
@@ -237,7 +237,7 @@ export function ContractDocument({ data }: { data: ContractData }) {
         {/* Footer */}
         <View style={s.footer} fixed>
           <Text style={s.footerText}>
-            Orinlabí Distribution Ltd · orinlabi.com · info@orinlabi.com
+            OrinlabÍ Records Distribution Ltd · orinlabi.com · info@orinlabi.com
           </Text>
           <Text
             style={s.footerText}

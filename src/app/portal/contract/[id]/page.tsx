@@ -170,7 +170,7 @@ export default function ContractPage() {
             <p className="text-[#007bff] text-xs font-bold uppercase tracking-widest mb-4">Parties</p>
             <div className="grid gap-2 text-sm">
               {[
-                ["Distributor", `Orinlabí Distribution Ltd ("Orinlabí" or "Distributor")`],
+                ["Distributor", `OrinlabÍ Records Distribution Ltd ("OrinlabÍ Records" or "Distributor")`],
                 ["Artist", `${release.legal_name} (professionally known as "${release.artist_name}")`],
                 ["Email", release.email],
                 ["Release", `"${release.song_title}" (${release.release_type} · ${release.genre})`],
@@ -252,7 +252,7 @@ export default function ContractPage() {
           </div>
           <p className="text-white/55 text-sm leading-relaxed">
             I have read and understood the full Distribution Agreement above. I agree to all terms and confirm that I own or control all rights in the release{" "}
-            <strong className="text-white/80">{release.song_title}</strong>, and I authorise Orinlabí to distribute it on digital platforms worldwide.
+            <strong className="text-white/80">{release.song_title}</strong>, and I authorise OrinlabÍ Records to distribute it on digital platforms worldwide.
           </p>
         </label>
 
@@ -276,7 +276,7 @@ export default function ContractPage() {
             {submitting ? "Signing…" : "Sign & Submit"}
           </button>
           <p className="text-white/25 text-xs">
-            A signed PDF will be emailed to you and Orinlabí immediately.
+            A signed PDF will be emailed to you and OrinlabÍ Records immediately.
           </p>
         </div>
       </div>

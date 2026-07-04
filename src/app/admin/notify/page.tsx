@@ -240,7 +240,7 @@ const ARTIST_TEMPLATES: Template[] = [
     iconColor: "#8B5CF6",
     description: "Write a completely custom notification",
     notifType: "info",
-    categoryLabel: "Message from Orinlabí",
+    categoryLabel: "Message from OrinlabÍ Records",
     ctaLabel: "View in Portal",
     ctaPath: "/portal",
     fields: [
@@ -259,14 +259,14 @@ const LABEL_TEMPLATES: Template[] = [
     label: "Application Approved",
     icon: CheckCircle2,
     iconColor: "#10B981",
-    description: "Welcome the label to Orinlabí",
+    description: "Welcome the label to OrinlabÍ Records",
     notifType: "success",
-    categoryLabel: "Welcome to Orinlabí",
+    categoryLabel: "Welcome to OrinlabÍ Records",
     ctaLabel: "Go to Label Portal",
     ctaPath: "/labels/portal",
     fields: [],
     buildTitle: (_f) => "Your Label Application is Approved",
-    buildBody:  (_f) => "Congratulations! Your label has been approved on Orinlabí. You can now access your label portal, manage your roster, and distribute music on behalf of your artists.",
+    buildBody:  (_f) => "Congratulations! Your label has been approved on OrinlabÍ Records. You can now access your label portal, manage your roster, and distribute music on behalf of your artists.",
   },
   {
     id: "label_roster",
@@ -327,7 +327,7 @@ const LABEL_TEMPLATES: Template[] = [
     iconColor: "#8B5CF6",
     description: "Write a completely custom notification",
     notifType: "info",
-    categoryLabel: "Message from Orinlabí",
+    categoryLabel: "Message from OrinlabÍ Records",
     ctaLabel: "Go to Label Portal",
     ctaPath: "/labels/portal",
     fields: [
@@ -786,7 +786,7 @@ export default function NotifyPage() {
                 <div>
                   <p className="text-white/30 text-[10px] uppercase tracking-wider mb-2">Email Subject</p>
                   <div className="bg-white/[0.04] rounded-xl px-4 py-3">
-                    <p className="text-white/70 text-sm font-mono">{previewTitle} — Orinlabí</p>
+                    <p className="text-white/70 text-sm font-mono">{previewTitle} — OrinlabÍ Records</p>
                   </div>
                 </div>
 

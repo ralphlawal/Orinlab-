@@ -4,9 +4,9 @@ import { ArrowRight, Heart, Globe, Target, Lightbulb, Users, ShieldCheck, Zap } 
 import { AnimateIn } from "@/components/AnimateIn";
 
 export const metadata = {
-  title: "About – Orinlabí",
+  title: "About – OrinlabÍ Records",
   description:
-    "The story, mission, and vision behind Orinlabí — the home of independent artists worldwide.",
+    "The story, mission, and vision behind OrinlabÍ Records — the home of independent artists worldwide.",
 };
 
 function Hero() {
@@ -27,7 +27,7 @@ function Hero() {
         </AnimateIn>
         <AnimateIn delay={160}>
           <p className="text-white/50 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto">
-            Orinlabí is a global music distribution platform for independent creators everywhere. We help artists release worldwide, earn fairly, and own their legacy — with a team personally invested in every artist we work with.
+            OrinlabÍ Records is a global music distribution platform for independent creators everywhere. We help artists release worldwide, earn fairly, and own their legacy — with a team personally invested in every artist we work with.
           </p>
         </AnimateIn>
       </div>
@@ -44,7 +44,7 @@ function Story() {
             <div className="text-center">
               <Image
                 src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-                alt="Orinlabí"
+                alt="OrinlabÍ Records"
                 width={180}
                 height={50}
                 className="object-contain mx-auto"
@@ -68,9 +68,9 @@ function Story() {
           </AnimateIn>
           <div className="space-y-5 text-white/55 leading-relaxed">
             {[
-              "Orinlabí was founded by Ralph Lawal with a clear vision: to build the infrastructure that independent artists deserve — one that values their art, protects their ownership, and amplifies their voice to the world.",
+              "OrinlabÍ Records was founded by Ralph Lawal with a clear vision: to build the infrastructure that independent artists deserve — one that values their art, protects their ownership, and amplifies their voice to the world.",
               "Independent artists have long faced barriers to global distribution — complex systems, opaque royalty structures, and platforms not built with their needs in mind.",
-              "Orinlabí changes that. With our global distribution network and a full suite of artist services, we are building the platform that will power the next generation of musical talent worldwide.",
+              "OrinlabÍ Records changes that. With our global distribution network and a full suite of artist services, we are building the platform that will power the next generation of musical talent worldwide.",
             ].map((text, i) => (
               <AnimateIn key={i} delay={140 + i * 80}>
                 <p>{text}</p>
@@ -97,10 +97,10 @@ function FounderMessage() {
           <div className="bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 rounded-3xl p-10 sm:p-14">
             <div className="text-white/65 text-lg leading-relaxed space-y-5 italic mb-10">
               <p>
-                &ldquo;I built Orinlabí because I believe independent music deserves global infrastructure. Too many talented artists are releasing music without the tools, support, or knowledge to build a sustainable career from it.
+                &ldquo;I built OrinlabÍ Records because I believe independent music deserves global infrastructure. Too many talented artists are releasing music without the tools, support, or knowledge to build a sustainable career from it.
               </p>
               <p>
-                Orinlabí is my answer to that problem. It is a platform where artists can distribute their music worldwide, receive real marketing support, and grow their careers — while keeping every right to the music they create.
+                OrinlabÍ Records is my answer to that problem. It is a platform where artists can distribute their music worldwide, receive real marketing support, and grow their careers — while keeping every right to the music they create.
               </p>
               <p>
                 This is just the beginning. We are building something that will define how music reaches the world for generations to come.&rdquo;
@@ -108,7 +108,7 @@ function FounderMessage() {
             </div>
             <div className="pt-8 border-t border-white/10">
               <p className="text-white font-bold text-lg">Ralph Lawal</p>
-              <p className="text-white/40 text-sm mt-1">Founder &amp; CEO, Orinlabí · Ralph Lawal Group</p>
+              <p className="text-white/40 text-sm mt-1">Founder &amp; CEO, OrinlabÍ Records · Ralph Lawal Group</p>
             </div>
           </div>
         </AnimateIn>
@@ -266,7 +266,7 @@ function Roadmap() {
     { phase: "Phase 2", title: "Dashboard",     desc: "Artist dashboard with release tracking, royalty visibility, and detailed reports.",                status: "upcoming" },
     { phase: "Phase 3", title: "Royalty Portal",desc: "Full royalty portal with payment processing and analytics.",                                       status: "upcoming" },
     { phase: "Phase 4", title: "Publishing",    desc: "Publishing services and sync licensing for creators worldwide.",                                   status: "upcoming" },
-    { phase: "Phase 5", title: "Full Platform", desc: "Complete independent distribution infrastructure owned and operated by Orinlabí.",                 status: "upcoming" },
+    { phase: "Phase 5", title: "Full Platform", desc: "Complete independent distribution infrastructure owned and operated by OrinlabÍ Records.",                 status: "upcoming" },
   ];
 
   return (

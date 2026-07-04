@@ -40,14 +40,14 @@ export default function Footer() {
             <Link href="/" className="inline-flex mb-5">
               <Image
                 src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-                alt="Orinlabí"
+                alt="OrinlabÍ Records"
                 width={110}
                 height={30}
                 className="object-contain"
               />
             </Link>
             <p className="text-white/45 text-sm leading-relaxed mb-6 max-w-xs">
-              Orinlabí is the home of independent artists. Distribute, monetize and grow your music. Keep everything you earn and stay independent.
+              OrinlabÍ Records is the home of independent artists. Distribute, monetize and grow your music. Keep everything you earn and stay independent.
             </p>
             <div className="flex items-center gap-2.5 mb-8">
               {[
@@ -118,7 +118,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="border-t border-white/[0.07] pt-7 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-white/25 text-xs">
-            © 2026 Orinlabí · A{" "}
+            © 2026 OrinlabÍ Records · A{" "}
             <a href="https://ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors">
               Ralph Lawal Group
             </a>{" "}

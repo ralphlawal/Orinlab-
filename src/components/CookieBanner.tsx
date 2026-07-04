@@ -30,7 +30,7 @@ export default function CookieBanner() {
     <div className="fixed bottom-0 left-0 right-0 z-[80] p-4 md:p-6 pointer-events-none">
       <div className="max-w-4xl mx-auto bg-[#0d0d0d] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-2xl pointer-events-auto">
         <p className="text-white/60 text-sm leading-relaxed flex-1">
-          We use cookies to improve your experience on Orinlabí. See our{" "}
+          We use cookies to improve your experience on OrinlabÍ Records. See our{" "}
           <Link href="/privacy" className="text-[#007bff] hover:underline">
             Privacy Policy
           </Link>{" "}

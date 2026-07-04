@@ -12,10 +12,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     .select("name,bio")
     .eq("slug", slug)
     .maybeSingle();
-  if (!data) return { title: "Label Not Found – Orinlabí" };
+  if (!data) return { title: "Label Not Found – OrinlabÍ Records" };
   return {
-    title: `${data.name} – Orinlabí`,
-    description: data.bio || `${data.name} is a record label distributed globally by Orinlabí.`,
+    title: `${data.name} – OrinlabÍ Records`,
+    description: data.bio || `${data.name} is a record label distributed globally by OrinlabÍ Records.`,
   };
 }
 
@@ -251,7 +251,7 @@ export default async function LabelPage({ params }: { params: Promise<{ slug: st
 
       {/* CTA */}
       <section className="py-16 px-4 border-t border-white/[0.06] text-center">
-        <p className="text-white/40 text-sm mb-4">Want to distribute your label&apos;s music with Orinlabí?</p>
+        <p className="text-white/40 text-sm mb-4">Want to distribute your label&apos;s music with OrinlabÍ Records?</p>
         <Link
           href="/contact"
           className="inline-block bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-7 py-3 rounded-full transition-colors text-sm"

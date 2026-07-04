@@ -635,8 +635,8 @@ export default function AdminArtistsPage() {
       type: newStatus === "suspended" ? "warning" : "success",
       title: newStatus === "suspended" ? "Account Suspended" : "Account Reactivated",
       body: newStatus === "suspended"
-        ? "Your Orinlabí account has been suspended. Please contact support for details."
-        : "Your Orinlabí account has been reactivated. Welcome back!",
+        ? "Your OrinlabÍ Records account has been suspended. Please contact support for details."
+        : "Your OrinlabÍ Records account has been reactivated. Welcome back!",
       link: "/portal",
     });
     setTogglingEmail(null);

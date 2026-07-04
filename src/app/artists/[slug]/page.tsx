@@ -10,8 +10,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const name = decodeURIComponent(slug).trim();
   return {
-    title: `${name} – Orinlabí`,
-    description: `${name} is an independent artist distributed globally by Orinlabí.`,
+    title: `${name} – OrinlabÍ Records`,
+    description: `${name} is an independent artist distributed globally by OrinlabÍ Records.`,
   };
 }
 
@@ -245,7 +245,7 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
 
       {/* CTA */}
       <section className="py-16 px-4 border-t border-white/[0.06] text-center">
-        <p className="text-white/40 text-sm mb-4">Inspired? Distribute your music with Orinlabí.</p>
+        <p className="text-white/40 text-sm mb-4">Inspired? Distribute your music with OrinlabÍ Records.</p>
         <Link href="/submit" className="inline-block bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-7 py-3 rounded-full transition-colors text-sm">
           Apply for Distribution
         </Link>

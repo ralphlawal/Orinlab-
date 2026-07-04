@@ -36,7 +36,7 @@ function UnsubscribeContent() {
         <Link href="/" className="inline-flex justify-center">
           <Image
             src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-            alt="Orinlabí"
+            alt="OrinlabÍ Records"
             width={110}
             height={30}
             className="object-contain"
@@ -50,10 +50,10 @@ function UnsubscribeContent() {
             </div>
             <h1 className="text-white font-bold text-2xl">Unsubscribed</h1>
             <p className="text-white/50 leading-relaxed">
-              <span className="text-white/70">{email}</span> has been removed from the Orinlabí mailing list. You won&apos;t receive any more emails from us.
+              <span className="text-white/70">{email}</span> has been removed from the OrinlabÍ Records mailing list. You won&apos;t receive any more emails from us.
             </p>
             <Link href="/" className="inline-block text-[#007bff] text-sm hover:underline mt-2">
-              ← Back to Orinlabí
+              ← Back to OrinlabÍ Records
             </Link>
           </div>
         ) : state === "error" && !email ? (
@@ -69,7 +69,7 @@ function UnsubscribeContent() {
             <div>
               <h1 className="text-white font-bold text-2xl mb-3">Unsubscribe</h1>
               <p className="text-white/50 leading-relaxed">
-                Remove <span className="text-white/80">{email}</span> from the Orinlabí newsletter?
+                Remove <span className="text-white/80">{email}</span> from the OrinlabÍ Records newsletter?
               </p>
             </div>
 

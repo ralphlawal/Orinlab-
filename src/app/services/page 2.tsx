@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Services – Orinlabí",
+  title: "Services – OrinlabÍ Records",
   description:
     "Music distribution, marketing, release strategy, playlist promotion, brand development, and graphics design for African artists.",
 };
@@ -182,7 +182,7 @@ function CTA() {
           Ready to Get Started?
         </h2>
         <p className="text-white/50 text-lg mb-10">
-          Apply to join Orinlabí. Selected artists receive all of these services — free.
+          Apply to join OrinlabÍ Records. Selected artists receive all of these services — free.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link

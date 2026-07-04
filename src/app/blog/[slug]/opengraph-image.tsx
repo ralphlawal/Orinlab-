@@ -14,7 +14,7 @@ export default async function OGImage({ params }: { params: Promise<{ slug: stri
     .eq("slug", slug)
     .maybeSingle();
 
-  const title = post?.title ?? "Orinlabí Blog";
+  const title = post?.title ?? "OrinlabÍ Records Blog";
   const excerpt = post?.excerpt ?? "Music industry insights for independent artists worldwide.";
   const category = post?.category ?? "";
 

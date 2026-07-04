@@ -478,7 +478,7 @@ function WhyTab() {
 
   return (
     <div className="space-y-6">
-      <Section title="Why Orinlabí Cards">
+      <Section title="Why OrinlabÍ Records Cards">
         <p className="text-white/40 text-xs -mt-2">
           The reason cards in the &quot;Why Choose Us&quot; section. Icons are assigned automatically by position.
         </p>
@@ -567,7 +567,7 @@ function FaqTab() {
           <div key={i} className="border border-white/[0.06] rounded-xl p-4 space-y-3 relative">
             <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Question {i + 1}</p>
             <Field label="Question">
-              <input className={input} value={f.q} placeholder="e.g. How does Orinlabí distribute my music?" onChange={(e) => update(i, "q", e.target.value)} />
+              <input className={input} value={f.q} placeholder="e.g. How does OrinlabÍ Records distribute my music?" onChange={(e) => update(i, "q", e.target.value)} />
             </Field>
             <Field label="Answer">
               <textarea className={textarea} rows={3} value={f.a} placeholder="The full answer to this question…" onChange={(e) => update(i, "a", e.target.value)} />

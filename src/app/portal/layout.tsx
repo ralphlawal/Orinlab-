@@ -236,7 +236,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.05]">
           <Image
             src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
-            alt="Orinlabí" width={88} height={24} className="object-contain"
+            alt="OrinlabÍ Records" width={88} height={24} className="object-contain"
           />
           <p className="text-white/20 text-[10px] mt-1.5 font-semibold tracking-widest uppercase">Artist Portal</p>
         </div>

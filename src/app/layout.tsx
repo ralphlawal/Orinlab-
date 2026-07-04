@@ -16,11 +16,11 @@ const sora = Sora({
 export const metadata: Metadata = {
   metadataBase: new URL("https://orinlabi.com"),
   title: {
-    default: "Orinlabí – Global Music Distribution for Independent Artists",
-    template: "%s – Orinlabí",
+    default: "OrinlabÍ Records – Global Music Distribution for Independent Artists",
+    template: "%s – OrinlabÍ Records",
   },
   description:
-    "Orinlabí is a curated music distribution platform for independent artists. Release your music on 150+ platforms worldwide — Spotify, Apple Music, TikTok, and more. Keep 100% of your royalties.",
+    "OrinlabÍ Records is a curated music distribution platform for independent artists. Release your music on 150+ platforms worldwide — Spotify, Apple Music, TikTok, and more. Keep 100% of your royalties.",
   keywords: [
     "music distribution",
     "independent artist distribution",
@@ -30,10 +30,10 @@ export const metadata: Metadata = {
     "keep 100% royalties",
   ],
   openGraph: {
-    title: "Orinlabí – Global Music Distribution for Independent Artists",
+    title: "OrinlabÍ Records – Global Music Distribution for Independent Artists",
     description:
       "Release unlimited music on 150+ platforms worldwide. Keep 100% of your royalties. Every application personally reviewed by our team.",
-    siteName: "Orinlabí",
+    siteName: "OrinlabÍ Records",
     type: "website",
     url: "https://orinlabi.com",
     images: [
@@ -41,13 +41,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Orinlabí – Global Music Distribution",
+        alt: "OrinlabÍ Records – Global Music Distribution",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Orinlabí – Global Music Distribution for Independent Artists",
+    title: "OrinlabÍ Records – Global Music Distribution for Independent Artists",
     description:
       "Release unlimited music on 150+ platforms worldwide. Keep 100% of your royalties. Every submission reviewed by our team.",
     images: ["/og-image.png"],

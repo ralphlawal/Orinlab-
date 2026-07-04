@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import { ContractDocument } from "@/lib/contractPdf";
 import { supabase } from "@/lib/supabase";
 
-const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
+const FROM   = process.env.EMAIL_FROM  ?? "OrinlabÍ Records <onboarding@resend.dev>";
 const ADMINS = [process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com", "ibatwtc@gmail.com"];
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
@@ -74,13 +74,13 @@ export async function POST(req: NextRequest) {
   });
 
   const adminHtml = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><title>Orinlabí Admin</title></head>
+<html lang="en"><head><meta charset="UTF-8"/><title>OrinlabÍ Records Admin</title></head>
 <body style="margin:0;padding:0;background:#1a1a1a;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a1a;">
     <tr><td align="center" style="padding:32px 16px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr><td bgcolor="#050505" style="padding:24px 32px;border-radius:14px 14px 0 0;">
-          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="Orinlabí" width="120" height="33" style="display:block;border:0;" />
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
         </td></tr>
         <tr><td bgcolor="#f59e0b" style="height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
         <tr><td bgcolor="#181818" style="padding:32px 32px 36px;border-radius:0 0 14px 14px;">

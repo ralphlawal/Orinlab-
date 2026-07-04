@@ -1,7 +1,7 @@
 import ServicesClient from "@/components/ServicesClient";
 
 export const metadata = {
-  title: "Services – Orinlabí",
+  title: "Services – OrinlabÍ Records",
   description:
     "Music distribution, marketing, release strategy, playlist promotion, brand development, and graphics design for independent artists worldwide.",
 };

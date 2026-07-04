@@ -23,17 +23,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq("presave_enabled", true)
     .maybeSingle();
 
-  if (!data) return { title: "Pre-save | Orinlabí" };
+  if (!data) return { title: "Pre-save | OrinlabÍ Records" };
 
   const title = (data.release_type === "Album" || data.release_type === "EP")
     ? (data.album_title || data.song_title)
     : data.song_title;
 
   return {
-    title: `Pre-save: ${title} by ${data.artist_name} | Orinlabí`,
+    title: `Pre-save: ${title} by ${data.artist_name} | OrinlabÍ Records`,
     openGraph: {
       title: `${title} — Pre-save now`,
-      description: `Save "${title}" by ${data.artist_name} before it drops. Powered by Orinlabí.`,
+      description: `Save "${title}" by ${data.artist_name} before it drops. Powered by OrinlabÍ Records.`,
       images: data.cover_art_url ? [data.cover_art_url] : [],
     },
   };
@@ -105,7 +105,7 @@ export default async function PresavePage({ params }: Props) {
         <PresaveActions releaseId={release.id} presaveUrl={release.presave_url} />
 
         <p className="text-white/20 text-xs text-center mt-10">
-          Distributed by Orinlabí
+          Distributed by OrinlabÍ Records
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import { Resend } from "resend";
 import { adminNotificationEmail } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
-const FROM = process.env.EMAIL_FROM ?? "Orinlabí <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM ?? "OrinlabÍ Records <onboarding@resend.dev>";
 
 type Recipient = { email: string; name: string; portalUrl: string };
 type DeliveryMode = "both" | "inapp" | "email";
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
         const { error } = await resend.emails.send({
           from: FROM,
           to: r.email,
-          subject: `${notification.title} — Orinlabí`,
+          subject: `${notification.title} — OrinlabÍ Records`,
           html: adminNotificationEmail({
             recipientName: r.name,
             title: notification.title,

@@ -705,7 +705,7 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
               </div>
               <h3 className="text-white font-bold text-xl mb-2">Roster launching soon</h3>
               <p className="text-white/35 text-sm max-w-xs mx-auto mb-8 leading-relaxed">
-                We&apos;re reviewing our first wave of applications. Apply now and be among the founding artists on Orinlabí.
+                We&apos;re reviewing our first wave of applications. Apply now and be among the founding artists on OrinlabÍ Records.
               </p>
               <Link
                 href="/submit"

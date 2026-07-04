@@ -6,7 +6,7 @@ import { AnimateIn } from "@/components/AnimateIn";
 export const revalidate = 60; // refresh every 60s
 
 export const metadata = {
-  title: "Blog – Orinlabí",
+  title: "Blog – OrinlabÍ Records",
   description:
     "Music industry news, artist tips, marketing guides, distribution insights, and success stories for independent artists worldwide.",
 };
@@ -31,7 +31,7 @@ export default async function BlogPage() {
         <div className="relative z-10 max-w-2xl mx-auto">
           <AnimateIn>
             <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-              The Orinlabí Blog
+              The OrinlabÍ Records Blog
             </p>
           </AnimateIn>
           <AnimateIn delay={80}>
