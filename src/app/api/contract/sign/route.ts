@@ -9,8 +9,8 @@ import { rateLimitResponse } from "@/lib/rateLimit";
 // Anon client used only for auth token verification
 import { supabase } from "@/lib/supabase";
 
-const FROM  = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
-const ADMIN = process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com";
+const FROM   = process.env.EMAIL_FROM  ?? "Orinlabí <onboarding@resend.dev>";
+const ADMINS = [process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com", "ibatwtc@gmail.com"];
 
 export async function POST(req: NextRequest) {
   const limited = rateLimitResponse(req, 5, 60_000);
@@ -92,11 +92,23 @@ export async function POST(req: NextRequest) {
 
   const filename = `contract-${release.song_title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.pdf`;
 
-  // Send emails
+  // Mark as signed in DB first — so the record is always saved even if email fails
+  const { error: updateErr } = await authed
+    .from("releases")
+    .update({ contract_signed_at: signedAt, contract_signature: signatureName.trim() })
+    .eq("id", releaseId);
+
+  if (updateErr) {
+    console.error("DB update error:", updateErr);
+    return NextResponse.json({ error: "Failed to save contract record." }, { status: 500 });
+  }
+
+  // Send emails — fire-and-forget after DB is saved; we don't fail the request if email errors
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  const artistHtml = `
-<!DOCTYPE html>
+  const signedDateStr = new Date(signedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+  const artistHtml = `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head><meta charset="UTF-8"/><meta name="color-scheme" content="light"/><meta name="supported-color-schemes" content="light"/><title>Orinlabí</title></head>
 <body style="margin:0;padding:0;background:#f0f0f0;" bgcolor="#f0f0f0">
@@ -129,7 +141,7 @@ export async function POST(req: NextRequest) {
               </tr>
               <tr>
                 <td style="padding:10px 0;color:#999999;font-size:13px;font-family:Arial,sans-serif;">Date</td>
-                <td style="padding:10px 0;color:#111111;font-size:13px;font-weight:700;font-family:Arial,sans-serif;">${new Date(signedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}</td>
+                <td style="padding:10px 0;color:#111111;font-size:13px;font-weight:700;font-family:Arial,sans-serif;">${signedDateStr}</td>
               </tr>
             </table>
             <p style="margin:24px 0 0;color:#555555;font-size:14px;line-height:1.7;font-family:Arial,sans-serif;">
@@ -147,8 +159,44 @@ export async function POST(req: NextRequest) {
   </table>
 </body></html>`;
 
-  const adminHtml = artistHtml.replace("Your contract is signed.", `Signed Contract — ${release.artist_name}`).replace("A copy of your signed Distribution Agreement is attached to this email. Please keep it for your records.", "An artist has signed their distribution agreement. A copy is attached.");
+  const adminHtml = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><title>Orinlabí Admin</title></head>
+<body style="margin:0;padding:0;background:#1a1a1a;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a1a;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+        <tr><td bgcolor="#050505" style="padding:24px 32px;border-radius:14px 14px 0 0;">
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="Orinlabí" width="120" height="33" style="display:block;border:0;" />
+        </td></tr>
+        <tr><td bgcolor="#007bff" style="height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+        <tr><td bgcolor="#181818" style="padding:32px 32px 36px;border-radius:0 0 14px 14px;">
+          <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
+            <tr><td bgcolor="#0d1a2e" style="border-radius:100px;padding:5px 14px;border:1px solid rgba(0,123,255,0.35);">
+              <span style="color:#007bff;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:Arial,sans-serif;">Contract Signed</span>
+            </td></tr>
+          </table>
+          <h2 style="margin:0 0 6px;color:#ffffff;font-size:22px;font-weight:800;font-family:Arial,sans-serif;">Artist Signed a Contract</h2>
+          <p style="margin:0 0 24px;color:#888888;font-size:13px;font-family:Arial,sans-serif;">A signed Distribution Agreement PDF is attached.</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #1e1e1e;">
+            <tr><td style="padding:10px 0;color:#666;font-size:13px;width:130px;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">Artist</td><td style="padding:10px 0;color:#fff;font-size:13px;font-weight:700;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${release.artist_name}</td></tr>
+            <tr><td style="padding:10px 0;color:#666;font-size:13px;width:130px;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">Legal Name</td><td style="padding:10px 0;color:#fff;font-size:13px;font-weight:700;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${release.legal_name}</td></tr>
+            <tr><td style="padding:10px 0;color:#666;font-size:13px;width:130px;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">Email</td><td style="padding:10px 0;color:#007bff;font-size:13px;font-weight:700;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${release.email}</td></tr>
+            <tr><td style="padding:10px 0;color:#666;font-size:13px;width:130px;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">Release</td><td style="padding:10px 0;color:#fff;font-size:13px;font-weight:700;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${release.song_title}</td></tr>
+            <tr><td style="padding:10px 0;color:#666;font-size:13px;width:130px;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">Signature</td><td style="padding:10px 0;color:#fff;font-size:13px;font-weight:700;border-bottom:1px solid #1e1e1e;font-family:Arial,sans-serif;">${contractData.signatureName}</td></tr>
+            <tr><td style="padding:10px 0;color:#666;font-size:13px;font-family:Arial,sans-serif;">Signed At</td><td style="padding:10px 0;color:#fff;font-size:13px;font-weight:700;font-family:Arial,sans-serif;">${signedDateStr}</td></tr>
+          </table>
+          <table cellpadding="0" cellspacing="0" style="margin-top:28px;">
+            <tr><td bgcolor="#007bff" style="border-radius:100px;">
+              <a href="https://orinlabi.com/admin/contracts" style="display:inline-block;padding:13px 28px;color:#fff;font-size:14px;font-weight:700;text-decoration:none;font-family:Arial,sans-serif;">View in Admin Panel →</a>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
 
+  // Best-effort emails — don't fail the request if Resend errors
   try {
     await Promise.all([
       resend.emails.send({
@@ -160,22 +208,16 @@ export async function POST(req: NextRequest) {
       }),
       resend.emails.send({
         from: FROM,
-        to: ADMIN,
+        to: ADMINS,
         subject: `Signed contract — ${release.artist_name} · ${release.song_title}`,
         html: adminHtml,
         attachments: [{ filename, content: pdfBuffer }],
       }),
     ]);
   } catch (err) {
-    console.error("Email send error:", err);
-    return NextResponse.json({ error: "Failed to send contract emails." }, { status: 500 });
+    console.error("Contract email send error (contract saved):", err);
+    // Don't return an error — the DB record is already saved, email just failed
   }
-
-  // Mark as signed in DB
-  await authed
-    .from("releases")
-    .update({ contract_signed_at: signedAt, contract_signature: signatureName.trim() })
-    .eq("id", releaseId);
 
   return NextResponse.json({ success: true, signedAt });
 }
