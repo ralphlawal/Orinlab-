@@ -193,9 +193,9 @@ export default function SubmitPage() {
           </div>
           <h2 className="text-3xl font-bold text-white mb-4">Application Received!</h2>
           <p className="text-white/60 leading-relaxed">
-            Thank you for applying to distribute with OrinlabÍ Records. We review every
-            application carefully and reach out to selected artists within
-            <strong className="text-white"> 3–5 business days</strong>.
+            Thank you for submitting to OrinlabÍ Records. We review every
+            application and will be in touch with your approval confirmation
+            <strong className="text-white"> promptly</strong>.
           </p>
           <p className="text-white/40 text-sm mt-4">
             Check your email for a confirmation from info@orinlabi.com

@@ -14,25 +14,25 @@ export const metadata = {
 const steps = [
   {
     number: "01",
-    title: "Submit Your Application",
+    title: "Submit Your Music",
     description:
-      "Fill in your artist profile and upload your release. Tell us about your music, your goals, and link us to your existing work.",
+      "Fill in your artist profile and upload your release. Tell us about your music and your goals — the process takes under 10 minutes.",
   },
   {
     number: "02",
-    title: "We Review Your Music",
+    title: "Instant Review",
     description:
-      "Our team listens to every submission carefully. We look for quality, originality, and artistic vision. You'll hear back within 3–5 business days.",
+      "Our team reviews every submission promptly. Once approved, you receive a confirmation email from info@orinlabi.com.",
   },
   {
     number: "03",
-    title: "Selection & Onboarding",
+    title: "Sign Your Contract",
     description:
-      "If selected, you receive a confirmation email from info@orinlabi.com. We walk you through everything you need to go live.",
+      "You'll get a digital distribution agreement to review and sign. It takes seconds and locks in your royalty terms.",
   },
   {
     number: "04",
-    title: "Global Distribution",
+    title: "Go Live Worldwide",
     description:
       "Your music goes live on Spotify, Apple Music, TikTok, YouTube Music, Boomplay, Audiomack, and 150+ more stores worldwide.",
   },
@@ -44,21 +44,17 @@ const included = [
   { icon: Music2,          label: "ISRC & UPC codes",                detail: "Generated automatically if you don't already have them" },
   { icon: HeadphonesIcon,  label: "Dedicated artist support",        detail: "A real team you can reach — not just a ticket system" },
   { icon: Shield,          label: "Rights management",               detail: "We protect your metadata and ownership at every store" },
-  { icon: Sparkles,        label: "Promotional opportunities",       detail: "Selected artists get featured on our social channels and editorial picks" },
+  { icon: Sparkles,        label: "Promotional opportunities",       detail: "Approved artists get featured on our social channels and editorial picks" },
 ];
 
 const faqs = [
   {
-    q: "How are artists selected?",
-    a: "Every application is reviewed by our team personally — no algorithms. We select based on three things: sound quality, artistic vision, and originality. There are no follower count requirements.",
+    q: "Can any artist submit?",
+    a: "Yes — any independent artist can submit their music. Our team reviews every submission and approves it promptly. There are no follower count requirements.",
   },
   {
-    q: "What happens if I'm not selected?",
-    a: "We provide feedback where we can, and encourage you to keep creating and reapply. Many of our artists reapplied after an initial pass. A rejection is not a door closed permanently.",
-  },
-  {
-    q: "How long does selection take?",
-    a: "We aim to respond within 3–5 business days of receiving your application. If you haven't heard back after 7 days, feel free to reach out via our contact page.",
+    q: "How quickly will I be approved?",
+    a: "We review submissions promptly. Once approved you receive a confirmation email from info@orinlabi.com and you can sign your contract and go live.",
   },
   {
     q: "Do I keep ownership of my music?",
@@ -67,6 +63,10 @@ const faqs = [
   {
     q: "How do royalties work?",
     a: "Earnings are collected from platforms and paid out to you on a monthly basis. We provide transparent reporting so you always know what you're earning.",
+  },
+  {
+    q: "What platforms will my music be on?",
+    a: "Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Deezer, TIDAL, Boomplay, Audiomack, and 150+ more stores worldwide.",
   },
 ];
 
@@ -90,7 +90,7 @@ export default function PricingPage() {
           </AnimateIn>
           <AnimateIn delay={160}>
             <p className="text-white/50 text-lg leading-relaxed mb-10 max-w-xl mx-auto">
-              Apply, get reviewed by our team, and release your music to 150+ platforms worldwide. We handle everything from delivery to royalty collection — you keep 100% of your rights.
+              Submit your music, get approved, and release to 150+ platforms worldwide — for free. We handle everything from delivery to royalty collection. You keep your rights.
             </p>
           </AnimateIn>
           <AnimateIn delay={220}>
@@ -162,7 +162,7 @@ export default function PricingPage() {
             <AnimateIn>
               <div className="flex items-center justify-center gap-2 mb-4">
                 <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
-                <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">For Selected Artists</span>
+                <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">For Every Approved Artist</span>
               </div>
             </AnimateIn>
             <AnimateIn delay={80}>
@@ -172,7 +172,7 @@ export default function PricingPage() {
             </AnimateIn>
             <AnimateIn delay={140}>
               <p className="text-white/40 max-w-lg mx-auto leading-relaxed">
-                Every selected artist gets the full OrinlabÍ Records experience — the same tools major labels use, with no price tag attached.
+                Every approved artist gets the full OrinlabÍ Records experience — the same tools major labels use, with no price tag attached.
               </p>
             </AnimateIn>
           </div>
@@ -195,20 +195,20 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Why invite-only */}
+      {/* Why OrinlabÍ */}
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto">
           <AnimateIn>
             <div className="bg-gradient-to-br from-[#007bff]/8 via-transparent to-transparent border border-[#007bff]/15 hover:border-[#007bff]/25 transition-all duration-300 rounded-3xl p-10 sm:p-14 text-center">
               <Sparkles size={32} className="text-[#007bff] mx-auto mb-6" />
               <h2 className="text-[clamp(1.8rem,4vw,3rem)] font-bold text-white leading-[1.1] tracking-tight mb-6">
-                Why Invitation-Based?
+                Free to submit. Free to distribute.
               </h2>
               <p className="text-white/55 leading-relaxed text-base sm:text-lg mb-5">
-                We believe distribution should be earned, not purchased. The internet is saturated with music. Rather than being a pipeline that accepts everything for a fee, OrinlabÍ Records acts as a curator — surfacing voices that deserve to be heard.
+                Any independent artist can submit their music to OrinlabÍ Records — no gatekeeping, no upfront fees. Submit once, get approved, and your music goes live on every major platform worldwide.
               </p>
               <p className="text-white/55 leading-relaxed text-base sm:text-lg">
-                We invest our platform, our team, and our relationships directly into the artists we select. That means we can only work with artists we genuinely believe in — and for those we do select, we go all the way.
+                We invest our platform, our team, and our relationships into every artist we work with. That means we go all the way — from delivery and royalty collection to promotion and support.
               </p>
             </div>
           </AnimateIn>

@@ -39,15 +39,12 @@ export default function TermsPage() {
             </p>
           </Section>
 
-          <Section title="2. Eligibility & Invitation">
+          <Section title="2. Eligibility">
             <p>
-              OrinlabÍ Records operates an invitation-based model. Distribution services are available
-              only to artists who have applied and been selected by our team. Submitting an
-              application does not guarantee acceptance.
-            </p>
-            <p>
-              You must be at least 18 years old, or have the consent of a parent or legal
-              guardian, to apply for or use our services.
+              Any independent artist may submit music for distribution through OrinlabÍ Records.
+              Submitted music is reviewed by our team and approved promptly. You must be at least
+              18 years old, or have the consent of a parent or legal guardian, to apply for or
+              use our services.
             </p>
           </Section>
 
@@ -83,7 +80,7 @@ export default function TermsPage() {
 
           <Section title="5. Distribution & Royalties">
             <p>
-              Distribution through OrinlabÍ Records is provided to selected artists under terms
+              Distribution through OrinlabÍ Records is provided to approved artists under terms
               agreed in your individual artist agreement. We do not take a commission on your streaming royalties.
             </p>
             <p>

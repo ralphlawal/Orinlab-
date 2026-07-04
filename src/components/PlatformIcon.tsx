@@ -124,8 +124,9 @@ const ICONS: Record<string, IconFn> = {
   ),
 
   boomplay: (s, c) => (
+    /* Boomplay brand mark: two beamed eighth-notes (the actual app icon mark) */
     <svg width={s} height={s} viewBox="0 0 24 24" className={c} fill="currentColor">
-      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-2 5.5h3.2c1.82 0 3.3 1.34 3.3 3 0 .96-.49 1.82-1.25 2.36 1.01.53 1.75 1.58 1.75 2.84C17 17.16 15.48 18 13.5 18H10V7.5zm2 1.5v2.5h1.1c.77 0 1.4-.56 1.4-1.25S15.87 9 15.1 9H12zm0 4v3H13.5c1.1 0 1.8-.6 1.8-1.5S14.6 11.5 13.5 11.5H12z" />
+      <path d="M6.5 21a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zm11-3a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM10 3h11v2H10zm0 3.5h11v2H10zM10 14V5h2v9zm9-3V5h2v6z" />
     </svg>
   ),
 
