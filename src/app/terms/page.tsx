@@ -129,8 +129,8 @@ export default function TermsPage() {
           <Section title="10. Contact">
             <p>
               For questions about these Terms, email us at{" "}
-              <a href="mailto:legal@orinlabi.com" className="text-[#007bff] hover:underline">
-                legal@orinlabi.com
+              <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">
+                info@orinlabi.com
               </a>
               .
             </p>

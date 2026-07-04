@@ -9,9 +9,25 @@ const FROM = process.env.EMAIL_FROM ?? "OrinlabÍ Records <onboarding@resend.dev
 type Recipient = { email: string; name: string; portalUrl: string };
 type DeliveryMode = "both" | "inapp" | "email";
 
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+  .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+
 export async function POST(req: NextRequest) {
   const limited = rateLimitResponse(req, 10, 60_000);
   if (limited) return limited;
+
+  // Require valid admin session
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "").trim();
+  if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data: { user } } = await authClient.auth.getUser(token);
+  const callerEmail = (user?.email ?? "").toLowerCase();
+  if (!callerEmail || !ADMIN_EMAILS.includes(callerEmail)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body = await req.json();
   const {

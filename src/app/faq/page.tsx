@@ -40,7 +40,7 @@ const FAQS = [
       },
       {
         q: "Who collects my streaming royalties?",
-        a: "Royalties from streaming platforms are collected and paid directly to you. OrinlabÍ Records facilitates distribution — we do not take a percentage of your royalty income.",
+        a: "Royalties from streaming platforms are collected and paid directly to you. Your first release earns you 100% of streaming revenue. From your second release onwards, 85% goes to you and 15% to OrinlabÍ Records. T&Cs apply.",
       },
       {
         q: "Do I need an ISRC code?",

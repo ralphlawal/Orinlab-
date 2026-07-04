@@ -197,7 +197,7 @@ function Hero({ s }: { s: HeroSettings }) {
           {[
             { value: "∞",    label: "Releases" },
             { value: "150+", label: "Platforms" },
-            { value: "100%", label: "Royalties" },
+            { value: "100%", label: "Ownership" },
           ].map((stat) => (
             <div key={stat.label}>
               <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>

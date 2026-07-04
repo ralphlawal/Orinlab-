@@ -18,11 +18,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  const { data: posts } = await supabase
-    .from("blog_posts")
-    .select("slug, created_at")
-    .eq("published", true)
-    .order("created_at", { ascending: false });
+  const [{ data: posts }, { data: artistProfiles }] = await Promise.all([
+    supabase
+      .from("blog_posts")
+      .select("slug, created_at")
+      .eq("published", true)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("artist_profiles")
+      .select("artist_name, updated_at"),
+  ]);
 
   const blogPages: MetadataRoute.Sitemap = (posts ?? []).map((post) => ({
     url: `${BASE}/blog/${post.slug}`,
@@ -31,5 +36,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...blogPages];
+  const artistPages: MetadataRoute.Sitemap = (artistProfiles ?? [])
+    .filter((a) => a.artist_name)
+    .map((a) => ({
+      url: `${BASE}/artists/${encodeURIComponent(a.artist_name.trim())}`,
+      lastModified: a.updated_at ? new Date(a.updated_at) : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    }));
+
+  return [...staticPages, ...blogPages, ...artistPages];
 }
