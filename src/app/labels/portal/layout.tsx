@@ -110,7 +110,7 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
         {/* Logo + identity */}
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
           <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
             alt="OrinlabÍ Records" width={88} height={24} className="object-contain"
           />
           <p className="text-white/25 text-[11px] mt-1.5 font-medium tracking-wide uppercase">Label Portal</p>

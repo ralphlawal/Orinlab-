@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="text-center space-y-8 max-w-md">
         <Link href="/" className="inline-flex justify-center">
           <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
             alt="OrinlabÍ Records"
             width={110}
             height={30}

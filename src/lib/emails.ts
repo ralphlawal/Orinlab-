@@ -1,6 +1,6 @@
 /* ── OrinlabÍ Records email templates ── */
 
-const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
+const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png";
 const PORTAL = "https://orinlabi.com/portal/login";
 
 const base = (content: string, accentColor = "#007bff") => `

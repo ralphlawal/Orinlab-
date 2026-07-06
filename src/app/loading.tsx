@@ -6,7 +6,7 @@ export default function Loading() {
     <div className="fixed inset-0 z-[55] bg-black flex items-center justify-center">
       <div className="flex flex-col items-center gap-6">
         <Image
-          src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+          src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
           alt="OrinlabÍ Records"
           width={150}
           height={40}

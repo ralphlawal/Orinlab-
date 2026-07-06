@@ -4,7 +4,7 @@ import { rateLimitResponse } from "@/lib/rateLimit";
 
 const FROM   = process.env.EMAIL_FROM  ?? "OrinlabÍ Records <onboarding@resend.dev>";
 const ADMIN  = [process.env.ADMIN_EMAIL ?? "ralphlawal2003@gmail.com", "ibatwtc@gmail.com"];
-const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png";
+const LOGO   = "https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png";
 
 function esc(s: unknown): string {
   return String(s ?? "—").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

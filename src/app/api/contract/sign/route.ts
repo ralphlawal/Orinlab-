@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
           <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:14px 14px 0 0;" align="left">
-            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
           </td>
         </tr>
         <tr><td bgcolor="#007bff" style="background:#007bff;height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     <tr><td align="center" style="padding:32px 16px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr><td bgcolor="#050505" style="padding:24px 32px;border-radius:14px 14px 0 0;">
-          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
+          <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png" alt="OrinlabÍ Records" width="120" height="33" style="display:block;border:0;" />
         </td></tr>
         <tr><td bgcolor="#007bff" style="height:3px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
         <tr><td bgcolor="#181818" style="padding:32px 32px 36px;border-radius:0 0 14px 14px;">

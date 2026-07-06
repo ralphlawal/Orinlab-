@@ -85,7 +85,7 @@ export default function PortalLoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-10">
           <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
             alt="OrinlabÍ Records"
             width={140}
             height={38}

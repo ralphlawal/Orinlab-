@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
         <tr>
           <td bgcolor="#050505" style="background:#050505;padding:24px 32px;border-radius:16px 16px 0 0;border:1px solid #1a1a1a;border-bottom:none;" align="left">
-            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1781548294/IMG_1636_icjgpt.png"
+            <img src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
               alt="" width="120" height="33" style="display:block;border:0;outline:none;max-width:120px;" />
             <p style="margin:6px 0 0;color:#ffffff;font-size:17px;font-weight:800;letter-spacing:1px;font-family:Arial,sans-serif;line-height:1;">ORINLAB&Iacute;</p>
           </td>
