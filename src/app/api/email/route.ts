@@ -4,6 +4,7 @@ import {
   submissionEmail, approvalEmail, rejectionEmail, liveEmail,
   takedownConfirmEmail, payoutConfirmEmail, supportConfirmEmail,
   pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
+  releaseDateEmail, artistReminderEmail,
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
@@ -86,13 +87,36 @@ export async function POST(req: NextRequest) {
     } else if (type === "stage-update") {
       const stage = data.stage as "in_distribution" | "live";
       subject = stage === "live"
-        ? `Your music is live — ${data.song_title} 🎉`
+        ? `Your music is live — ${data.song_title} 🔥`
         : `Distribution update — ${data.song_title}`;
       html = stageUpdateEmail({
         artistName:  data.artist_name,
         songTitle:   data.song_title,
         stage,
         storeLinks:  data.store_links ?? {},
+      });
+    } else if (type === "release-date-set") {
+      subject = `Your release date is locked in — ${data.song_title} drops ${data.release_date}`;
+      html = releaseDateEmail({
+        artistName:  data.artist_name,
+        songTitle:   data.song_title,
+        releaseDate: data.release_date,
+      });
+    } else if (type === "artist-reminder") {
+      const reminderType = data.reminder_type as "profile" | "store-links" | "lyrics" | "payout-details" | "contract";
+      const subjectMap = {
+        "profile":        `Your OrinlabÍ Records profile needs attention`,
+        "store-links":    `Add your streaming links — ${data.song_title ?? "your release"} is live!`,
+        "lyrics":         `Don't forget to add your lyrics — ${data.song_title ?? "your release"}`,
+        "payout-details": `We can't pay you without your details — urgent`,
+        "contract":       `Sign your distribution agreement — ${data.song_title ?? "your release"} is waiting`,
+      };
+      subject = subjectMap[reminderType] ?? "A quick reminder from OrinlabÍ Records";
+      html = artistReminderEmail({
+        artistName:   data.artist_name,
+        songTitle:    data.song_title,
+        reminderType,
+        missingItems: data.missing_items,
       });
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });

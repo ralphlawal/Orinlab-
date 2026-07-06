@@ -14,8 +14,8 @@ const FAQS = [
         a: "You submit your release through our application form. Our team reviews it within 24–48 hours. If approved, we distribute your music to 150+ streaming platforms worldwide — including Spotify, Apple Music, Boomplay, Audiomack, Deezer, TIDAL, and more.",
       },
       {
-        q: "How does the selection process work?",
-        a: "Every application is reviewed by our team personally. We select based on sound quality, artistic vision, and the strength of the music. If selected, your music goes to 150+ platforms worldwide.",
+        q: "What happens after I submit my release?",
+        a: "Every submission is reviewed by our team personally. We assess sound quality, artwork, and release metadata. If everything meets our standards, your release is approved and distributed to 150+ platforms worldwide.",
       },
       {
         q: "How long does it take for my music to go live?",
@@ -64,8 +64,8 @@ const FAQS = [
         a: "Yes. You can submit singles, EPs, and albums. For multi-track releases, contact us at info@orinlabi.com after submitting your application so we can coordinate the full package.",
       },
       {
-        q: "What if my application is not selected?",
-        a: "We review every submission carefully. If your release isn't selected, you're welcome to reapply. We may provide notes on what to improve. Keep creating — the door is always open.",
+        q: "What if my submission is not approved?",
+        a: "We review every submission carefully. If your release doesn't meet our quality standards, you're welcome to resubmit after making improvements. We may provide notes on what to improve. Keep creating — the door is always open.",
       },
       {
         q: "Can I submit more than one release?",
@@ -118,12 +118,16 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         </span>
         <ChevronDown
           size={18}
-          className={`flex-shrink-0 mt-0.5 text-white/30 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`flex-shrink-0 mt-0.5 text-white/30 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
       </button>
-      {open && (
-        <p className="text-white/50 text-sm leading-relaxed pb-5">{a}</p>
-      )}
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      >
+        <div className="overflow-hidden">
+          <p className="text-white/50 text-sm leading-relaxed pb-5">{a}</p>
+        </div>
+      </div>
     </div>
   );
 }

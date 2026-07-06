@@ -82,6 +82,11 @@ export default function NewReleasePage() {
   const [youtubeContentId, setYoutubeContentId] = useState(false);
   const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>(draftStateRef.current.featuredArtists);
   const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
+  const [newLyrics, setNewLyrics] = useState(draft?.lyrics ?? "");
+  const [newVideoUrl, setNewVideoUrl] = useState(draft?.music_video_url ?? "");
+  const [newSongStory, setNewSongStory] = useState(draft?.song_story ?? "");
+  const [newMixingEngineer, setNewMixingEngineer] = useState(draft?.mixing_engineer ?? "");
+  const [newMasteringEngineer, setNewMasteringEngineer] = useState(draft?.mastering_engineer ?? "");
 
   const isMultiTrack = releaseType === "Album" || releaseType === "EP" || releaseType === "Compilation";
 
@@ -97,6 +102,11 @@ export default function NewReleasePage() {
     snapshot._coverSong = String(coverSong);
     snapshot._featuredArtists = JSON.stringify(featuredArtists);
     snapshot._tracks = JSON.stringify(tracks.map((t) => ({ title: t.title, version: t.version, explicit: t.explicit, instrumental: t.instrumental })));
+    snapshot.lyrics = newLyrics;
+    snapshot.music_video_url = newVideoUrl;
+    snapshot.song_story = newSongStory;
+    snapshot.mixing_engineer = newMixingEngineer;
+    snapshot.mastering_engineer = newMasteringEngineer;
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot)); setDraftSavedAt(new Date()); } catch {}
   }
 
@@ -304,6 +314,11 @@ export default function NewReleasePage() {
         cover_song_details:   coverSong ? (data.get("coverSongDetails") as string | null) : null,
         store_platforms:      selectedStores === "all" ? "all" : selectedStores.join(","),
         youtube_content_id:   youtubeContentId,
+        lyrics:               newLyrics.trim() || null,
+        music_video_url:      newVideoUrl.trim() || null,
+        song_story:           newSongStory.trim() || null,
+        mixing_engineer:      newMixingEngineer.trim() || null,
+        mastering_engineer:   newMasteringEngineer.trim() || null,
         status:               "pending",
       };
 
@@ -379,9 +394,14 @@ export default function NewReleasePage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 size={28} className="text-[#007bff] animate-spin" />
-      </div>
+      <section className="max-w-2xl mx-auto px-4 py-12 space-y-8">
+        <div className="skeleton h-5 w-24 rounded-lg" />
+        <div className="skeleton h-8 w-64 rounded-xl" />
+        <div className="skeleton h-24 rounded-2xl" />
+        <div className="skeleton h-72 rounded-2xl" />
+        <div className="skeleton h-48 rounded-2xl" />
+        <div className="skeleton h-14 rounded-full" />
+      </section>
     );
   }
 
@@ -845,6 +865,68 @@ export default function NewReleasePage() {
                     className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors" />
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Lyrics & Additional Credits */}
+        <div>
+          <h2 className="text-white font-bold text-lg mb-2 pb-3 border-b border-white/10">
+            Lyrics &amp; Additional Credits
+          </h2>
+          <p className="text-white/30 text-xs mb-6">Optional — you can always add or update these from your release dashboard after submission.</p>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-white/70 text-sm font-medium mb-2">Lyrics</label>
+              <textarea
+                value={newLyrics}
+                onChange={(e) => setNewLyrics(e.target.value)}
+                rows={8}
+                placeholder={"[Verse 1]\nYour lyrics here…\n\n[Chorus]\n…"}
+                className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-y transition-colors font-mono leading-relaxed"
+              />
+            </div>
+            <div>
+              <label className="block text-white/70 text-sm font-medium mb-2">Music Video URL</label>
+              <input
+                type="url"
+                value={newVideoUrl}
+                onChange={(e) => setNewVideoUrl(e.target.value)}
+                placeholder="https://youtube.com/watch?v=…"
+                className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-white/70 text-sm font-medium mb-2">Song Story / Press Notes</label>
+              <textarea
+                value={newSongStory}
+                onChange={(e) => setNewSongStory(e.target.value)}
+                rows={4}
+                placeholder="Share the story behind this track — what inspired it, the creative process, what it means to you…"
+                className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-y transition-colors leading-relaxed"
+              />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">Mixing Engineer</label>
+                <input
+                  type="text"
+                  value={newMixingEngineer}
+                  onChange={(e) => setNewMixingEngineer(e.target.value)}
+                  placeholder="e.g. DJ Coublon"
+                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">Mastering Engineer</label>
+                <input
+                  type="text"
+                  value={newMasteringEngineer}
+                  onChange={(e) => setNewMasteringEngineer(e.target.value)}
+                  placeholder="e.g. Sterling Sound"
+                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -134,7 +134,16 @@ export default function EarningsPage() {
     }
   }
 
-  if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 size={26} className="text-[#007bff] animate-spin" /></div>;
+  if (loading) return (
+    <section className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+      <div className="skeleton h-8 w-48 rounded-xl" />
+      <div className="grid grid-cols-3 gap-4">
+        {[0, 1, 2].map((i) => <div key={i} className="skeleton h-24 rounded-2xl" />)}
+      </div>
+      <div className="skeleton h-48 rounded-2xl" />
+      <div className="skeleton h-64 rounded-2xl" />
+    </section>
+  );
 
   const totalStreams   = releases.reduce((s, r) => s + Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0), 0);
   const totalEarnings = releases.reduce((s, r) => s + (r.royalties_usd ?? 0), 0);

@@ -84,9 +84,12 @@ export default function ContractPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 size={28} className="text-[#007bff] animate-spin" />
-      </div>
+      <section className="max-w-2xl mx-auto px-4 py-10 space-y-6">
+        <div className="skeleton h-5 w-24 rounded-lg" />
+        <div className="skeleton h-8 w-48 rounded-xl" />
+        <div className="skeleton h-96 rounded-2xl" />
+        <div className="skeleton h-14 rounded-full" />
+      </section>
     );
   }
 

@@ -77,7 +77,9 @@ export default function NotificationsPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48"><Loader2 size={26} className="text-[#007bff] animate-spin" /></div>
+        <div className="space-y-3 mt-2">
+          {[0, 1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-16 rounded-2xl" />)}
+        </div>
       ) : items.length === 0 ? (
         <div className="text-center py-20">
           <Bell size={36} className="text-white/10 mx-auto mb-4" />

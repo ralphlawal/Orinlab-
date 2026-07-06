@@ -87,7 +87,7 @@ export default function OGImage() {
           }}
         >
           Release unlimited music. Keep 100% of your royalties. Every application
-          reviewed by our team. 150+ platforms worldwide.
+          reviewed by our team. Keep ownership of your masters.
         </div>
 
         {/* Brand */}

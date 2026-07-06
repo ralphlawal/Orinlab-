@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { readTime } from "@/lib/blogUtils";
 import ReactMarkdown from "react-markdown";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
+import { ShareButtons } from "@/components/ShareButtons";
 
 export const revalidate = 60;
 
@@ -80,19 +81,25 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <p className="text-white/60 text-lg leading-relaxed mb-8">{post.excerpt}</p>
           )}
 
-          <div className="flex items-center gap-5 text-white/30 text-sm">
-            <span className="flex items-center gap-2">
-              <Calendar size={14} />
-              {new Date(post.created_at).toLocaleDateString("en-GB", {
-                day: "numeric", month: "long", year: "numeric",
-              })}
-            </span>
-            {post.content && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center gap-5 text-white/30 text-sm">
               <span className="flex items-center gap-2">
-                <Clock size={14} />
-                {readTime(post.content)}
+                <Calendar size={14} />
+                {new Date(post.created_at).toLocaleDateString("en-GB", {
+                  day: "numeric", month: "long", year: "numeric",
+                })}
               </span>
-            )}
+              {post.content && (
+                <span className="flex items-center gap-2">
+                  <Clock size={14} />
+                  {readTime(post.content)}
+                </span>
+              )}
+            </div>
+            <ShareButtons
+              url={`https://orinlabi.com/blog/${slug}`}
+              title={post.title}
+            />
           </div>
         </div>
       </section>
@@ -108,10 +115,18 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       </div>
 
       {/* Content */}
-      <section className="px-4 pb-20">
+      <section className="px-4 pb-12">
         <div className="max-w-3xl mx-auto">
           <div className="prose-orinlabi">
             <ReactMarkdown>{post.content}</ReactMarkdown>
+          </div>
+          {/* End-of-article share row */}
+          <div className="mt-10 pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <p className="text-white/30 text-sm">Found this useful? Share it with other artists.</p>
+            <ShareButtons
+              url={`https://orinlabi.com/blog/${slug}`}
+              title={post.title}
+            />
           </div>
         </div>
       </section>

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { createElement } from "react";
 import { Resend } from "resend";
-import { createClient } from "@supabase/supabase-js";
 import { ContractDocument } from "@/lib/contractPdf";
 import { supabase } from "@/lib/supabase";
 
@@ -13,7 +12,7 @@ const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
   .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 
 export async function POST(req: NextRequest) {
-  // Verify admin
+  // Verify admin via Bearer token
   const token = req.headers.get("Authorization")?.replace("Bearer ", "");
   if (!token) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
@@ -26,13 +25,8 @@ export async function POST(req: NextRequest) {
   const { releaseId } = await req.json();
   if (!releaseId) return NextResponse.json({ error: "Missing releaseId." }, { status: 400 });
 
-  // Fetch with service-role to bypass RLS
-  const service = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: release, error: releaseErr } = await service
+  // Anon client — SELECT on releases is publicly readable via RLS
+  const { data: release, error: releaseErr } = await supabase
     .from("releases")
     .select("id, artist_name, legal_name, email, song_title, release_type, genre, contract_signed_at, contract_signature")
     .eq("id", releaseId)

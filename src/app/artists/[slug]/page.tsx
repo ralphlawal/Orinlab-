@@ -220,7 +220,25 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                           {new Date(r.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                       )}
-                      {hasLinks && (
+                      {/* Spotify track embed */}
+                      {(() => {
+                        const trackId = spotifyLink?.match(/track\/([A-Za-z0-9]+)/)?.[1];
+                        return trackId ? (
+                          <div className="mt-3 -mx-4 px-0">
+                            <iframe
+                              src={`https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`}
+                              width="100%"
+                              height="80"
+                              frameBorder="0"
+                              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                              loading="lazy"
+                              title={`Listen to ${r.song_title} on Spotify`}
+                              className="rounded-b-2xl"
+                            />
+                          </div>
+                        ) : null;
+                      })()}
+                      {hasLinks && !spotifyLink?.match(/track\/([A-Za-z0-9]+)/) && (
                         <div className="flex gap-2 mt-3">
                           {spotifyLink ? (
                             <a href={spotifyLink} target="_blank" rel="noopener noreferrer"
@@ -228,6 +246,14 @@ export default async function ArtistPage({ params }: { params: Promise<{ slug: s
                               <Play size={11} /> Spotify
                             </a>
                           ) : null}
+                          <Link href={`/listen/${r.id}`}
+                            className="text-white/40 hover:text-white text-xs transition-colors">
+                            All platforms →
+                          </Link>
+                        </div>
+                      )}
+                      {hasLinks && !spotifyLink && (
+                        <div className="flex gap-2 mt-3">
                           <Link href={`/listen/${r.id}`}
                             className="text-white/40 hover:text-white text-xs transition-colors">
                             All platforms →

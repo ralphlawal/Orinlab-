@@ -388,6 +388,10 @@ export default function NotifyPage() {
   const [showTemplates, setShowTemplates] = useState(true);
   const [sentHistory, setSentHistory] = useState<{ title: string; count: number; time: string }[]>([]);
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>("both");
+  const [reminderPin, setReminderPin]     = useState("");
+  const [reminderRunning, setReminderRunning] = useState(false);
+  const [reminderResult, setReminderResult] = useState<{ artistsHit: number; totalNotificationsInserted: number; totalEmailsSent: number } | null>(null);
+  const [reminderError, setReminderError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -532,6 +536,28 @@ export default function NotifyPage() {
     }
   }
 
+  async function runReminders() {
+    if (!reminderPin.trim()) { setReminderError("Enter your admin PIN."); return; }
+    setReminderRunning(true);
+    setReminderError("");
+    setReminderResult(null);
+    try {
+      const res = await fetch("/api/admin/profile-reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin: reminderPin }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      setReminderResult(data);
+      setReminderPin("");
+    } catch (e) {
+      setReminderError(e instanceof Error ? e.message : "Failed to run reminders.");
+    } finally {
+      setReminderRunning(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -550,6 +576,54 @@ export default function NotifyPage() {
         <p className="text-white/40 text-sm mt-1">
           Send targeted updates from your Ditto dashboard or write custom messages — no coding required.
         </p>
+      </div>
+
+      {/* ── Automated Reminders ────────────────────────────────────────── */}
+      <div className="mb-8 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-5">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <p className="text-white font-semibold text-sm flex items-center gap-2">
+              <Zap size={15} className="text-[#007bff]" /> Automated Reminders
+            </p>
+            <p className="text-white/40 text-xs mt-1">
+              Checks every approved artist and sends targeted in-app notifications + emails for: incomplete profiles, missing payout details, live releases with no streaming links, and releases missing lyrics.
+            </p>
+          </div>
+        </div>
+        {reminderResult && (
+          <div className="mb-4 flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-4 py-3 text-sm">
+            <CheckCircle2 size={15} className="text-emerald-400 flex-shrink-0" />
+            <span className="text-white/80">
+              Done — <strong className="text-white">{reminderResult.artistsHit}</strong> artists had gaps ·{" "}
+              <strong className="text-white">{reminderResult.totalNotificationsInserted}</strong> notifications inserted ·{" "}
+              <strong className="text-white">{reminderResult.totalEmailsSent}</strong> emails sent
+            </span>
+            <button onClick={() => setReminderResult(null)} className="ml-auto text-white/30 hover:text-white/60"><X size={13} /></button>
+          </div>
+        )}
+        {reminderError && (
+          <div className="mb-4 flex items-center gap-3 bg-rose-500/10 border border-rose-500/25 rounded-xl px-4 py-3 text-sm text-rose-400">
+            <AlertTriangle size={14} className="flex-shrink-0" /> {reminderError}
+          </div>
+        )}
+        <div className="flex items-center gap-3">
+          <input
+            type="password"
+            placeholder="Admin PIN"
+            value={reminderPin}
+            onChange={(e) => setReminderPin(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && runReminders()}
+            className="bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-3 py-2 rounded-xl transition-colors w-36"
+          />
+          <button
+            onClick={runReminders}
+            disabled={reminderRunning}
+            className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          >
+            {reminderRunning ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            {reminderRunning ? "Running…" : "Send All Reminders"}
+          </button>
+        </div>
       </div>
 
       {/* Success result */}

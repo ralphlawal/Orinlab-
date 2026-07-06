@@ -20,37 +20,29 @@ export const metadata: Metadata = {
     template: "%s – OrinlabÍ Records",
   },
   description:
-    "OrinlabÍ Records is a curated music distribution platform for independent artists. Release your music on 150+ platforms worldwide — Spotify, Apple Music, TikTok, and more. Keep 100% of your royalties.",
+    "OrinlabÍ Records is a music distribution platform for independent artists. Submit your music and get approved to release on 150+ platforms worldwide — Spotify, Apple Music, Boomplay, TikTok, and more. Keep ownership of your masters.",
   keywords: [
     "music distribution",
     "independent artist distribution",
     "global music distribution",
     "distribute music online",
     "release music worldwide",
-    "keep 100% royalties",
+    "african music distribution",
+    "afrobeats distribution",
   ],
   openGraph: {
     title: "OrinlabÍ Records – Global Music Distribution for Independent Artists",
     description:
-      "Release unlimited music on 150+ platforms worldwide. Keep 100% of your royalties. Every application personally reviewed by our team.",
+      "Submit your music and get approved to release on 150+ platforms worldwide. Keep ownership of your masters. Every submission reviewed by our team.",
     siteName: "OrinlabÍ Records",
     type: "website",
     url: "https://orinlabi.com",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "OrinlabÍ Records – Global Music Distribution",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "OrinlabÍ Records – Global Music Distribution for Independent Artists",
     description:
-      "Release unlimited music on 150+ platforms worldwide. Keep 100% of your royalties. Every submission reviewed by our team.",
-    images: ["/og-image.png"],
+      "Submit your music and get approved to release on 150+ platforms worldwide. Keep ownership of your masters.",
   },
 };
 
@@ -72,9 +64,15 @@ export default function RootLayout({
         `}</Script>
       </head>
       <body className="min-h-full flex flex-col bg-black text-white overflow-x-hidden">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:bg-[#007bff] focus:text-white focus:font-semibold focus:px-4 focus:py-2 focus:rounded-full focus:text-sm focus:outline-none"
+        >
+          Skip to content
+        </a>
         <ScrollToTop />
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">{children}</main>
         <Footer />
         <CookieBanner />
       </body>

@@ -8,7 +8,7 @@ import {
   Music2, Clock, CheckCircle2, XCircle,
   ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
   BarChart2, DollarSign, Radio, Megaphone, AlertTriangle, Info,
-  ImageIcon, AtSign, CreditCard, Mic2, X,
+  ImageIcon, AtSign, CreditCard, Mic2, X, FileText,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,6 +28,7 @@ type Release = {
   streams: Record<string, number> | null;
   royalties_usd: number | null;
   store_links: Record<string, string> | null;
+  contract_signed_at: string | null;
 };
 
 type Pitch = {
@@ -386,7 +387,7 @@ export default function PortalDashboard() {
       const [releasesRes, profileRes, announcementsRes, pitchesRes, notifsRes] = await Promise.all([
         supabase
           .from("releases")
-          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links")
+          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links,contract_signed_at")
           .eq("email", session.user.email!)
           .order("submitted_at", { ascending: false }),
         supabase
@@ -426,13 +427,19 @@ export default function PortalDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-2 border-[#007bff]/20" />
-          <Loader2 size={28} className="text-[#007bff] animate-spin absolute inset-0 m-auto" />
+      <section className="max-w-3xl mx-auto px-4 py-10 space-y-5">
+        {/* Hero banner */}
+        <div className="skeleton h-44 rounded-3xl" />
+        {/* Quick actions */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton h-24 rounded-2xl" />)}
         </div>
-        <p className="text-white/20 text-xs">Loading your dashboard…</p>
-      </div>
+        {/* Release cards */}
+        <div className="space-y-3 pt-2">
+          <div className="skeleton h-4 w-28 rounded-lg" />
+          {[0, 1, 2].map((i) => <div key={i} className="skeleton h-20 rounded-2xl" />)}
+        </div>
+      </section>
     );
   }
 
@@ -510,6 +517,21 @@ export default function PortalDashboard() {
       gradient: "linear-gradient(180deg, #10B981, #007bff)",
     });
   }
+  // Contract signing — show for approved releases with no contract yet
+  const unsignedContract = approved.find((r) => !r.contract_signed_at);
+  if (unsignedContract) {
+    allReminders.push({
+      id: `unsigned_contract_${unsignedContract.id}`,
+      icon: FileText,
+      iconColor: "#8B5CF6",
+      title: "Sign your distribution agreement",
+      body: `Your release "${unsignedContract.song_title}" is approved but your contract hasn't been signed yet. Sign it to lock in your distribution terms.`,
+      href: `/portal/contract/${unsignedContract.id}`,
+      cta: "Sign Now",
+      gradient: "linear-gradient(180deg, #8B5CF6, #007bff)",
+    });
+  }
+
   if (pending.length > 0) {
     allReminders.push({
       id: `pending_${pending.length}`,

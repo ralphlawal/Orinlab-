@@ -94,7 +94,13 @@ export default function SupportPage() {
     setSubmitting(false);
   }
 
-  if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 size={26} className="text-[#007bff] animate-spin" /></div>;
+  if (loading) return (
+    <section className="max-w-2xl mx-auto px-4 py-10 space-y-4">
+      <div className="skeleton h-8 w-48 rounded-xl" />
+      {[0, 1, 2].map((i) => <div key={i} className="skeleton h-24 rounded-2xl" />)}
+      <div className="skeleton h-48 rounded-2xl mt-4" />
+    </section>
+  );
 
   return (
     <section className="max-w-3xl mx-auto px-4 py-12">

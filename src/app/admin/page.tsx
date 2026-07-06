@@ -8,7 +8,7 @@ import { usePinGate } from "@/context/AdminPinContext";
 import {
   Music, MessageSquare, Clock, CheckCircle2, XCircle, ArrowRight,
   Mail, Users, Globe, DollarSign, LifeBuoy, Loader2, RefreshCw,
-  Megaphone, Radio, Send, TrendingUp, Zap, Bell,
+  Megaphone, Radio, Send, TrendingUp, Zap, Bell, ShieldAlert, FileText,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -68,6 +68,8 @@ type Stats = {
   openTickets: number;
   pendingPayouts: number;
   pendingPayoutsUsd: number;
+  complianceIssues: number;
+  unsignedContracts: number;
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -323,7 +325,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({
     totalArtists: 0, totalReleases: 0, pendingReleases: 0, approvedReleases: 0,
     totalLabels: 0, pendingLabels: 0, subscribers: 0, openTickets: 0,
-    pendingPayouts: 0, pendingPayoutsUsd: 0,
+    pendingPayouts: 0, pendingPayoutsUsd: 0, complianceIssues: 0, unsignedContracts: 0,
   });
   const [pendingReleases, setPendingReleases] = useState<PendingRelease[]>([]);
   const [pendingLabels, setPendingLabels]     = useState<PendingLabel[]>([]);
@@ -355,12 +357,15 @@ export default function AdminDashboard() {
       { count: pendingLabels },
       { count: subscribers },
       { count: openTicketsCount },
+      { count: unsignedContractsCount },
       { data: pendingPayoutsData },
       { data: pendingReleasesData },
       { data: pendingLabelsData },
       { data: openTicketsData },
       { data: recentReleases },
       { data: recentMessages },
+      { data: approvedProfiles },
+      { data: approvedReleaseData },
     ] = await Promise.all([
       supabase.from("artist_profiles").select("*", { count: "exact", head: true }),
       supabase.from("releases").select("*", { count: "exact", head: true }),
@@ -370,13 +375,34 @@ export default function AdminDashboard() {
       supabase.from("label_profiles").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("active", true),
       supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
+      supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "approved").is("contract_signed_at", null),
       supabase.from("payout_requests").select("id,artist_name,song_title,amount_usd,payout_method,created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(5),
       supabase.from("releases").select("id,artist_name,email,song_title,genre,release_type,submitted_at").eq("status", "pending").order("submitted_at", { ascending: false }).limit(8),
       supabase.from("label_profiles").select("id,name,email,country,submitted_at").eq("status", "pending").order("submitted_at", { ascending: false }).limit(5),
       supabase.from("support_tickets").select("id,artist_name,subject,category,created_at").eq("status", "open").order("created_at", { ascending: false }).limit(5),
       supabase.from("releases").select("id,artist_name,song_title,status,submitted_at").order("submitted_at", { ascending: false }).limit(6),
       supabase.from("messages").select("id,artist_name,artist_email,content,created_at").order("created_at", { ascending: false }).limit(4),
+      supabase.from("artist_profiles").select("email,bio,artist_image_url,country,instagram_handle,x_handle,tiktok_username,payout_method").eq("status", "approved"),
+      supabase.from("releases").select("email,store_links,royalties_usd,contract_signed_at").eq("status", "approved"),
     ]);
+
+    // Count artists with at least one compliance gap
+    const relByEmail: Record<string, { store_links: Record<string, string> | null; royalties_usd: number | null; contract_signed_at: string | null }[]> = {};
+    for (const r of approvedReleaseData ?? []) {
+      if (!relByEmail[r.email]) relByEmail[r.email] = [];
+      relByEmail[r.email]!.push(r);
+    }
+    let complianceCount = 0;
+    for (const p of approvedProfiles ?? []) {
+      const rels = relByEmail[p.email] ?? [];
+      const hasGap =
+        !p.bio || !p.artist_image_url || !p.country ||
+        (!p.instagram_handle && !p.x_handle && !p.tiktok_username) ||
+        rels.some(r => !r.store_links || Object.keys(r.store_links).length === 0) ||
+        rels.some(r => !r.contract_signed_at) ||
+        (rels.some(r => Number(r.royalties_usd ?? 0) > 0) && !p.payout_method);
+      if (hasGap) complianceCount++;
+    }
 
     const payouts = (pendingPayoutsData ?? []) as PendingPayout[];
     const pendingUsd = payouts.reduce((s, p) => s + p.amount_usd, 0);
@@ -392,6 +418,8 @@ export default function AdminDashboard() {
       openTickets: openTicketsCount ?? 0,
       pendingPayouts: payouts.length,
       pendingPayoutsUsd: pendingUsd,
+      complianceIssues: complianceCount,
+      unsignedContracts: unsignedContractsCount ?? 0,
     });
 
     setPendingReleases((pendingReleasesData ?? []) as PendingRelease[]);
@@ -416,7 +444,7 @@ export default function AdminDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  const needsAttention = stats.pendingReleases + stats.pendingLabels + stats.openTickets + stats.pendingPayouts;
+  const needsAttention = stats.pendingReleases + stats.pendingLabels + stats.openTickets + stats.pendingPayouts + stats.unsignedContracts;
 
   if (loading) {
     return (
@@ -456,14 +484,16 @@ export default function AdminDashboard() {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard icon={<Users size={18} />}     label="Artists"      value={stats.totalArtists}    color="text-[#007bff]"  bg="bg-[#007bff]/10" href="/admin/artists" />
-        <StatCard icon={<Music size={18} />}      label="Releases"     value={stats.totalReleases}   color="text-purple-400" bg="bg-purple-400/10" href="/admin/releases" sub={`${stats.pendingReleases} pending`} urgent={stats.pendingReleases > 0} />
-        <StatCard icon={<Globe size={18} />}      label="Labels"       value={stats.totalLabels}     color="text-cyan-400"   bg="bg-cyan-400/10"  href="/admin/labels"   sub={`${stats.pendingLabels} pending`}  urgent={stats.pendingLabels > 0} />
-        <StatCard icon={<Mail size={18} />}       label="Subscribers"  value={stats.subscribers}     color="text-pink-400"   bg="bg-pink-400/10"  href="/admin/newsletter" />
-        <StatCard icon={<Clock size={18} />}      label="Pending"      value={stats.pendingReleases} color="text-yellow-400" bg="bg-yellow-400/10" href="/admin/releases"  urgent={stats.pendingReleases > 0} />
-        <StatCard icon={<CheckCircle2 size={18} />} label="Approved"   value={stats.approvedReleases} color="text-green-400" bg="bg-green-400/10" href="/admin/releases" />
-        <StatCard icon={<LifeBuoy size={18} />}   label="Open Tickets" value={stats.openTickets}    color="text-orange-400" bg="bg-orange-400/10" href="/admin/support"   urgent={stats.openTickets > 0} />
-        <StatCard icon={<DollarSign size={18} />} label="Payouts Due"  value={`$${stats.pendingPayoutsUsd.toFixed(0)}`} color="text-emerald-400" bg="bg-emerald-400/10" href="/admin/payouts" sub={`${stats.pendingPayouts} request${stats.pendingPayouts !== 1 ? "s" : ""}`} urgent={stats.pendingPayouts > 0} />
+        <StatCard icon={<Users size={18} />}       label="Artists"           value={stats.totalArtists}    color="text-[#007bff]"  bg="bg-[#007bff]/10"  href="/admin/artists" />
+        <StatCard icon={<Music size={18} />}        label="Releases"          value={stats.totalReleases}   color="text-purple-400" bg="bg-purple-400/10" href="/admin/releases" sub={`${stats.pendingReleases} pending`} urgent={stats.pendingReleases > 0} />
+        <StatCard icon={<Globe size={18} />}        label="Labels"            value={stats.totalLabels}     color="text-cyan-400"   bg="bg-cyan-400/10"   href="/admin/labels"   sub={`${stats.pendingLabels} pending`}  urgent={stats.pendingLabels > 0} />
+        <StatCard icon={<Mail size={18} />}         label="Subscribers"       value={stats.subscribers}     color="text-pink-400"   bg="bg-pink-400/10"   href="/admin/newsletter" />
+        <StatCard icon={<Clock size={18} />}        label="Pending Review"    value={stats.pendingReleases} color="text-yellow-400" bg="bg-yellow-400/10" href="/admin/releases"  urgent={stats.pendingReleases > 0} />
+        <StatCard icon={<CheckCircle2 size={18} />} label="Live Releases"     value={stats.approvedReleases} color="text-green-400" bg="bg-green-400/10" href="/admin/releases" />
+        <StatCard icon={<LifeBuoy size={18} />}     label="Open Tickets"      value={stats.openTickets}     color="text-orange-400" bg="bg-orange-400/10" href="/admin/support"   urgent={stats.openTickets > 0} />
+        <StatCard icon={<DollarSign size={18} />}   label="Payouts Due"       value={`$${stats.pendingPayoutsUsd.toFixed(0)}`} color="text-emerald-400" bg="bg-emerald-400/10" href="/admin/payouts" sub={`${stats.pendingPayouts} request${stats.pendingPayouts !== 1 ? "s" : ""}`} urgent={stats.pendingPayouts > 0} />
+        <StatCard icon={<ShieldAlert size={18} />}  label="Compliance Issues" value={stats.complianceIssues} color="text-amber-400" bg="bg-amber-400/10"  href="/admin/compliance" urgent={stats.complianceIssues > 0} />
+        <StatCard icon={<Zap size={18} />}          label="Unsigned Contracts" value={stats.unsignedContracts} color="text-yellow-400" bg="bg-yellow-400/10" href="/admin/contracts" urgent={stats.unsignedContracts > 0} sub="need signature" />
       </div>
 
       {/* Needs attention */}
@@ -543,6 +573,47 @@ export default function AdminDashboard() {
                     <p className="text-white/25 text-xs flex-shrink-0">{reltime(t.created_at)}</p>
                   </Link>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unsigned contracts */}
+          {stats.unsignedContracts > 0 && (
+            <div className="bg-white/[0.03] border border-yellow-400/20 rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                  <FileText size={14} className="text-yellow-400" /> Unsigned Contracts
+                  <span className="bg-yellow-400/15 text-yellow-400 text-xs font-bold px-2 py-0.5 rounded-full">{stats.unsignedContracts}</span>
+                </h3>
+                <Link href="/admin/contracts" className="text-[#007bff] text-xs flex items-center gap-1 hover:gap-2 transition-all">
+                  Chase them <ArrowRight size={11} />
+                </Link>
+              </div>
+              <div className="px-5 py-3">
+                <p className="text-white/40 text-xs">
+                  {stats.unsignedContracts} approved release{stats.unsignedContracts !== 1 ? "s" : ""} without a signed distribution agreement.
+                  Go to Contracts to nudge the artists.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Compliance */}
+          {stats.complianceIssues > 0 && (
+            <div className="bg-white/[0.03] border border-amber-400/20 rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
+                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                  <ShieldAlert size={14} className="text-amber-400" /> Artist Compliance
+                  <span className="bg-amber-400/15 text-amber-400 text-xs font-bold px-2 py-0.5 rounded-full">{stats.complianceIssues}</span>
+                </h3>
+                <Link href="/admin/compliance" className="text-[#007bff] text-xs flex items-center gap-1 hover:gap-2 transition-all">
+                  View & Nudge <ArrowRight size={11} />
+                </Link>
+              </div>
+              <div className="px-5 py-3">
+                <p className="text-white/40 text-xs">
+                  {stats.complianceIssues} artist{stats.complianceIssues !== 1 ? "s" : ""} with incomplete profiles, missing store links, or other outstanding actions.
+                </p>
               </div>
             </div>
           )}

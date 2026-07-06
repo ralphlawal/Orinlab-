@@ -46,6 +46,11 @@ type Release = {
   presave_url: string | null;
   youtube_content_id: boolean | null;
   artist_bio: string | null;
+  lyrics: string | null;
+  music_video_url: string | null;
+  song_story: string | null;
+  mixing_engineer: string | null;
+  mastering_engineer: string | null;
 };
 
 const DITTO_PLATFORMS = LISTENING_PLATFORMS;
@@ -76,7 +81,7 @@ export default function ReleaseDetailPage() {
   const [release, setRelease] = useState<Release | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [tab, setTab] = useState<"overview" | "stores" | "services" | "splits">("overview");
+  const [tab, setTab] = useState<"overview" | "stores" | "lyrics" | "services" | "splits">("overview");
 
   const [takedownState, setTakedownState] = useState<"idle" | "confirm" | "sent">("idle");
   const [sendingTakedown, setSendingTakedown] = useState(false);
@@ -102,6 +107,14 @@ export default function ReleaseDetailPage() {
   const [metaDraft, setMetaDraft] = useState({ song_title: "", genre: "", language: "", copyright_owner: "", copyright_year: "", artist_bio: "" });
   const [savingMeta, setSavingMeta] = useState(false);
   const [metaSaved, setMetaSaved] = useState(false);
+  const [lyricsText, setLyricsText] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [songStory, setSongStory] = useState("");
+  const [mixingEngineer, setMixingEngineer] = useState("");
+  const [masteringEngineer, setMasteringEngineer] = useState("");
+  const [editingContent, setEditingContent] = useState(false);
+  const [savingContent, setSavingContent] = useState(false);
+  const [contentSaved, setContentSaved] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -122,15 +135,21 @@ export default function ReleaseDetailPage() {
 
       if (!data) setNotFound(true);
       else {
-        setRelease(data as Release);
-        setLocalLinks((data as Release).store_links ?? {});
-        const raw = (data as Release).featured_artists;
+        const rel = data as Release;
+        setRelease(rel);
+        setLocalLinks(rel.store_links ?? {});
+        const raw = rel.featured_artists;
         if (raw) {
           try { setFeaturedArtists(JSON.parse(raw)); }
           catch {
             setFeaturedArtists(raw.split(",").map((n: string) => ({ name: n.trim(), spotify_id: "", apple_id: "" })).filter((a: { name: string }) => a.name));
           }
         }
+        if (rel.lyrics) setLyricsText(rel.lyrics);
+        if (rel.music_video_url) setVideoUrl(rel.music_video_url);
+        if (rel.song_story) setSongStory(rel.song_story);
+        if (rel.mixing_engineer) setMixingEngineer(rel.mixing_engineer);
+        if (rel.mastering_engineer) setMasteringEngineer(rel.mastering_engineer);
       }
       setHasPayoutDetails(!!profileData?.payout_method);
       setLoading(false);
@@ -138,7 +157,14 @@ export default function ReleaseDetailPage() {
     load();
   }, [id]);
 
-  if (loading) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 size={28} className="text-[#007bff] animate-spin" /></div>;
+  if (loading) return (
+    <section className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+      <div className="skeleton h-5 w-24 rounded-lg" />
+      <div className="skeleton h-52 rounded-3xl" />
+      <div className="skeleton h-40 rounded-2xl" />
+      <div className="skeleton h-32 rounded-2xl" />
+    </section>
+  );
   if (notFound || !release) return (
     <div className="max-w-3xl mx-auto px-4 py-12 text-center">
       <p className="text-white/50">Release not found.</p>
@@ -200,6 +226,28 @@ export default function ReleaseDetailPage() {
     setTimeout(() => setMetaSaved(false), 3000);
   }
 
+  async function saveContent() {
+    if (!release) return;
+    setSavingContent(true);
+    await supabase.from("releases").update({
+      lyrics: lyricsText.trim() || null,
+      music_video_url: videoUrl.trim() || null,
+      song_story: songStory.trim() || null,
+      mixing_engineer: mixingEngineer.trim() || null,
+      mastering_engineer: masteringEngineer.trim() || null,
+    }).eq("id", release.id);
+    setRelease((r) => r ? {
+      ...r,
+      lyrics: lyricsText.trim() || null,
+      music_video_url: videoUrl.trim() || null,
+      song_story: songStory.trim() || null,
+      mixing_engineer: mixingEngineer.trim() || null,
+      mastering_engineer: masteringEngineer.trim() || null,
+    } : r);
+    setSavingContent(false); setContentSaved(true); setEditingContent(false);
+    setTimeout(() => setContentSaved(false), 3000);
+  }
+
   async function handlePayoutRequest() {
     if (!release) return;
     setPayoutLoading(true);
@@ -242,8 +290,9 @@ export default function ReleaseDetailPage() {
   const TABS = [
     { key: "overview",  label: "Overview",         num: 1 },
     { key: "stores",    label: "Stores",            num: 2 },
-    { key: "services",  label: "Services & Extras", num: 3 },
-    { key: "splits",    label: "Royalty Splits",    num: 4 },
+    { key: "lyrics",    label: "Lyrics & Content",  num: 3 },
+    { key: "services",  label: "Services & Extras", num: 4 },
+    { key: "splits",    label: "Royalty Splits",    num: 5 },
   ] as const;
 
   return (
@@ -796,7 +845,155 @@ export default function ReleaseDetailPage() {
         </div>
       )}
 
-      {/* ── Tab 3: Services & Extras ── */}
+      {/* ── Tab 3: Lyrics & Content ── */}
+      {tab === "lyrics" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-white font-bold text-xl">Lyrics &amp; Content</h2>
+              <p className="text-white/40 text-sm mt-1">Add your lyrics, music video, song story, and production credits.</p>
+            </div>
+            {!editingContent && (
+              <button
+                onClick={() => setEditingContent(true)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-white/40 hover:text-white border border-white/[0.1] hover:border-white/30 px-3 py-2 rounded-xl transition-colors"
+              >
+                <PenLine size={13} /> Edit
+              </button>
+            )}
+          </div>
+
+          {/* Lyrics */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Lyrics</p>
+            {editingContent ? (
+              <textarea
+                value={lyricsText}
+                onChange={(e) => setLyricsText(e.target.value)}
+                rows={14}
+                placeholder={"[Verse 1]\nYour lyrics here…\n\n[Chorus]\n…"}
+                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors resize-y font-mono leading-relaxed"
+              />
+            ) : lyricsText ? (
+              <pre className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap font-mono">{lyricsText}</pre>
+            ) : (
+              <p className="text-white/20 text-sm">No lyrics added yet. Tap Edit to add them.</p>
+            )}
+          </div>
+
+          {/* Music Video URL */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Music Video</p>
+            {editingContent ? (
+              <input
+                type="url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://youtube.com/watch?v=…"
+                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors"
+              />
+            ) : videoUrl ? (
+              (() => {
+                const ytId = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]{11})/)?.[1];
+                return ytId ? (
+                  <div className="space-y-3">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}`}
+                      width="100%"
+                      height="280"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      loading="lazy"
+                      title="Music video"
+                      className="rounded-xl"
+                    />
+                    <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-[#007bff] text-xs hover:underline flex items-center gap-1">
+                      <ExternalLink size={11} /> {videoUrl}
+                    </a>
+                  </div>
+                ) : (
+                  <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="text-[#007bff] text-sm hover:underline flex items-center gap-1.5">
+                    <ExternalLink size={13} /> {videoUrl}
+                  </a>
+                );
+              })()
+            ) : (
+              <p className="text-white/20 text-sm">No music video URL added yet.</p>
+            )}
+          </div>
+
+          {/* Song Story */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Song Story / Press Notes</p>
+            {editingContent ? (
+              <textarea
+                value={songStory}
+                onChange={(e) => setSongStory(e.target.value)}
+                rows={5}
+                placeholder="Share the story behind this track — what inspired it, the creative process, what it means to you…"
+                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors resize-y leading-relaxed"
+              />
+            ) : songStory ? (
+              <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">{songStory}</p>
+            ) : (
+              <p className="text-white/20 text-sm">No song story added yet.</p>
+            )}
+          </div>
+
+          {/* Production Credits */}
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <p className="text-white/40 text-xs uppercase tracking-widest mb-4">Production Credits</p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-white/30 text-xs block mb-1.5">Mixing Engineer</label>
+                {editingContent ? (
+                  <input
+                    type="text"
+                    value={mixingEngineer}
+                    onChange={(e) => setMixingEngineer(e.target.value)}
+                    placeholder="e.g. DJ Coublon"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                  />
+                ) : (
+                  <p className={mixingEngineer ? "text-white/70 text-sm" : "text-white/20 text-sm"}>{mixingEngineer || "Not specified"}</p>
+                )}
+              </div>
+              <div>
+                <label className="text-white/30 text-xs block mb-1.5">Mastering Engineer</label>
+                {editingContent ? (
+                  <input
+                    type="text"
+                    value={masteringEngineer}
+                    onChange={(e) => setMasteringEngineer(e.target.value)}
+                    placeholder="e.g. Sterling Sound"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                  />
+                ) : (
+                  <p className={masteringEngineer ? "text-white/70 text-sm" : "text-white/20 text-sm"}>{masteringEngineer || "Not specified"}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Save / Cancel */}
+          {editingContent && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={saveContent}
+                disabled={savingContent}
+                className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+              >
+                {savingContent ? <Loader2 size={14} className="animate-spin" /> : null} Save
+              </button>
+              <button onClick={() => { setEditingContent(false); if (release) { setLyricsText(release.lyrics ?? ""); setVideoUrl(release.music_video_url ?? ""); setSongStory(release.song_story ?? ""); setMixingEngineer(release.mixing_engineer ?? ""); setMasteringEngineer(release.mastering_engineer ?? ""); } }} className="text-sm text-white/30 hover:text-white transition-colors px-3 py-2">Cancel</button>
+              {contentSaved && <span className="text-green-400 text-xs">Saved ✓</span>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Tab 4: Services & Extras ── */}
       {tab === "services" && (
         <div className="space-y-3">
           <h2 className="text-white font-bold text-xl mb-5">Services &amp; Extras</h2>
@@ -905,7 +1102,7 @@ export default function ReleaseDetailPage() {
         </div>
       )}
 
-      {/* ── Tab 4: Royalty Splits ── */}
+      {/* ── Tab 5: Royalty Splits ── */}
       {tab === "splits" && (
         <div className="space-y-6">
           <h2 className="text-white font-bold text-xl">Share Your Royalties</h2>

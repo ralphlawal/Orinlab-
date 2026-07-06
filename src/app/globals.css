@@ -241,7 +241,28 @@ body {
 .prose-orinlabi code { background: rgba(255,255,255,0.06); border-radius: 4px; padding: 2px 6px; font-size: 0.875em; }
 .prose-orinlabi hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 2rem 0; }
 
+/* ─── Focus visible (keyboard navigation) ───────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
 /* ─── Custom scrollbar ──────────────────────────────────────────────────────── */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #007bff #050505;
+}
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: #050505; }

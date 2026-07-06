@@ -293,8 +293,38 @@ export default function ReleasesPage() {
   async function saveMeta() {
     if (!selected) return;
     setSavingMeta(true);
+    const prevDate = selected.release_date ?? "";
     await supabase.from("releases").update({ isrc: editIsrc || null, upc: editUpc || null, release_date: editReleaseDate || null }).eq("id", selected.id);
     setSelected((s) => s ? { ...s, isrc: editIsrc, upc: editUpc || null, release_date: editReleaseDate } : s);
+
+    // Notify artist when a release date is set or changed
+    if (editReleaseDate && editReleaseDate !== prevDate) {
+      // In-portal notification
+      supabase.from("notifications").insert({
+        email: selected.email,
+        title: `Release date set — ${selected.song_title}`,
+        body: `Your release date has been confirmed: your music drops on ${new Date(editReleaseDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}. Start building the hype!`,
+        type: "success",
+        read: false,
+        created_at: new Date().toISOString(),
+      }).then(() => {});
+
+      // Email notification
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "release-date-set",
+          data: {
+            email:        selected.email,
+            artist_name:  selected.artist_name,
+            song_title:   selected.song_title,
+            release_date: editReleaseDate,
+          },
+        }),
+      }).catch(() => {});
+    }
+
     setSavingMeta(false);
     setMetaSaved(true);
   }

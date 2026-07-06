@@ -120,9 +120,12 @@ export default function PromotePage() {
   }
 
   if (loading) return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <Loader2 size={26} className="text-[#007bff] animate-spin" />
-    </div>
+    <section className="max-w-2xl mx-auto px-4 py-10 space-y-6">
+      <div className="skeleton h-5 w-24 rounded-lg" />
+      <div className="skeleton h-8 w-56 rounded-xl" />
+      <div className="skeleton h-32 rounded-2xl" />
+      {[0, 1, 2].map((i) => <div key={i} className="skeleton h-16 rounded-2xl" />)}
+    </section>
   );
 
   if (done) {

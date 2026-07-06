@@ -231,9 +231,14 @@ export default function PortalMessagesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 size={28} className="text-[#007bff] animate-spin" />
-      </div>
+      <section className="max-w-2xl mx-auto px-4 py-10 space-y-4">
+        <div className="skeleton h-8 w-48 rounded-xl" />
+        <div className="skeleton h-16 rounded-2xl ml-auto w-3/4" />
+        <div className="skeleton h-12 rounded-2xl w-2/3" />
+        <div className="skeleton h-20 rounded-2xl ml-auto w-4/5" />
+        <div className="skeleton h-14 rounded-2xl w-1/2" />
+        <div className="skeleton h-14 rounded-full mt-6" />
+      </section>
     );
   }
 
