@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Send, Paperclip, Mic, MicOff, X, FileText } from "lucide-react";
+import { Loader2, Send, Paperclip, Mic, MicOff, X, FileText, Languages } from "lucide-react";
 
 type Msg = {
   id: string;
@@ -21,6 +21,18 @@ type PendingAttachment = {
 };
 
 const MAX_FILE_MB = 20;
+
+type TranslationState = { text: string; loading: boolean; error: boolean; showing: boolean };
+
+async function translateText(text: string, targetLang: string): Promise<string> {
+  const lang = targetLang.split("-")[0]; // "fr-CA" → "fr"
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${lang}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Translation request failed");
+  const json = await res.json();
+  if (json.responseStatus !== 200) throw new Error(json.responseDetails ?? "Translation failed");
+  return json.responseData.translatedText as string;
+}
 
 function formatSecs(s: number) {
   const m = Math.floor(s / 60);
@@ -53,6 +65,8 @@ export default function PortalMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [artistName, setArtistName] = useState("");
+  const [translations, setTranslations] = useState<Record<string, TranslationState>>({});
+  const userLang = typeof navigator !== "undefined" ? navigator.language : "en";
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -180,6 +194,26 @@ export default function PortalMessagesPage() {
     return { url: data.publicUrl };
   }
 
+  async function translate(msgId: string, text: string) {
+    const lang = userLang.split("-")[0];
+    if (lang === "en") return;
+    setTranslations((prev) => ({ ...prev, [msgId]: { text: "", loading: true, error: false, showing: true } }));
+    try {
+      const translated = await translateText(text, lang);
+      setTranslations((prev) => ({ ...prev, [msgId]: { text: translated, loading: false, error: false, showing: true } }));
+    } catch {
+      setTranslations((prev) => ({ ...prev, [msgId]: { text: "", loading: false, error: true, showing: true } }));
+    }
+  }
+
+  function toggleTranslation(msgId: string) {
+    setTranslations((prev) => {
+      const t = prev[msgId];
+      if (!t) return prev;
+      return { ...prev, [msgId]: { ...t, showing: !t.showing } };
+    });
+  }
+
   async function send() {
     const content = text.trim();
     if ((!content && !attachment) || !email || sending || recording) return;
@@ -260,33 +294,71 @@ export default function PortalMessagesPage() {
             <p className="text-white/20 text-xs mt-1">Send us a message — we reply within a few hours.</p>
           </div>
         )}
-        {msgs.map((m) => (
-          <div key={m.id} className={`flex ${m.sender === "artist" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
-              m.sender === "artist"
-                ? "bg-[#007bff] text-white rounded-br-sm"
-                : "bg-white/[0.07] text-white/85 rounded-bl-sm"
-            }`}>
-              {m.sender === "admin" && (
-                <p className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest mb-1">OrinlabÍ Records</p>
-              )}
-              {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
-              {m.attachment_url && m.attachment_type && (
-                <AttachmentBubble
-                  url={m.attachment_url}
-                  type={m.attachment_type}
-                  name={m.attachment_name}
-                  isArtist={m.sender === "artist"}
-                />
-              )}
-              <p className={`text-[10px] mt-1.5 ${m.sender === "artist" ? "text-white/50" : "text-white/30"}`}>
-                {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                {" · "}
-                {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-              </p>
+        {msgs.map((m) => {
+          const tr = translations[m.id];
+          const isAdmin = m.sender === "admin";
+          const canTranslate = isAdmin && !!m.content && userLang.split("-")[0] !== "en";
+          return (
+            <div key={m.id} className={`flex ${m.sender === "artist" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                m.sender === "artist"
+                  ? "bg-[#007bff] text-white rounded-br-sm"
+                  : "bg-white/[0.07] text-white/85 rounded-bl-sm"
+              }`}>
+                {isAdmin && (
+                  <p className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest mb-1">OrinlabÍ Records</p>
+                )}
+                {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
+                {m.attachment_url && m.attachment_type && (
+                  <AttachmentBubble
+                    url={m.attachment_url}
+                    type={m.attachment_type}
+                    name={m.attachment_name}
+                    isArtist={m.sender === "artist"}
+                  />
+                )}
+                {/* Translation */}
+                {canTranslate && (
+                  <div className="mt-2 border-t border-white/10 pt-2">
+                    {!tr ? (
+                      <button
+                        onClick={() => translate(m.id, m.content)}
+                        className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/80 transition-colors"
+                      >
+                        <Languages size={12} /> Translate
+                      </button>
+                    ) : tr.loading ? (
+                      <span className="flex items-center gap-1.5 text-[11px] text-white/30">
+                        <Loader2 size={11} className="animate-spin" /> Translating…
+                      </span>
+                    ) : tr.error ? (
+                      <span className="text-[11px] text-red-400/70">Translation unavailable. Try again later.</span>
+                    ) : (
+                      <div>
+                        {tr.showing && (
+                          <p className="text-white/75 text-sm leading-relaxed whitespace-pre-wrap break-words mb-1.5 italic">
+                            {tr.text}
+                          </p>
+                        )}
+                        <button
+                          onClick={() => toggleTranslation(m.id)}
+                          className="text-[11px] text-white/40 hover:text-white/80 transition-colors"
+                        >
+                          {tr.showing ? "Show original" : "Show translation"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <p className={`text-[10px] mt-1.5 ${m.sender === "artist" ? "text-white/50" : "text-white/30"}`}>
+                  {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                  {" · "}
+                  {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 

@@ -722,47 +722,73 @@ export default function NewReleasePage() {
               <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
                 Featured Artists
               </label>
+
+              {/* Info banner — only show when adding featured artists */}
+              {featuredArtists.length > 0 && (
+                <div className="mb-4 bg-[#007bff]/[0.06] border border-[#007bff]/20 rounded-xl px-4 py-3 space-y-1.5">
+                  <p className="text-[#60a5fa] text-xs font-semibold">Add the featured artist&apos;s full details below.</p>
+                  <p className="text-white/45 text-xs leading-relaxed">
+                    Their <strong className="text-white/60">Spotify Artist ID</strong> and <strong className="text-white/60">Apple Music Artist ID</strong> are needed so the release links to their existing profiles on each platform — they get streams and followers credited to their account.
+                  </p>
+                  <p className="text-white/30 text-xs">
+                    <strong className="text-white/45">Haven&apos;t released before?</strong> Their IDs won&apos;t exist yet — just leave those fields blank and we&apos;ll create their profile during distribution.
+                  </p>
+                  <p className="text-white/25 text-[11px]">Find an ID in the Spotify/Apple Music profile URL, e.g. <span className="font-mono text-white/40">open.spotify.com/artist/4Z8W4fKeB5YxbusRsdQVPb</span></p>
+                </div>
+              )}
+
               <div className="space-y-3 mb-2">
                 {featuredArtists.map((fa, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr_28px] gap-2 items-start">
+                  <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest flex-1">Featured Artist {featuredArtists.length > 1 ? i + 1 : ""}</span>
+                      <button
+                        type="button"
+                        onClick={() => setFeaturedArtists(featuredArtists.filter((_, j) => j !== i))}
+                        className="text-white/25 hover:text-red-400 transition-colors text-sm"
+                      >✕</button>
+                    </div>
                     <input
                       type="text"
-                      placeholder="Artist name *"
+                      placeholder="Artist / Stage name *"
                       value={fa.name}
                       onChange={(e) => {
                         const n = [...featuredArtists];
                         n[i] = { ...n[i], name: e.target.value };
                         setFeaturedArtists(n);
                       }}
-                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-2.5 rounded-xl transition-colors"
                     />
-                    <input
-                      type="text"
-                      placeholder="Spotify Artist ID (optional)"
-                      value={fa.spotify_id}
-                      onChange={(e) => {
-                        const n = [...featuredArtists];
-                        n[i] = { ...n[i], spotify_id: e.target.value };
-                        setFeaturedArtists(n);
-                      }}
-                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Apple Music Artist ID (optional)"
-                      value={fa.apple_id}
-                      onChange={(e) => {
-                        const n = [...featuredArtists];
-                        n[i] = { ...n[i], apple_id: e.target.value };
-                        setFeaturedArtists(n);
-                      }}
-                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setFeaturedArtists(featuredArtists.filter((_, j) => j !== i))}
-                      className="text-white/30 hover:text-red-400 transition-colors text-sm pt-3"
-                    >✕</button>
+                    <div className="grid sm:grid-cols-2 gap-2.5">
+                      <div>
+                        <p className="text-white/30 text-[10px] mb-1">Spotify Artist ID <span className="text-white/20">(optional if unreleased)</span></p>
+                        <input
+                          type="text"
+                          placeholder="e.g. 4Z8W4fKeB5YxbusRsdQVPb"
+                          value={fa.spotify_id}
+                          onChange={(e) => {
+                            const n = [...featuredArtists];
+                            n[i] = { ...n[i], spotify_id: e.target.value };
+                            setFeaturedArtists(n);
+                          }}
+                          className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-xs px-3 py-2.5 rounded-xl transition-colors font-mono"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-white/30 text-[10px] mb-1">Apple Music Artist ID <span className="text-white/20">(optional if unreleased)</span></p>
+                        <input
+                          type="text"
+                          placeholder="e.g. 1234567890"
+                          value={fa.apple_id}
+                          onChange={(e) => {
+                            const n = [...featuredArtists];
+                            n[i] = { ...n[i], apple_id: e.target.value };
+                            setFeaturedArtists(n);
+                          }}
+                          className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-xs px-3 py-2.5 rounded-xl transition-colors font-mono"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -773,11 +799,6 @@ export default function NewReleasePage() {
               >
                 + Add Featured Artist
               </button>
-              {featuredArtists.length > 0 && (
-                <p className="text-white/25 text-xs mt-2">
-                  Spotify/Apple Music IDs help us properly credit featured artists on their profiles. Find the ID in the artist&apos;s profile URL.
-                </p>
-              )}
             </div>
             {!isMultiTrack && (
               <Select label="Instrumental?" name="instrumental" options={["No", "Yes"]} required />

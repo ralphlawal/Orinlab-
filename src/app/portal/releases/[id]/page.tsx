@@ -705,14 +705,22 @@ export default function ReleaseDetailPage() {
                 </div>
                 {editingFeatured ? (
                   <div className="space-y-2">
+                    <div className="bg-[#007bff]/[0.05] border border-[#007bff]/15 rounded-xl px-3 py-2.5 mb-3">
+                      <p className="text-white/50 text-xs leading-relaxed">
+                        Adding their <strong className="text-white/65">Spotify</strong> and <strong className="text-white/65">Apple Music</strong> artist IDs links this release to their existing profiles — they get proper credit and streams count towards their account. Find the ID in their profile URL.
+                      </p>
+                      <p className="text-white/25 text-[11px] mt-1">First-time artists who haven&apos;t released yet don&apos;t have IDs — leave those fields blank.</p>
+                    </div>
                     {featuredArtists.map((fa, i) => (
                       <div key={i} className="space-y-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
                         <div className="flex items-center gap-2">
-                          <input type="text" placeholder="Artist name *" value={fa.name} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], name: e.target.value }; setFeaturedArtists(n); }} className="flex-1 bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
+                          <input type="text" placeholder="Artist / Stage name *" value={fa.name} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], name: e.target.value }; setFeaturedArtists(n); }} className="flex-1 bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
                           <button type="button" onClick={() => setFeaturedArtists(featuredArtists.filter((_, j) => j !== i))} className="text-white/20 hover:text-red-400 transition-colors text-sm flex-shrink-0">✕</button>
                         </div>
-                        <input type="text" placeholder="Spotify Artist ID (optional)" value={fa.spotify_id} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], spotify_id: e.target.value }; setFeaturedArtists(n); }} className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
-                        <input type="text" placeholder="Apple Music Artist ID (optional)" value={fa.apple_id} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], apple_id: e.target.value }; setFeaturedArtists(n); }} className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
+                        <p className="text-white/25 text-[10px]">Spotify Artist ID <span className="text-white/15">(optional if unreleased)</span></p>
+                        <input type="text" placeholder="e.g. 4Z8W4fKeB5YxbusRsdQVPb" value={fa.spotify_id} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], spotify_id: e.target.value }; setFeaturedArtists(n); }} className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/15 text-xs px-3 py-2 rounded-lg transition-colors font-mono" />
+                        <p className="text-white/25 text-[10px]">Apple Music Artist ID <span className="text-white/15">(optional if unreleased)</span></p>
+                        <input type="text" placeholder="e.g. 1234567890" value={fa.apple_id} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], apple_id: e.target.value }; setFeaturedArtists(n); }} className="w-full bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/15 text-xs px-3 py-2 rounded-lg transition-colors font-mono" />
                       </div>
                     ))}
                     <button type="button" onClick={() => setFeaturedArtists([...featuredArtists, { name: "", spotify_id: "", apple_id: "" }])} className="text-xs text-white/40 hover:text-white transition-colors">+ Add artist</button>
