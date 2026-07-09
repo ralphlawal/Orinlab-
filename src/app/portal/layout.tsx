@@ -13,19 +13,59 @@ import {
 export const PORTAL_LANG_KEY = "orinlabi_portal_lang";
 
 export const PORTAL_LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "yo", label: "Yoruba" },
-  { code: "ig", label: "Igbo" },
-  { code: "ha", label: "Hausa" },
-  { code: "fr", label: "Français" },
-  { code: "pt", label: "Português" },
-  { code: "sw", label: "Kiswahili" },
-  { code: "ar", label: "العربية" },
-  { code: "am", label: "አማርኛ" },
-  { code: "es", label: "Español" },
-  { code: "zu", label: "isiZulu" },
-  { code: "de", label: "Deutsch" },
-] as const;
+  // African Languages
+  { code: "af", label: "Afrikaans",           section: "African" },
+  { code: "am", label: "Amharic (አማርኛ)",      section: "African" },
+  { code: "bm", label: "Bambara",             section: "African" },
+  { code: "ny", label: "Chichewa / Nyanja",   section: "African" },
+  { code: "ee", label: "Ewe",                 section: "African" },
+  { code: "ff", label: "Fula / Fulani",       section: "African" },
+  { code: "ha", label: "Hausa",               section: "African" },
+  { code: "ig", label: "Igbo",                section: "African" },
+  { code: "rw", label: "Kinyarwanda",         section: "African" },
+  { code: "rn", label: "Kirundi",             section: "African" },
+  { code: "ln", label: "Lingala",             section: "African" },
+  { code: "lg", label: "Luganda",             section: "African" },
+  { code: "mg", label: "Malagasy",            section: "African" },
+  { code: "nd", label: "Ndebele",             section: "African" },
+  { code: "om", label: "Oromo",               section: "African" },
+  { code: "st", label: "Sesotho",             section: "African" },
+  { code: "sn", label: "Shona",              section: "African" },
+  { code: "so", label: "Somali",              section: "African" },
+  { code: "sw", label: "Kiswahili",           section: "African" },
+  { code: "ti", label: "Tigrinya",            section: "African" },
+  { code: "tn", label: "Tswana",              section: "African" },
+  { code: "tw", label: "Twi / Akan",          section: "African" },
+  { code: "wo", label: "Wolof",               section: "African" },
+  { code: "xh", label: "Xhosa",               section: "African" },
+  { code: "yo", label: "Yoruba",              section: "African" },
+  { code: "zu", label: "isiZulu",             section: "African" },
+  // Major World Languages
+  { code: "en", label: "English",             section: "World" },
+  { code: "ar", label: "Arabic (العربية)",    section: "World" },
+  { code: "bn", label: "Bengali (বাংলা)",     section: "World" },
+  { code: "zh", label: "Chinese (中文)",      section: "World" },
+  { code: "nl", label: "Dutch",              section: "World" },
+  { code: "fr", label: "Français",           section: "World" },
+  { code: "de", label: "Deutsch",            section: "World" },
+  { code: "hi", label: "Hindi (हिन्दी)",     section: "World" },
+  { code: "id", label: "Indonesian",         section: "World" },
+  { code: "it", label: "Italiano",           section: "World" },
+  { code: "ja", label: "Japanese (日本語)",  section: "World" },
+  { code: "ko", label: "Korean (한국어)",    section: "World" },
+  { code: "ms", label: "Malay",              section: "World" },
+  { code: "fa", label: "Persian (فارسی)",    section: "World" },
+  { code: "pl", label: "Polish",             section: "World" },
+  { code: "pt", label: "Português",          section: "World" },
+  { code: "ro", label: "Romanian",           section: "World" },
+  { code: "ru", label: "Russian",            section: "World" },
+  { code: "es", label: "Español",            section: "World" },
+  { code: "th", label: "Thai (ภาษาไทย)",    section: "World" },
+  { code: "tr", label: "Turkish",            section: "World" },
+  { code: "uk", label: "Ukrainian",          section: "World" },
+  { code: "ur", label: "Urdu (اردو)",        section: "World" },
+  { code: "vi", label: "Vietnamese",         section: "World" },
+];
 
 type Counts = { messages: number; notifications: number };
 type NavBadge = "none" | "messages" | "notifications";
@@ -97,6 +137,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [suspended, setSuspended]       = useState(false);
   const [portalLang, setPortalLang]     = useState("en");
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [langFilter, setLangFilter]     = useState("");
   const langPickerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,6 +167,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     localStorage.setItem(PORTAL_LANG_KEY, code);
     setPortalLang(code);
     setShowLangPicker(false);
+    setLangFilter("");
   }
 
   const loadCounts = useCallback(async (userEmail: string) => {
@@ -409,7 +451,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             {/* Language selector */}
             <div ref={langPickerRef} className="relative">
               <button
-                onClick={() => setShowLangPicker((v) => !v)}
+                onClick={() => { setShowLangPicker((v) => !v); setLangFilter(""); }}
                 title="Change language"
                 className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
                   portalLang !== "en"
@@ -418,28 +460,63 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 }`}
               >
                 <Globe size={13} />
-                <span>{PORTAL_LANGUAGES.find((l) => l.code === portalLang)?.label ?? "Language"}</span>
+                <span className="hidden sm:inline">{PORTAL_LANGUAGES.find((l) => l.code === portalLang)?.label ?? "Language"}</span>
               </button>
 
-              {showLangPicker && (
-                <div className="absolute right-0 top-full mt-2 bg-[#0d0d0d] border border-white/[0.10] rounded-2xl shadow-2xl p-1.5 z-50 w-44 max-h-72 overflow-y-auto">
-                  <p className="text-white/25 text-[10px] uppercase tracking-widest px-3 py-1.5">Translate portal to</p>
-                  {PORTAL_LANGUAGES.map((l) => (
-                    <button
-                      key={l.code}
-                      onClick={() => changeLanguage(l.code)}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors flex items-center justify-between ${
-                        portalLang === l.code
-                          ? "bg-[#007bff]/10 text-[#007bff] font-semibold"
-                          : "text-white/50 hover:text-white hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      {l.label}
-                      {portalLang === l.code && <span className="text-[10px]">✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {showLangPicker && (() => {
+                const q = langFilter.toLowerCase();
+                const filtered = q
+                  ? PORTAL_LANGUAGES.filter((l) => l.label.toLowerCase().includes(q) || l.code.includes(q))
+                  : PORTAL_LANGUAGES;
+                const african = filtered.filter((l) => l.section === "African");
+                const world   = filtered.filter((l) => l.section === "World");
+                const LangBtn = ({ l }: { l: typeof PORTAL_LANGUAGES[number] }) => (
+                  <button
+                    key={l.code}
+                    onClick={() => changeLanguage(l.code)}
+                    className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                      portalLang === l.code
+                        ? "bg-[#007bff]/10 text-[#007bff] font-semibold"
+                        : "text-white/55 hover:text-white hover:bg-white/[0.05]"
+                    }`}
+                  >
+                    {l.label}
+                    {portalLang === l.code && <span className="text-[10px] flex-shrink-0">✓</span>}
+                  </button>
+                );
+                return (
+                  <div className="absolute right-0 top-full mt-2 bg-[#0d0d0d] border border-white/[0.10] rounded-2xl shadow-2xl z-50 w-52 flex flex-col" style={{ maxHeight: "min(420px, 80vh)" }}>
+                    {/* Search */}
+                    <div className="p-2 border-b border-white/[0.07] flex-shrink-0">
+                      <input
+                        autoFocus
+                        value={langFilter}
+                        onChange={(e) => setLangFilter(e.target.value)}
+                        placeholder="Search language…"
+                        className="w-full bg-white/[0.06] border border-white/[0.08] outline-none text-white/80 placeholder-white/25 text-xs px-3 py-2 rounded-lg"
+                      />
+                    </div>
+                    {/* List */}
+                    <div className="overflow-y-auto flex-1 p-1.5">
+                      {african.length > 0 && (
+                        <>
+                          <p className="text-white/20 text-[10px] uppercase tracking-widest px-3 py-1.5">African Languages</p>
+                          {african.map((l) => <LangBtn key={l.code} l={l} />)}
+                        </>
+                      )}
+                      {world.length > 0 && (
+                        <>
+                          <p className="text-white/20 text-[10px] uppercase tracking-widest px-3 pt-3 pb-1.5">World Languages</p>
+                          {world.map((l) => <LangBtn key={l.code} l={l} />)}
+                        </>
+                      )}
+                      {filtered.length === 0 && (
+                        <p className="text-white/25 text-xs text-center py-4">No language found.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </header>
