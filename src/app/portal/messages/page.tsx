@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { PORTAL_LANG_KEY, PORTAL_LANGUAGES } from "@/app/portal/layout";
 import { Loader2, Send, Paperclip, Mic, MicOff, X, FileText, Languages } from "lucide-react";
 
 type Msg = {
@@ -66,7 +68,18 @@ export default function PortalMessagesPage() {
   const [email, setEmail] = useState("");
   const [artistName, setArtistName] = useState("");
   const [translations, setTranslations] = useState<Record<string, TranslationState>>({});
-  const userLang = typeof navigator !== "undefined" ? navigator.language : "en";
+  const [portalLang, setPortalLang] = useState("en");
+
+  // Sync with the language set in the portal header
+  useEffect(() => {
+    function syncLang() {
+      const saved = localStorage.getItem(PORTAL_LANG_KEY);
+      setPortalLang(saved ?? "en");
+    }
+    syncLang();
+    window.addEventListener("storage", syncLang);
+    return () => window.removeEventListener("storage", syncLang);
+  }, []);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -195,11 +208,10 @@ export default function PortalMessagesPage() {
   }
 
   async function translate(msgId: string, text: string) {
-    const lang = userLang.split("-")[0];
-    if (lang === "en") return;
+    if (portalLang === "en") return;
     setTranslations((prev) => ({ ...prev, [msgId]: { text: "", loading: true, error: false, showing: true } }));
     try {
-      const translated = await translateText(text, lang);
+      const translated = await translateText(text, portalLang);
       setTranslations((prev) => ({ ...prev, [msgId]: { text: translated, loading: false, error: false, showing: true } }));
     } catch {
       setTranslations((prev) => ({ ...prev, [msgId]: { text: "", loading: false, error: true, showing: true } }));
@@ -297,7 +309,7 @@ export default function PortalMessagesPage() {
         {msgs.map((m) => {
           const tr = translations[m.id];
           const isAdmin = m.sender === "admin";
-          const canTranslate = isAdmin && !!m.content && userLang.split("-")[0] !== "en";
+          const canTranslate = isAdmin && !!m.content;
           return (
             <div key={m.id} className={`flex ${m.sender === "artist" ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
@@ -320,19 +332,33 @@ export default function PortalMessagesPage() {
                 {/* Translation */}
                 {canTranslate && (
                   <div className="mt-2 border-t border-white/10 pt-2">
-                    {!tr ? (
+                    {portalLang === "en" ? (
+                      <Link
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); document.dispatchEvent(new CustomEvent("orinlabi:open-lang-picker")); }}
+                        className="flex items-center gap-1.5 text-[11px] text-white/25 hover:text-white/50 transition-colors"
+                      >
+                        <Languages size={12} /> Set language to translate
+                      </Link>
+                    ) : !tr ? (
                       <button
                         onClick={() => translate(m.id, m.content)}
                         className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/80 transition-colors"
                       >
-                        <Languages size={12} /> Translate
+                        <Languages size={12} />
+                        Translate to {PORTAL_LANGUAGES.find((l) => l.code === portalLang)?.label ?? portalLang}
                       </button>
                     ) : tr.loading ? (
                       <span className="flex items-center gap-1.5 text-[11px] text-white/30">
                         <Loader2 size={11} className="animate-spin" /> Translating…
                       </span>
                     ) : tr.error ? (
-                      <span className="text-[11px] text-red-400/70">Translation unavailable. Try again later.</span>
+                      <button
+                        onClick={() => translate(m.id, m.content)}
+                        className="text-[11px] text-red-400/70 hover:text-red-400 transition-colors"
+                      >
+                        Translation failed — tap to retry
+                      </button>
                     ) : (
                       <div>
                         {tr.showing && (

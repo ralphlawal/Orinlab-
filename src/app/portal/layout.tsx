@@ -7,8 +7,25 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard, DollarSign, Megaphone, Wrench, FolderOpen,
-  MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus, ShieldOff,
+  MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus, ShieldOff, Globe,
 } from "lucide-react";
+
+export const PORTAL_LANG_KEY = "orinlabi_portal_lang";
+
+export const PORTAL_LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "yo", label: "Yoruba" },
+  { code: "ig", label: "Igbo" },
+  { code: "ha", label: "Hausa" },
+  { code: "fr", label: "Français" },
+  { code: "pt", label: "Português" },
+  { code: "sw", label: "Kiswahili" },
+  { code: "ar", label: "العربية" },
+  { code: "am", label: "አማርኛ" },
+  { code: "es", label: "Español" },
+  { code: "zu", label: "isiZulu" },
+  { code: "de", label: "Deutsch" },
+] as const;
 
 type Counts = { messages: number; notifications: number };
 type NavBadge = "none" | "messages" | "notifications";
@@ -78,6 +95,38 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [counts, setCounts]             = useState<Counts>({ messages: 0, notifications: 0 });
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [suspended, setSuspended]       = useState(false);
+  const [portalLang, setPortalLang]     = useState("en");
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const langPickerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = typeof localStorage !== "undefined" ? localStorage.getItem(PORTAL_LANG_KEY) : null;
+    if (saved) setPortalLang(saved);
+  }, []);
+
+  useEffect(() => {
+    if (!showLangPicker) return;
+    function onClickOutside(e: MouseEvent) {
+      if (langPickerRef.current && !langPickerRef.current.contains(e.target as Node)) {
+        setShowLangPicker(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [showLangPicker]);
+
+  // Allow child pages (e.g. messages) to open the lang picker via a custom event
+  useEffect(() => {
+    function onOpenLangPicker() { setShowLangPicker(true); }
+    document.addEventListener("orinlabi:open-lang-picker", onOpenLangPicker);
+    return () => document.removeEventListener("orinlabi:open-lang-picker", onOpenLangPicker);
+  }, []);
+
+  function changeLanguage(code: string) {
+    localStorage.setItem(PORTAL_LANG_KEY, code);
+    setPortalLang(code);
+    setShowLangPicker(false);
+  }
 
   const loadCounts = useCallback(async (userEmail: string) => {
     const [{ count: msg }, { count: notif }] = await Promise.all([
@@ -356,6 +405,42 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 {totalUnread} unread
               </Link>
             )}
+
+            {/* Language selector */}
+            <div ref={langPickerRef} className="relative">
+              <button
+                onClick={() => setShowLangPicker((v) => !v)}
+                title="Change language"
+                className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+                  portalLang !== "en"
+                    ? "border-[#007bff]/30 text-[#007bff] bg-[#007bff]/[0.07]"
+                    : "border-white/[0.08] text-white/30 hover:text-white/70 hover:border-white/20"
+                }`}
+              >
+                <Globe size={13} />
+                <span>{PORTAL_LANGUAGES.find((l) => l.code === portalLang)?.label ?? "Language"}</span>
+              </button>
+
+              {showLangPicker && (
+                <div className="absolute right-0 top-full mt-2 bg-[#0d0d0d] border border-white/[0.10] rounded-2xl shadow-2xl p-1.5 z-50 w-44 max-h-72 overflow-y-auto">
+                  <p className="text-white/25 text-[10px] uppercase tracking-widest px-3 py-1.5">Translate portal to</p>
+                  {PORTAL_LANGUAGES.map((l) => (
+                    <button
+                      key={l.code}
+                      onClick={() => changeLanguage(l.code)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors flex items-center justify-between ${
+                        portalLang === l.code
+                          ? "bg-[#007bff]/10 text-[#007bff] font-semibold"
+                          : "text-white/50 hover:text-white hover:bg-white/[0.05]"
+                      }`}
+                    >
+                      {l.label}
+                      {portalLang === l.code && <span className="text-[10px]">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
