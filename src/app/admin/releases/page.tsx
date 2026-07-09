@@ -252,6 +252,7 @@ export default function ReleasesPage() {
     setSavingDitto(false);
     setDittoSaved(true);
     setTimeout(() => setDittoSaved(false), 3000);
+    load();
   }
 
   async function saveStoreLinks() {
@@ -278,6 +279,7 @@ export default function ReleasesPage() {
     setSelected((s) => s ? { ...s, streams: filtered } : s);
     setSavingStreams(false);
     setStreamsSaved(true);
+    load();
   }
 
   async function saveRoyalties() {
@@ -288,6 +290,7 @@ export default function ReleasesPage() {
     setSelected((s) => s ? { ...s, royalties_usd: val } : s);
     setSavingRoyalties(false);
     setRoyaltiesSaved(true);
+    load();
   }
 
   async function saveMeta() {
@@ -327,6 +330,7 @@ export default function ReleasesPage() {
 
     setSavingMeta(false);
     setMetaSaved(true);
+    load();
   }
 
   function generateIsrc() {
@@ -378,6 +382,7 @@ export default function ReleasesPage() {
     }
     setSavingStage(false);
     setStageSaved(true);
+    load();
   }
 
   async function savePresaveSettings() {
@@ -389,6 +394,7 @@ export default function ReleasesPage() {
     }).eq("id", selected.id);
     setSavingPresave(false);
     setPresaveSaved(true);
+    load();
   }
 
   async function toggleDittoUploaded() {
@@ -767,7 +773,7 @@ export default function ReleasesPage() {
               <Section title="Release">
                 <Row label="Type" value={selected.release_type} />
                 <Row label="Genre" value={selected.genre} />
-                <Row label="Release Date" value={selected.release_date} />
+                <Row label="Release Date" value={editReleaseDate || selected.release_date} />
                 <Row label="Album" value={selected.album_title} />
                 <Row label="Explicit" value={selected.explicit ? "Yes" : "No"} />
               </Section>
@@ -801,8 +807,8 @@ export default function ReleasesPage() {
               </Section>
 
               {/* Metadata — editable */}
-              <Section title="Metadata">
-                <p className="text-white/30 text-xs mb-3">ISRC and UPC can be assigned or corrected here after submission.</p>
+              <Section title="Edit Release Details">
+                <p className="text-white/30 text-xs mb-3">Set or correct the release date, ISRC, and UPC. Click <strong className="text-white/50">Save Release Details</strong> below to apply.</p>
                 <div className="space-y-2">
                   {([
                     { key: "releaseDate", label: "Release Date", value: editReleaseDate, set: setEditReleaseDate, placeholder: "", type: "date" },
@@ -834,7 +840,7 @@ export default function ReleasesPage() {
                     className="flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-white/60 hover:text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     {savingMeta ? <Loader2 size={12} className="animate-spin" /> : null}
-                    {metaSaved ? "Saved ✓" : "Save Metadata"}
+                    {metaSaved ? "Saved ✓" : "Save Release Details"}
                   </button>
                 </div>
               </Section>
