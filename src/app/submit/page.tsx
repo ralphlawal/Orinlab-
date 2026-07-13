@@ -775,8 +775,9 @@ export default function SubmitPage() {
                   I confirm that I own or control all rights to the music and artwork
                   submitted. I understand this is an application and selection is at
                   OrinlabÍ Records&apos;s discretion. If selected, I authorize OrinlabÍ Records to
-                  distribute this content globally on my behalf, with public credits
-                  appearing as ℗ 2026 OrinlabÍ Records / © 2026 OrinlabÍ Records as agreed.
+                  distribute this content globally on my behalf. Public credits will appear
+                  under my artist name or label name as provided above — OrinlabÍ Records
+                  acts solely as the distributor.
                 </span>
               </label>
             </div>
