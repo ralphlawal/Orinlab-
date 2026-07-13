@@ -45,7 +45,7 @@ export const CONTRACT_CLAUSES = [
   {
     number: "8",
     title: "Intellectual Property & Credits",
-    body: `The Artist retains full ownership of all intellectual property in the Release, including the sound recording copyright and the underlying musical composition. OrinlabÍ Records acquires no ownership interest by virtue of this Agreement. The Artist acknowledges that DSPs may display distributor credits (℗ and © lines) and consents to OrinlabÍ Records supplying its name as distributor to DSPs where required by their ingestion processes. This does not constitute a claim of ownership. OrinlabÍ Records shall not register any copyright, trademark, or other intellectual property in the Artist's name or in respect of the Release.`,
+    body: `The Artist retains full ownership of all intellectual property in the Release, including the sound recording copyright and the underlying musical composition. OrinlabÍ Records acquires no ownership interest by virtue of this Agreement. Public release credits (℗ and © lines) on DSPs will reflect the Artist's own name or label name as provided in the submission metadata — not OrinlabÍ Records. OrinlabÍ Records may appear solely as the "Distributed by" entity where DSPs separately display distributor information; this does not constitute a claim of ownership or co-authorship. OrinlabÍ Records shall not register any copyright, trademark, or other intellectual property in the Artist's name or in respect of the Release.`,
   },
   {
     number: "9",

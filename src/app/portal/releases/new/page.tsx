@@ -879,7 +879,7 @@ export default function NewReleasePage() {
                 <div className="mt-3 space-y-3">
                   <div className="bg-blue-400/8 border border-blue-400/20 rounded-xl px-4 py-3">
                     <p className="text-blue-400 text-xs font-semibold mb-1">Cover song licensing</p>
-                    <p className="text-white/50 text-xs">OrinlabÍ Records will obtain a mechanical licence on your behalf through Ditto.</p>
+                    <p className="text-white/50 text-xs">We handle obtaining the mechanical licence for you through Ditto — you stay the rights holder, we just take care of the paperwork.</p>
                   </div>
                   <textarea name="coverSongDetails" rows={2} placeholder="Original song title and original artist/writer name"
                     defaultValue={draft?.coverSongDetails}

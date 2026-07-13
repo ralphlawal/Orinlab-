@@ -420,7 +420,7 @@ function LiveGrowth() {
             </AnimateIn>
             <AnimateIn delay={160}>
               <p className="text-white/40 text-sm mt-4 max-w-sm leading-relaxed">
-                Illustrative streaming trajectory based on our artist roster over 12 months.
+                Illustrative streaming trajectory for artists distributed through OrinlabÍ over 12 months.
               </p>
             </AnimateIn>
           </div>
@@ -454,7 +454,7 @@ function LiveGrowth() {
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { value: "24K", label: "Avg streams / month", sub: "across all platforms in year 1", color: "#1DB954" },
-            { value: "+127%", label: "Avg growth rate",      sub: "month-over-month across our roster", color: "#69C9D0" },
+            { value: "+127%", label: "Avg growth rate",      sub: "month-over-month for distributed artists", color: "#69C9D0" },
             { value: "$2.1M", label: "Paid to artists",      sub: "in royalties since launch", color: "#FC3C44" },
           ].map((s, i) => (
             <AnimateIn key={s.label} delay={i * 70}>
