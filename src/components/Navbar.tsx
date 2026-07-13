@@ -119,9 +119,9 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-2">
           <Link
             href="/portal/login"
-            className="text-[13px] text-white/55 hover:text-white font-medium px-4 py-2 rounded-lg transition-colors duration-150"
+            className="text-[13px] text-white/70 hover:text-white font-semibold px-4 py-2 rounded-lg border border-white/[0.1] hover:border-white/25 transition-all duration-150"
           >
-            Login
+            Artist Login
           </Link>
           <Link
             href="/submit"
@@ -177,9 +177,9 @@ export default function Navbar() {
           <div className="flex flex-col gap-2 pt-3 border-t border-white/[0.07]">
             <Link
               href="/portal/login"
-              className="block text-center text-white/70 hover:text-white text-sm font-medium px-5 py-3 rounded-full border border-white/[0.12] hover:border-white/30 transition-all"
+              className="block text-center text-white/70 hover:text-white text-sm font-semibold px-5 py-3 rounded-full border border-white/[0.15] hover:border-white/30 transition-all"
             >
-              Login
+              Artist Login
             </Link>
             <Link
               href="/submit"

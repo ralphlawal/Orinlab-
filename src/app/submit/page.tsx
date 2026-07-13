@@ -277,11 +277,11 @@ export default function SubmitPage() {
             </div>
 
             <h1 className="text-white font-bold text-2xl text-center mb-2">
-              Create your free account
+              Sign in or create account
             </h1>
             <p className="text-white/50 text-sm text-center leading-relaxed mb-8">
-              Enter your email address to get started. We&apos;ll send you a one-time
-              code to verify your identity — no password needed.
+              Enter your email and we&apos;ll send a one-time code. Works for both
+              new artists and returning artists — no password needed.
             </p>
 
             <form onSubmit={sendAuthCode} className="space-y-4">
@@ -319,13 +319,13 @@ export default function SubmitPage() {
               </button>
             </form>
 
-            <p className="text-center text-white/25 text-xs mt-7">
-              Already have an account?{" "}
-              <span className="text-white/50">Enter the same email you used before.</span>
+            <p className="text-center text-white/30 text-xs mt-7">
+              Returning artist? Enter the same email you used before and you&apos;ll be signed straight back in.
             </p>
-            <p className="text-center text-white/20 text-xs mt-2">
+            <p className="text-center text-white/20 text-xs mt-3">
+              Just want to log in without submitting?{" "}
               <Link href="/portal/login" className="text-[#007bff] hover:underline">
-                Go to artist portal login →
+                Go to Artist Portal →
               </Link>
             </p>
           </div>

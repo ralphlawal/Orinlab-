@@ -170,25 +170,29 @@ function Hero({ s }: { s: HeroSettings }) {
         </p>
 
         <div
-          className="flex flex-col sm:flex-row items-start gap-3 mb-16"
+          className="flex flex-col sm:flex-row items-start gap-3 mb-5"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.3s both" }}
         >
           <Link
             href="/submit"
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-full text-base transition-all duration-200 hover:gap-3 group animate-cta-glow"
-            style={{
-              background: "linear-gradient(135deg, #007bff, #6d28d9)",
-            }}
+            style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)" }}
           >
-            Start Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            Apply Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
-            href="/pricing"
-            className="inline-flex items-center gap-2 text-white/60 hover:text-white font-medium px-7 py-4 rounded-full border border-white/10 hover:border-white/30 text-base transition-all duration-200"
+            href="/portal/login"
+            className="inline-flex items-center gap-2 text-white font-semibold px-7 py-4 rounded-full border border-white/20 hover:border-white/40 hover:bg-white/[0.05] text-base transition-all duration-200"
           >
-            How It Works
+            Artist Login
           </Link>
         </div>
+        <div style={{ animation: "fadeSlideUp 0.7s ease-out 0.35s both" }}>
+          <Link href="/pricing" className="text-white/30 hover:text-white/60 text-xs transition-colors">
+            How it works →
+          </Link>
+        </div>
+        <div className="mb-12" />
 
         {/* Stats */}
         <div
