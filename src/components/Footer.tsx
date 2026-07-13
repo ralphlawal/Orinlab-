@@ -32,7 +32,9 @@ const COMPANY = [
 
 export default function Footer() {
   return (
-    <footer className="bg-black border-t border-white/[0.07] pt-16 pb-8">
+    <footer className="bg-black pt-16 pb-8 relative">
+      {/* Gradient top border */}
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #007bff40, #7c3aed40, #ec489940, transparent)" }} />
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
           {/* Brand */}
@@ -62,7 +64,7 @@ export default function Footer() {
                   target={s.href.startsWith("http") ? "_blank" : undefined}
                   rel={s.href.startsWith("http") ? "noopener noreferrer" : undefined}
                   aria-label={s.label}
-                  className="w-8 h-8 bg-white/[0.05] hover:bg-[#007bff] rounded-full flex items-center justify-center text-white/50 hover:text-white transition-all duration-200"
+                  className="w-8 h-8 bg-white/[0.05] hover:bg-[#007bff] rounded-full flex items-center justify-center text-white/40 hover:text-white transition-all duration-200 hover:scale-110 hover:shadow-[0_0_16px_rgba(0,123,255,0.5)]"
                 >
                   {s.icon}
                 </a>

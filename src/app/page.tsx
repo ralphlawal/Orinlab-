@@ -11,6 +11,7 @@ import { AnimateIn } from "@/components/AnimateIn";
 import { CountUp } from "@/components/CountUp";
 import { StreamsChart } from "@/components/StreamsChart";
 import { EarningsCard } from "@/components/EarningsCard";
+import { FAQAccordion } from "@/components/FAQAccordion";
 import { supabase } from "@/lib/supabase";
 import {
   getSetting,
@@ -95,14 +96,15 @@ const HERO_PLATFORMS = [
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 function Hero({ s }: { s: HeroSettings }) {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050505]">
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050505] noise-overlay">
       {/* Ambient background — kept small for GPU performance */}
-      <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-[#007bff]/12 rounded-full blur-[70px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[320px] h-[320px] bg-violet-600/10 rounded-full blur-[60px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#007bff]/10 rounded-full blur-[90px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[380px] h-[380px] bg-violet-600/8 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute top-2/3 left-1/3 w-[250px] h-[250px] bg-pink-600/6 rounded-full blur-[60px] pointer-events-none" />
 
       {/* Subtle grid */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        className="absolute inset-0 pointer-events-none opacity-[0.025]"
         style={{
           backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
@@ -173,10 +175,9 @@ function Hero({ s }: { s: HeroSettings }) {
         >
           <Link
             href="/submit"
-            className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-full text-base transition-all duration-200 hover:gap-3 group"
+            className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-full text-base transition-all duration-200 hover:gap-3 group animate-cta-glow"
             style={{
               background: "linear-gradient(135deg, #007bff, #6d28d9)",
-              boxShadow: "0 0 30px rgba(0,123,255,0.35), 0 0 60px rgba(109,40,217,0.15)",
             }}
           >
             Start Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
@@ -221,7 +222,7 @@ function Hero({ s }: { s: HeroSettings }) {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/20">
+      <div className="absolute bottom-8 left-1/2 text-white/25 animate-bounce-chevron">
         <ChevronDown size={22} />
       </div>
 
@@ -245,20 +246,36 @@ function Hero({ s }: { s: HeroSettings }) {
 
 /* ── Platform ticker ──────────────────────────────────────────────────────── */
 const TICKER_PLATFORMS = [
-  "Spotify", "Apple Music", "YouTube Music", "TikTok", "Amazon Music",
-  "Deezer", "TIDAL", "Audiomack", "SoundCloud", "Boomplay",
-  "Pandora", "Anghami", "Beatport", "Instagram", "Shazam",
+  { key: "spotify",       name: "Spotify",       color: "#1DB954" },
+  { key: "apple_music",   name: "Apple Music",   color: "#FC3C44" },
+  { key: "youtube_music", name: "YouTube Music", color: "#FF0000" },
+  { key: "tiktok",        name: "TikTok",        color: "#69C9D0" },
+  { key: "amazon_music",  name: "Amazon Music",  color: "#00A8E1" },
+  { key: "deezer",        name: "Deezer",        color: "#A238FF" },
+  { key: "tidal",         name: "TIDAL",         color: "#00FFFF" },
+  { key: "audiomack",     name: "Audiomack",     color: "#FFA500" },
+  { key: "soundcloud",    name: "SoundCloud",    color: "#FF5500" },
+  { key: "boomplay",      name: "Boomplay",      color: "#FF6B35" },
+  { key: "pandora",       name: "Pandora",       color: "#3668FF" },
+  { key: "anghami",       name: "Anghami",       color: "#9B59B6" },
+  { key: "beatport",      name: "Beatport",      color: "#01FF95" },
+  { key: "instagram",     name: "Instagram",     color: "#E1306C" },
+  { key: "shazam",        name: "Shazam",        color: "#0088FF" },
 ];
 
 function PlatformTicker() {
   const items = [...TICKER_PLATFORMS, ...TICKER_PLATFORMS];
   return (
-    <div className="border-y border-white/[0.06] py-4 overflow-hidden bg-white/[0.01]">
-      <div className="flex gap-12 whitespace-nowrap" style={{ animation: "ticker 35s linear infinite" }}>
-        {items.map((name, i) => (
-          <span key={i} className="text-white/20 text-xs font-bold uppercase tracking-[0.18em] flex-shrink-0">
-            {name} <span className="text-[#007bff]/30 mx-2">·</span>
-          </span>
+    <div className="ticker-wrap border-y border-white/[0.06] py-3.5 overflow-hidden bg-white/[0.01]">
+      <div className="ticker-inner flex gap-10 whitespace-nowrap" style={{ animation: "ticker 45s linear infinite" }}>
+        {items.map((p, i) => (
+          <div key={i} className="inline-flex items-center gap-2 flex-shrink-0">
+            <span style={{ color: p.color, opacity: 0.85 }}>
+              <PlatformIcon platformKey={p.key} size={14} />
+            </span>
+            <span className="text-white/25 text-[11px] font-semibold tracking-[0.12em] uppercase">{p.name}</span>
+            <span className="text-white/10 ml-1">·</span>
+          </div>
         ))}
       </div>
       <style>{`@keyframes ticker { from { transform: translateX(0) } to { transform: translateX(-50%) } }`}</style>
@@ -786,22 +803,7 @@ function FAQ({ items }: { items: FaqItem[] }) {
             <h2 className="text-[clamp(2rem,5vw,3.5rem)] font-bold text-white leading-[1.1] tracking-tight">Common questions.</h2>
           </AnimateIn>
         </div>
-        <div className="space-y-3">
-          {items.map((faq, i) => (
-            <AnimateIn key={i} delay={i * 50}>
-              <details className="group bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] rounded-xl overflow-hidden transition-colors duration-200">
-                <summary className="flex items-center justify-between p-5 cursor-pointer text-white font-medium text-sm list-none hover:text-[#007bff] transition-colors">
-                  {faq.q}
-                  <span className="text-white/30 group-open:text-[#007bff] text-xl leading-none ml-4 transition-colors flex-shrink-0">
-                    <span className="group-open:hidden">+</span>
-                    <span className="hidden group-open:inline">–</span>
-                  </span>
-                </summary>
-                <p className="px-5 pb-5 text-white/45 text-sm leading-relaxed">{faq.a}</p>
-              </details>
-            </AnimateIn>
-          ))}
-        </div>
+        <FAQAccordion items={items} />
       </div>
     </section>
   );
@@ -832,8 +834,8 @@ function CTA() {
           <p className="text-white/20 text-xs mb-10">From second release onwards: 85% to you, 15% to us. <Link href="/terms" className="underline hover:text-white/40 transition-colors">T&amp;Cs apply.</Link></p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/submit"
-              className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group"
-              style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)", boxShadow: "0 0 40px rgba(0,123,255,0.4), 0 0 80px rgba(124,58,237,0.2)" }}>
+              className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group animate-cta-glow"
+              style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}>
               Sign Up Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link href="/pricing" className="text-white/40 hover:text-white font-medium px-7 py-4 rounded-full border border-white/10 hover:border-white/30 transition-all duration-200 text-sm">

@@ -271,3 +271,62 @@ a:focus-visible,
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
+
+/* ─── Text selection ────────────────────────────────────────────────────────── */
+
+::selection {
+  background: rgba(0, 123, 255, 0.3);
+  color: #fff;
+}
+
+/* ─── Noise / grain overlay ─────────────────────────────────────────────────── */
+
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ─── Animated gradient border ───────────────────────────────────────────────── */
+
+.animated-border-btn {
+  position: relative;
+  z-index: 0;
+}
+.animated-border-btn::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  background: linear-gradient(45deg, #007bff, #7c3aed, #ec4899, #007bff);
+  background-size: 300% 300%;
+  animation: gradient-shift 3s linear infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.animated-border-btn:hover::before { opacity: 1; }
+
+/* ─── Bounce down arrow ──────────────────────────────────────────────────────── */
+
+@keyframes bounce-chevron {
+  0%, 100% { transform: translateY(0) translateX(-50%); }
+  50%       { transform: translateY(8px) translateX(-50%); }
+}
+.animate-bounce-chevron { animation: bounce-chevron 1.8s ease-in-out infinite; }
+
+/* ─── Glow pulse (CTA) ───────────────────────────────────────────────────────── */
+
+@keyframes cta-glow {
+  0%, 100% { box-shadow: 0 0 24px rgba(0,123,255,0.4), 0 0 48px rgba(109,40,217,0.15); }
+  50%       { box-shadow: 0 0 40px rgba(0,123,255,0.6), 0 0 80px rgba(109,40,217,0.25); }
+}
+.animate-cta-glow { animation: cta-glow 2.5s ease-in-out infinite; }
+
+/* ─── Ticker pause on hover ──────────────────────────────────────────────────── */
+
+.ticker-wrap:hover .ticker-inner { animation-play-state: paused; }

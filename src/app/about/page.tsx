@@ -40,16 +40,35 @@ function Story() {
     <section className="py-24 px-6">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
         <AnimateIn direction="left">
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-3xl p-10 aspect-square flex items-center justify-center">
-            <div className="text-center">
+          <div className="relative rounded-3xl overflow-hidden aspect-square" style={{ background: "linear-gradient(135deg, #050814 0%, #0d0a1f 40%, #0a0510 100%)" }}>
+            {/* Ambient blobs */}
+            <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-[#007bff]/20 rounded-full blur-[60px] pointer-events-none" />
+            <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-violet-600/15 rounded-full blur-[50px] pointer-events-none" />
+            <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-pink-500/10 rounded-full blur-[45px] pointer-events-none" />
+            <div className="absolute inset-0 border border-white/[0.06] rounded-3xl" />
+            {/* Content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 p-10">
               <Image
                 src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
                 alt="OrinlabÍ Records"
-                width={180}
-                height={50}
-                className="object-contain mx-auto"
+                width={160}
+                height={44}
+                className="object-contain"
               />
-              <p className="text-white/20 text-xs mt-8">A Ralph Lawal Group Company</p>
+              <div className="grid grid-cols-2 gap-4 w-full">
+                {[
+                  { v: "150+", l: "Platforms" },
+                  { v: "100%", l: "Ownership" },
+                  { v: "$0",   l: "To Start" },
+                  { v: "48h",  l: "Go-Live" },
+                ].map((s) => (
+                  <div key={s.l} className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-4 text-center">
+                    <p className="text-white font-bold text-xl leading-none mb-1">{s.v}</p>
+                    <p className="text-white/35 text-[10px] font-semibold uppercase tracking-wider">{s.l}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/20 text-[11px] tracking-wider text-center">A Ralph Lawal Group Company</p>
             </div>
           </div>
         </AnimateIn>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, CheckCircle2, AlertCircle, Loader2, Info } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const genres = [
@@ -222,34 +222,50 @@ export default function SubmitPage() {
   return (
     <>
       {/* Header */}
-      <section className="relative pt-32 pb-12 px-4 text-center overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
+      <section className="relative pt-32 pb-10 px-4 text-center overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/7 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-violet-600/6 rounded-full blur-[80px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto">
-          <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
-            Apply for Distribution
-          </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
-            Submit Your Application.
+          <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-8">
+            <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
+            Apply for Distribution · Applications Open Year-Round
+          </div>
+          <h1 className="text-[clamp(2.5rem,8vw,5rem)] font-bold text-white leading-[0.95] tracking-tight mb-5">
+            Submit Your<br />
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(90deg, #007bff, #7c3aed, #ec4899, #007bff)", backgroundSize: "300% auto", animation: "shimmer 5s linear infinite" }}>
+              Application.
+            </span>
           </h1>
-          <p className="text-white/60 leading-relaxed max-w-lg mx-auto">
-            Submit your release below and our team will personally review it.
-            We respond within 3–5 business days. Selected artists receive
-            global distribution to 150+ platforms.
+          <p className="text-white/50 leading-relaxed max-w-lg mx-auto text-base">
+            Fill in your details below. Our team personally reviews every submission
+            and responds promptly. Selected artists get global distribution to 150+ platforms.
           </p>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="px-4 pb-10">
+      {/* Step progress */}
+      <section className="px-4 pb-8">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-[#007bff]/5 border border-[#007bff]/20 rounded-2xl p-5 flex gap-4">
-            <Info size={20} className="text-[#007bff] flex-shrink-0 mt-0.5" />
-            <div className="space-y-1 text-sm text-white/60 leading-relaxed">
-              <p><strong className="text-white">How it works:</strong></p>
-              <p>1. Fill in your details and upload your release below.</p>
-              <p>2. Our team reviews your application within 3–5 business days.</p>
-              <p>3. Selected artists receive global distribution to 150+ platforms worldwide.</p>
-            </div>
+          <div className="flex items-center gap-0 mb-2">
+            {[
+              { n: "01", label: "Artist" },
+              { n: "02", label: "Release" },
+              { n: "03", label: "Files" },
+              { n: "04", label: "Metadata" },
+              { n: "05", label: "Rights" },
+            ].map((step, i, arr) => (
+              <div key={step.n} className="flex items-center flex-1 min-w-0">
+                <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-[#007bff]/15 border border-[#007bff]/30 flex items-center justify-center">
+                    <span className="text-[9px] font-bold text-[#007bff]">{step.n}</span>
+                  </div>
+                  <span className="text-[9px] text-white/30 font-semibold uppercase tracking-wider hidden sm:block">{step.label}</span>
+                </div>
+                {i < arr.length - 1 && (
+                  <div className="flex-1 h-px bg-white/[0.07] mx-1.5" />
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -268,9 +284,12 @@ export default function SubmitPage() {
 
             {/* Artist Information */}
             <div>
-              <h2 className="text-white font-bold text-xl mb-6 pb-3 border-b border-white/10">
-                Artist Information
-              </h2>
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/[0.07]">
+                <div className="w-8 h-8 rounded-full bg-[#007bff]/15 border border-[#007bff]/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-[#007bff]">01</span>
+                </div>
+                <h2 className="text-white font-bold text-lg">Artist Information</h2>
+              </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Artist Name" name="artistName" required />
                 <Field label="Legal Name" name="legalName" required />
@@ -303,9 +322,12 @@ export default function SubmitPage() {
 
             {/* Release Information */}
             <div>
-              <h2 className="text-white font-bold text-xl mb-6 pb-3 border-b border-white/10">
-                Release Information
-              </h2>
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/[0.07]">
+                <div className="w-8 h-8 rounded-full bg-violet-500/15 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-violet-400">02</span>
+                </div>
+                <h2 className="text-white font-bold text-lg">Release Information</h2>
+              </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <Select label="Release Type" name="releaseType" options={["Single", "EP", "Album"]} required />
                 <Field label="Song / Release Title" name="songTitle" required />
@@ -320,9 +342,12 @@ export default function SubmitPage() {
 
             {/* Uploads */}
             <div>
-              <h2 className="text-white font-bold text-xl mb-2 pb-3 border-b border-white/10">
-                Files & Uploads
-              </h2>
+              <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/[0.07]">
+                <div className="w-8 h-8 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-green-400">03</span>
+                </div>
+                <h2 className="text-white font-bold text-lg">Files & Uploads</h2>
+              </div>
               <p className="text-white/30 text-xs mb-5">
                 Upload your audio and cover art so we can properly evaluate your release.
               </p>
@@ -338,9 +363,12 @@ export default function SubmitPage() {
 
             {/* Metadata */}
             <div>
-              <h2 className="text-white font-bold text-xl mb-6 pb-3 border-b border-white/10">
-                Metadata
-              </h2>
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/[0.07]">
+                <div className="w-8 h-8 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-amber-400">04</span>
+                </div>
+                <h2 className="text-white font-bold text-lg">Metadata</h2>
+              </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Songwriters" name="songwriters" placeholder="Separate with commas" required />
                 <Field label="Producers" name="producers" placeholder="Separate with commas" required />
@@ -420,9 +448,12 @@ export default function SubmitPage() {
 
             {/* Rights */}
             <div>
-              <h2 className="text-white font-bold text-xl mb-6 pb-3 border-b border-white/10">
-                Rights & Publishing
-              </h2>
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/[0.07]">
+                <div className="w-8 h-8 rounded-full bg-rose-500/15 border border-rose-500/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-rose-400">05</span>
+                </div>
+                <h2 className="text-white font-bold text-lg">Rights & Publishing</h2>
+              </div>
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Copyright Owner" name="copyrightOwner" placeholder="e.g. Your Name" required />
                 <Field label="Copyright Year" name="copyrightYear" placeholder="e.g. 2026" required />
@@ -516,14 +547,18 @@ export default function SubmitPage() {
             <button
               type="submit"
               disabled={!agreed || isLoading}
-              className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-full text-base transition-all duration-200 flex items-center justify-center gap-3"
+              className="w-full disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-full text-base transition-all duration-200 flex items-center justify-center gap-3"
+              style={{
+                background: agreed && !isLoading ? "linear-gradient(135deg, #007bff, #7c3aed)" : "#007bff",
+                boxShadow: agreed && !isLoading ? "0 0 30px rgba(0,123,255,0.35), 0 0 60px rgba(109,40,217,0.15)" : "none",
+              }}
             >
               {isLoading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
                   {state === "uploading" ? "Uploading files…" : "Submitting application…"}
                 </>
-              ) : "Submit Application"}
+              ) : "Submit Application →"}
             </button>
           </form>
         </div>

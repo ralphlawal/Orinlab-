@@ -4,6 +4,7 @@ import {
   Sparkles, CheckCircle2, ArrowRight,
 } from "lucide-react";
 import { AnimateIn } from "@/components/AnimateIn";
+import { FAQAccordion } from "@/components/FAQAccordion";
 
 export const metadata = {
   title: "How It Works – OrinlabÍ Records",
@@ -232,22 +233,7 @@ export default function PricingPage() {
             </AnimateIn>
           </div>
 
-          <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <AnimateIn key={faq.q} delay={i * 50}>
-                <details className="group bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] rounded-xl overflow-hidden transition-colors duration-200">
-                  <summary className="flex items-center justify-between p-5 cursor-pointer list-none hover:text-[#007bff] text-white font-medium text-sm transition-colors">
-                    {faq.q}
-                    <span className="text-white/30 group-open:text-[#007bff] text-xl ml-4 flex-shrink-0 transition-colors">
-                      <span className="group-open:hidden">+</span>
-                      <span className="hidden group-open:inline">–</span>
-                    </span>
-                  </summary>
-                  <p className="px-5 pb-5 text-white/45 text-sm leading-relaxed">{faq.a}</p>
-                </details>
-              </AnimateIn>
-            ))}
-          </div>
+          <FAQAccordion items={faqs} />
         </div>
       </section>
 
