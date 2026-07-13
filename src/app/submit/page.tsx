@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Upload, CheckCircle2, AlertCircle, Loader2, Mail, KeyRound, ArrowRight, ExternalLink } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 const genres = [
   "Pop", "Hip-Hop / Rap", "R&B / Soul", "Afrobeats", "Afropop", "Amapiano",
@@ -33,8 +34,18 @@ const countries = [
 ];
 
 type FormState = "idle" | "uploading" | "saving" | "success" | "error";
+type AuthStep = "loading" | "email" | "code" | "ready";
 
 export default function SubmitPage() {
+  // ── Auth gate state ──────────────────────────────────────────────────────
+  const [authStep, setAuthStep]         = useState<AuthStep>("loading");
+  const [userEmail, setUserEmail]       = useState("");
+  const [authCode, setAuthCode]         = useState("");
+  const [authLoading, setAuthLoading]   = useState(false);
+  const [authError, setAuthError]       = useState("");
+  const [authTimeLeft, setAuthTimeLeft] = useState<number | null>(null);
+
+  // ── Form state ───────────────────────────────────────────────────────────
   const [state, setState] = useState<FormState>("idle");
   const [agreed, setAgreed] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -43,6 +54,65 @@ export default function SubmitPage() {
   const [samplesUsed, setSamplesUsed] = useState(false);
   const [coverSong, setCoverSong] = useState(false);
   const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>([]);
+
+  // On mount: check if already logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user?.email) {
+        setUserEmail(data.session.user.email);
+        setAuthStep("ready");
+      } else {
+        setAuthStep("email");
+      }
+    });
+  }, []);
+
+  // OTP countdown timer
+  useEffect(() => {
+    if (authStep !== "code" || authTimeLeft === null || authTimeLeft <= 0) return;
+    const id = setInterval(() => setAuthTimeLeft((t) => (t !== null ? t - 1 : null)), 1000);
+    return () => clearInterval(id);
+  }, [authStep, authTimeLeft]);
+
+  async function sendAuthCode(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const { error } = await supabase.auth.signInWithOtp({
+      email: userEmail.trim().toLowerCase(),
+      options: { shouldCreateUser: true },
+    });
+    setAuthLoading(false);
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes("rate limit") || msg.includes("too many")) {
+        setAuthError("Too many attempts. Please wait a few minutes and try again.");
+      } else {
+        setAuthError(error.message || "Something went wrong. Please try again.");
+      }
+    } else {
+      setAuthTimeLeft(300);
+      setAuthStep("code");
+    }
+  }
+
+  async function verifyAuthCode(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: userEmail.trim().toLowerCase(),
+      token: authCode.trim(),
+      type: "email",
+    });
+    setAuthLoading(false);
+    if (error) {
+      setAuthError("That code is invalid or has expired. Try requesting a new one.");
+    } else {
+      setUserEmail(data.user?.email ?? userEmail);
+      setAuthStep("ready");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -184,6 +254,159 @@ export default function SubmitPage() {
     }
   }
 
+  // ── Auth gate: loading ─────────────────────────────────────────────────
+  if (authStep === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 size={28} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  // ── Auth gate: enter email ─────────────────────────────────────────────
+  if (authStep === "email") {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-sm">
+          {/* Ambient */}
+          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10">
+            <div className="w-14 h-14 bg-[#007bff]/10 border border-[#007bff]/20 rounded-2xl flex items-center justify-center mx-auto mb-7">
+              <Mail size={24} className="text-[#007bff]" />
+            </div>
+
+            <h1 className="text-white font-bold text-2xl text-center mb-2">
+              Create your free account
+            </h1>
+            <p className="text-white/50 text-sm text-center leading-relaxed mb-8">
+              Enter your email address to get started. We&apos;ll send you a one-time
+              code to verify your identity — no password needed.
+            </p>
+
+            <form onSubmit={sendAuthCode} className="space-y-4">
+              <div>
+                <label className="block text-white/60 text-xs font-medium mb-2">Email Address</label>
+                <div className="relative">
+                  <Mail size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                  <input
+                    type="email"
+                    value={userEmail}
+                    onChange={(e) => { setUserEmail(e.target.value); setAuthError(""); }}
+                    placeholder="your@email.com"
+                    required
+                    autoFocus
+                    className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm pl-10 pr-4 py-3.5 rounded-xl transition-colors"
+                  />
+                </div>
+              </div>
+
+              {authError && (
+                <p className="text-red-400 text-xs flex items-center gap-2">
+                  <AlertCircle size={13} /> {authError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={authLoading}
+                className="w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}
+              >
+                {authLoading ? <Loader2 size={16} className="animate-spin" /> : (
+                  <>Continue <ArrowRight size={15} /></>
+                )}
+              </button>
+            </form>
+
+            <p className="text-center text-white/25 text-xs mt-7">
+              Already have an account?{" "}
+              <span className="text-white/50">Enter the same email you used before.</span>
+            </p>
+            <p className="text-center text-white/20 text-xs mt-2">
+              <Link href="/portal/login" className="text-[#007bff] hover:underline">
+                Go to artist portal login →
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Auth gate: verify OTP code ─────────────────────────────────────────
+  if (authStep === "code") {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="w-full max-w-sm relative z-10">
+          <div className="fixed top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="w-14 h-14 bg-[#007bff]/10 border border-[#007bff]/20 rounded-2xl flex items-center justify-center mx-auto mb-7">
+            <KeyRound size={24} className="text-[#007bff]" />
+          </div>
+
+          <h1 className="text-white font-bold text-2xl text-center mb-2">Check your inbox</h1>
+          <p className="text-white/50 text-sm text-center leading-relaxed mb-8">
+            We sent a verification code to{" "}
+            <strong className="text-white">{userEmail}</strong>.
+            <br />Enter it below to verify your email and continue.
+          </p>
+
+          <form onSubmit={verifyAuthCode} className="space-y-4">
+            <div>
+              <label className="block text-white/60 text-xs font-medium mb-2 text-center">Verification Code</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={12}
+                value={authCode}
+                onChange={(e) => { setAuthCode(e.target.value.replace(/\D/g, "")); setAuthError(""); }}
+                placeholder="········"
+                required
+                autoFocus
+                className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-center text-2xl font-bold tracking-[0.4em] py-4 rounded-xl transition-colors"
+              />
+            </div>
+
+            {authTimeLeft !== null && authTimeLeft > 0 && (
+              <p className={`text-xs text-center ${authTimeLeft <= 60 ? "text-amber-400" : "text-white/30"}`}>
+                Code expires in {Math.floor(authTimeLeft / 60)}:{String(authTimeLeft % 60).padStart(2, "0")}
+              </p>
+            )}
+            {authTimeLeft === 0 && (
+              <p className="text-red-400 text-xs text-center">Code expired — request a new one below.</p>
+            )}
+
+            {authError && (
+              <p className="text-red-400 text-xs text-center flex items-center justify-center gap-2">
+                <AlertCircle size={13} /> {authError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={authLoading || authCode.length < 4 || authTimeLeft === 0}
+              className="w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+              style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}
+            >
+              {authLoading ? <Loader2 size={16} className="animate-spin" /> : (
+                <>Verify & Continue <ArrowRight size={15} /></>
+              )}
+            </button>
+          </form>
+
+          <button
+            onClick={() => { setAuthStep("email"); setAuthCode(""); setAuthError(""); setAuthTimeLeft(null); }}
+            className="w-full text-center text-white/30 hover:text-white/60 text-xs mt-5 transition-colors"
+          >
+            Use a different email or resend code
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Success state ──────────────────────────────────────────────────────
   if (state === "success") {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 pt-20">
@@ -198,20 +421,23 @@ export default function SubmitPage() {
             <strong className="text-white"> promptly</strong>.
           </p>
           <p className="text-white/40 text-sm mt-4">
-            Check your email for a confirmation from info@orinlabi.com
+            Check your email at <strong className="text-white/70">{userEmail}</strong> for a confirmation from info@orinlabi.com
           </p>
-          <a
-            href="/status"
-            className="mt-3 inline-block text-[#007bff] text-sm hover:underline"
-          >
-            Track your application status →
-          </a>
-          <button
-            onClick={() => { setState("idle"); setAgreed(false); setAudioFile(null); setCoverFile(null); setSamplesUsed(false); setCoverSong(false); }}
-            className="mt-8 block w-full bg-[#007bff] hover:bg-[#0069d9] text-white font-semibold px-8 py-3 rounded-full transition-colors"
-          >
-            Submit Another Application
-          </button>
+          <div className="mt-8 flex flex-col gap-3">
+            <Link
+              href="/portal"
+              className="flex items-center justify-center gap-2 text-white font-bold px-8 py-3.5 rounded-full transition-all"
+              style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)", boxShadow: "0 0 24px rgba(0,123,255,0.35)" }}
+            >
+              Go to your Artist Portal <ExternalLink size={15} />
+            </Link>
+            <a href="/status" className="text-[#007bff] text-sm hover:underline">
+              Track your application status →
+            </a>
+          </div>
+          <p className="text-white/20 text-xs mt-6">
+            Your portal is ready at <Link href="/portal/login" className="underline hover:text-white/40">orinlabi.com/portal</Link>
+          </p>
         </div>
       </div>
     );
@@ -293,7 +519,18 @@ export default function SubmitPage() {
               <div className="grid sm:grid-cols-2 gap-5">
                 <Field label="Artist Name" name="artistName" required />
                 <Field label="Legal Name" name="legalName" required />
-                <Field label="Email Address" name="email" type="email" required />
+                {/* Email pre-filled from verified account — not editable */}
+                <div>
+                  <label className="block text-white/70 text-sm font-medium mb-2">
+                    Email Address <span className="text-[#007bff] ml-1">*</span>
+                  </label>
+                  <div className="flex items-center gap-3 bg-white/[0.03] border border-[#007bff]/20 rounded-xl px-4 py-3">
+                    <Mail size={14} className="text-[#007bff] flex-shrink-0" />
+                    <span className="text-white text-sm flex-1">{userEmail}</span>
+                    <span className="text-[9px] font-bold text-[#007bff] bg-[#007bff]/10 px-2 py-0.5 rounded-full uppercase tracking-wider">Verified</span>
+                  </div>
+                  <input type="hidden" name="email" value={userEmail} />
+                </div>
                 <Field label="Phone Number" name="phone" type="tel" required />
                 <div className="sm:col-span-2">
                   <Select label="Country" name="country" options={countries} required />
