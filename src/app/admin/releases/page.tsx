@@ -9,6 +9,15 @@ import { PlatformIcon } from "@/components/PlatformIcon";
 
 const PLATFORMS = LISTENING_PLATFORMS;
 
+function toSlug(name: string) {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 type Release = {
   id: string;
   artist_name: string;
@@ -1117,11 +1126,11 @@ export default function ReleasesPage() {
                     </p>
                     <div className="flex items-center gap-2 bg-[#007bff]/[0.06] border border-[#007bff]/20 rounded-xl px-3 py-2.5">
                       <span className="text-[#007bff]/80 text-xs font-mono flex-1 truncate">
-                        orinlabi.com/listen/{selected.id}
+                        orinlabi.com/listen/{toSlug(selected.artist_name)}
                       </span>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://orinlabi.com/listen/${selected.id}`);
+                          navigator.clipboard.writeText(`https://orinlabi.com/listen/${toSlug(selected.artist_name)}`);
                           setSmartLinkCopied(true);
                           setTimeout(() => setSmartLinkCopied(false), 2000);
                         }}
@@ -1130,7 +1139,7 @@ export default function ReleasesPage() {
                         {smartLinkCopied ? "Copied ✓" : "Copy"}
                       </button>
                       <a
-                        href={`https://orinlabi.com/listen/${selected.id}`}
+                        href={`https://orinlabi.com/listen/${toSlug(selected.artist_name)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-white/30 hover:text-white transition-colors flex-shrink-0"
@@ -1138,7 +1147,7 @@ export default function ReleasesPage() {
                         <ExternalLink size={12} />
                       </a>
                     </div>
-                    <p className="text-white/20 text-[10px] mt-1.5">Permanent fan link. Redirects to Ditto (when set) or shows individual store links.</p>
+                    <p className="text-white/20 text-[10px] mt-1.5">Fan link stays on orinlabi.com. Shows listen page or pre-save depending on release date.</p>
                   </div>
 
                 </Section>
@@ -1192,7 +1201,7 @@ export default function ReleasesPage() {
                     {presaveEnabled && (
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://orinlabi.com/presave/${selected.id}`);
+                          navigator.clipboard.writeText(`https://orinlabi.com/presave/${toSlug(selected.artist_name)}`);
                         }}
                         className="flex items-center gap-2 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.10] text-white/50 hover:text-white px-4 py-2 rounded-lg transition-colors"
                       >
@@ -1205,12 +1214,12 @@ export default function ReleasesPage() {
                     <div className="mt-3">
                       <p className="text-white/25 text-xs mb-1">Fan link:</p>
                       <a
-                        href={`https://orinlabi.com/presave/${selected.id}`}
+                        href={`https://orinlabi.com/presave/${toSlug(selected.artist_name)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#1db954] text-xs hover:underline font-mono break-all"
                       >
-                        orinlabi.com/presave/{selected.id}
+                        orinlabi.com/presave/{toSlug(selected.artist_name)}
                       </a>
                     </div>
                   )}

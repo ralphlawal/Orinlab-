@@ -14,26 +14,60 @@ type Props = {
   searchParams: Promise<Record<string, string>>;
 };
 
+const SELECT = "id, artist_name, song_title, album_title, release_type, release_date, cover_art_url, presave_url";
+
+async function getRelease(id: string) {
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id);
+
+  if (isUUID) {
+    const { data } = await db
+      .from("releases")
+      .select(SELECT)
+      .eq("id", id)
+      .eq("presave_enabled", true)
+      .maybeSingle();
+    return data;
+  }
+
+  // Slug lookup: 'staeci-moore' → find by artist_name
+  const nameQuery = id.replace(/-/g, " ");
+  const { data: rows } = await db
+    .from("releases")
+    .select(SELECT)
+    .ilike("artist_name", nameQuery)
+    .eq("presave_enabled", true)
+    .order("created_at", { ascending: false })
+    .limit(1);
+  return rows?.[0] ?? null;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const { data } = await db
-    .from("releases")
-    .select("artist_name, song_title, album_title, release_type, cover_art_url")
-    .eq("id", id)
-    .eq("presave_enabled", true)
-    .maybeSingle();
+  const data = await getRelease(id);
+  if (!data) return { title: "Pre-save | OrinlabÍ" };
 
-  if (!data) return { title: "Pre-save | OrinlabÍ Records" };
+  const title =
+    data.release_type === "Album" || data.release_type === "EP"
+      ? data.album_title || data.song_title
+      : data.song_title;
 
-  const title = (data.release_type === "Album" || data.release_type === "EP")
-    ? (data.album_title || data.song_title)
-    : data.song_title;
+  const releaseDate = data.release_date
+    ? new Date(data.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+    : null;
 
   return {
-    title: `Pre-save: ${title} by ${data.artist_name} | OrinlabÍ Records`,
+    title: `${title} · ${data.artist_name}`,
+    description: releaseDate ? `Pre-save now — dropping ${releaseDate}` : `Pre-save ${title} by ${data.artist_name}`,
     openGraph: {
-      title: `${title} — Pre-save now`,
-      description: `Save "${title}" by ${data.artist_name} before it drops. Powered by OrinlabÍ Records.`,
+      title: `${title} · ${data.artist_name}`,
+      description: releaseDate ? `Pre-save now — dropping ${releaseDate}` : `Pre-save now`,
+      images: data.cover_art_url ? [{ url: data.cover_art_url, width: 1200, height: 1200 }] : [],
+      siteName: "OrinlabÍ",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} · ${data.artist_name}`,
+      description: releaseDate ? `Pre-save now — dropping ${releaseDate}` : `Pre-save now`,
       images: data.cover_art_url ? [data.cover_art_url] : [],
     },
   };
@@ -41,28 +75,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PresavePage({ params }: Props) {
   const { id } = await params;
-
-  const { data: release } = await db
-    .from("releases")
-    .select("id, artist_name, song_title, album_title, release_type, release_date, cover_art_url, presave_url")
-    .eq("id", id)
-    .eq("presave_enabled", true)
-    .maybeSingle();
+  const release = await getRelease(id);
 
   if (!release || !release.presave_url) notFound();
 
-  const title = (release.release_type === "Album" || release.release_type === "EP")
-    ? (release.album_title || release.song_title)
-    : release.song_title;
+  const title =
+    release.release_type === "Album" || release.release_type === "EP"
+      ? release.album_title || release.song_title
+      : release.song_title;
 
   const releaseDate = release.release_date
     ? new Date(release.release_date).toLocaleDateString("en-GB", {
-        day: "numeric", month: "long", year: "numeric",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       })
     : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black overflow-y-auto flex flex-col items-center justify-center px-4 py-16">
+    // pt-24 ensures cover art clears the fixed navbar (h-16 + breathing room)
+    <div className="fixed inset-0 z-50 bg-black overflow-y-auto flex flex-col items-center justify-start pt-24 pb-16 px-4">
       {release.cover_art_url && (
         <div
           className="fixed inset-0 opacity-20 blur-3xl scale-110 bg-cover bg-center"
@@ -89,8 +121,10 @@ export default async function PresavePage({ params }: Props) {
         </div>
 
         {releaseDate && (
-          <p className="text-xs font-bold uppercase tracking-widest mb-3 text-center"
-            style={{ color: "#1db954" }}>
+          <p
+            className="text-xs font-bold uppercase tracking-widest mb-3 text-center"
+            style={{ color: "#1db954" }}
+          >
             Coming {releaseDate}
           </p>
         )}
@@ -98,15 +132,11 @@ export default async function PresavePage({ params }: Props) {
         <h1 className="text-white text-3xl font-black text-center leading-tight mb-1.5">
           {title}
         </h1>
-        <p className="text-white/50 text-base text-center mb-8">
-          {release.artist_name}
-        </p>
+        <p className="text-white/50 text-base text-center mb-8">{release.artist_name}</p>
 
         <PresaveActions releaseId={release.id} presaveUrl={release.presave_url} />
 
-        <p className="text-white/20 text-xs text-center mt-10">
-          Distributed by OrinlabÍ Records
-        </p>
+        <p className="text-white/20 text-xs text-center mt-10">Distributed by OrinlabÍ Records</p>
       </div>
     </div>
   );
