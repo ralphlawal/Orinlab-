@@ -48,7 +48,7 @@ async function getRelease(id: string): Promise<PresaveRelease | null> {
     .from("releases")
     .select(SELECT)
     .ilike("artist_name", `%${nameQuery}%`)
-    .order("created_at", { ascending: false })
+    .order("submitted_at", { ascending: false })
     .limit(1);
   if (error) return null;
   return ((data as PresaveRelease[])?.[0]) ?? null;
@@ -100,8 +100,40 @@ export default async function PresavePage({ params }: Props) {
   const { id } = await params;
   const release = await getRelease(id);
 
-  if (!release || !release.presave_enabled || !release.presave_url) {
-    notFound();
+  // True 404 — release doesn't exist at all
+  if (!release) notFound();
+
+  // Release exists but pre-save isn't configured yet — show holding page
+  if (!release.presave_enabled || !release.presave_url) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center px-6 text-center">
+        {release.cover_art_url && (
+          <div
+            className="fixed inset-0 opacity-15 blur-3xl scale-110 bg-cover bg-center"
+            style={{ backgroundImage: `url(${release.cover_art_url})` }}
+            aria-hidden="true"
+          />
+        )}
+        <div className="relative z-10 max-w-sm">
+          {release.cover_art_url && (
+            <Image
+              src={release.cover_art_url}
+              alt={release.song_title}
+              width={160}
+              height={160}
+              className="w-40 h-40 object-cover rounded-2xl mx-auto mb-6 shadow-2xl"
+            />
+          )}
+          <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Distributed by ORINLABÍ</p>
+          <h1 className="text-white font-bold text-2xl mb-2">{release.song_title}</h1>
+          <p className="text-white/50 text-sm mb-6">{release.artist_name}</p>
+          <div className="bg-white/[0.06] border border-white/[0.10] rounded-2xl px-6 py-5">
+            <p className="text-white font-semibold mb-1">Pre-save coming soon</p>
+            <p className="text-white/40 text-sm">The pre-save link will be live shortly. Check back soon.</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const title =

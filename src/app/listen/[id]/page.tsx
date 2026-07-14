@@ -48,7 +48,7 @@ async function getRelease(id: string): Promise<Release | null> {
     .from("releases")
     .select(SELECT)
     .ilike("artist_name", `%${nameQuery}%`)
-    .order("created_at", { ascending: false })
+    .order("submitted_at", { ascending: false })
     .limit(1);
   if (error) return null;
   return ((data as Release[])?.[0]) ?? null;
