@@ -106,7 +106,7 @@ export default async function PresavePage({ params }: Props) {
   // Release exists but pre-save isn't configured yet — show holding page
   if (!release.presave_enabled || !release.presave_url) {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center px-6 text-center">
+      <div className="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center px-6 text-center">
         {release.cover_art_url && (
           <div
             className="fixed inset-0 opacity-15 blur-3xl scale-110 bg-cover bg-center"
@@ -151,7 +151,7 @@ export default async function PresavePage({ params }: Props) {
 
   return (
     // pt-24 clears the fixed navbar (h-16/h-[72px]) with breathing room
-    <div className="fixed inset-0 z-50 bg-black overflow-y-auto flex flex-col items-center justify-start pt-24 pb-16 px-4">
+    <div className="fixed inset-0 z-[60] bg-black overflow-y-auto flex flex-col items-center justify-start pt-6 pb-16 px-4">
       {release.cover_art_url && (
         <div
           className="fixed inset-0 opacity-20 blur-3xl scale-110 bg-cover bg-center"

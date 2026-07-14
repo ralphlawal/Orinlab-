@@ -141,7 +141,7 @@ export default async function ListenPage({
           />
         )}
         <div className="fixed inset-0 bg-black/65" />
-        <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pb-16">
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pt-16 pb-16">
           <div className="w-full max-w-md">
             {/* Cover art */}
             <div className="w-full aspect-square overflow-hidden relative">
@@ -315,7 +315,7 @@ export default async function ListenPage({
         </>
       )}
 
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pb-16">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pt-16 pb-16">
         <div className="w-full max-w-md">
           {/* Cover art */}
           <div className="w-full aspect-square overflow-hidden relative">
