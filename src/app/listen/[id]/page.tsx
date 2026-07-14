@@ -52,13 +52,12 @@ async function getRelease(id: string): Promise<Release | null> {
     return (data as Release) ?? null;
   }
 
-  // Slug lookup: 'staeci-moore' → find artist matching 'staeci moore'
+  // Slug lookup: 'staeci-moore' → search by artist_name (no status filter; render handles all states)
   const nameQuery = id.replace(/-/g, " ");
   const { data: rows } = await supabase
     .from("releases")
     .select(SELECT)
-    .ilike("artist_name", nameQuery)
-    .in("status", ["approved", "live"])
+    .ilike("artist_name", `%${nameQuery}%`)
     .order("created_at", { ascending: false })
     .limit(1);
   return ((rows?.[0]) as Release) ?? null;

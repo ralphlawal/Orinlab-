@@ -14,28 +14,27 @@ type Props = {
   searchParams: Promise<Record<string, string>>;
 };
 
-const SELECT = "id, artist_name, song_title, album_title, release_type, release_date, cover_art_url, presave_url";
+const SELECT = "id, artist_name, song_title, album_title, release_type, release_date, cover_art_url, presave_url, presave_enabled";
 
 async function getRelease(id: string) {
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id);
 
   if (isUUID) {
+    // Fetch by ID — presave_enabled/presave_url check happens in the render
     const { data } = await db
       .from("releases")
       .select(SELECT)
       .eq("id", id)
-      .eq("presave_enabled", true)
       .maybeSingle();
     return data;
   }
 
-  // Slug lookup: 'staeci-moore' → find by artist_name
+  // Slug lookup: 'staeci-moore' → find by artist_name (no presave filter; render handles it)
   const nameQuery = id.replace(/-/g, " ");
   const { data: rows } = await db
     .from("releases")
     .select(SELECT)
-    .ilike("artist_name", nameQuery)
-    .eq("presave_enabled", true)
+    .ilike("artist_name", `%${nameQuery}%`)
     .order("created_at", { ascending: false })
     .limit(1);
   return rows?.[0] ?? null;
@@ -77,7 +76,7 @@ export default async function PresavePage({ params }: Props) {
   const { id } = await params;
   const release = await getRelease(id);
 
-  if (!release || !release.presave_url) notFound();
+  if (!release || !release.presave_enabled || !release.presave_url) notFound();
 
   const title =
     release.release_type === "Album" || release.release_type === "EP"
