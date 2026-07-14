@@ -1,31 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Music2, Bell, Loader2 } from "lucide-react";
+import { Check, Copy, Bell, Loader2 } from "lucide-react";
 
 const PLATFORMS = [
-  { label: "Spotify",      color: "#1db954" },
-  { label: "Apple Music",  color: "#fc3c44" },
-  { label: "Deezer",       color: "#a238ff" },
-  { label: "Tidal",        color: "#ffffff" },
-  { label: "Amazon Music", color: "#00a8e0" },
-  { label: "SoundCloud",   color: "#ff5500" },
-  { label: "Audiomack",    color: "#ffa500" },
+  { label: "Spotify",      color: "#1db954", bg: "#1db95420" },
+  { label: "Apple Music",  color: "#fc3c44", bg: "#fc3c4420" },
+  { label: "Amazon Music", color: "#00a8e0", bg: "#00a8e020" },
+  { label: "Deezer",       color: "#a238ff", bg: "#a238ff20" },
+  { label: "Tidal",        color: "#e0e0e0", bg: "#e0e0e015" },
+  { label: "Audiomack",    color: "#ffa500", bg: "#ffa50020" },
+  { label: "Boomplay",     color: "#ff4b4b", bg: "#ff4b4b20" },
 ];
 
 export default function PresaveActions({
   releaseId,
   presaveUrl,
+  artistName,
+  songTitle,
 }: {
   releaseId: string;
   presaveUrl: string;
+  artistName?: string;
+  songTitle?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifyState, setNotifyState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
   function copyLink() {
-    const url = window.location.origin + `/presave/${releaseId}`;
+    const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -40,7 +44,12 @@ export default function PresaveActions({
       const res = await fetch("/api/presave", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ releaseId, email: notifyEmail.trim() }),
+        body: JSON.stringify({
+          releaseId,
+          email: notifyEmail.trim(),
+          artistName,
+          songTitle,
+        }),
       });
       setNotifyState(res.ok ? "done" : "error");
     } catch {
@@ -50,33 +59,32 @@ export default function PresaveActions({
 
   return (
     <div className="space-y-3">
-      {/* Main CTA */}
-      <a
-        href={presaveUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex w-full items-center justify-center gap-2.5 font-bold py-4 rounded-xl transition-all text-base hover:opacity-90 active:scale-[0.98]"
-        style={{ background: "#1db954", color: "#000" }}
-      >
-        <Music2 size={20} />
-        Pre-save on all platforms
-      </a>
-
-      {/* Platform badges */}
-      <div className="flex flex-wrap items-center justify-center gap-2 pt-1 pb-1">
+      {/* Per-platform pre-save buttons */}
+      <div className="space-y-2.5">
         {PLATFORMS.map((p) => (
-          <span
+          <a
             key={p.label}
-            className="text-[10px] font-semibold px-2.5 py-1 rounded-full border"
-            style={{ color: p.color, borderColor: `${p.color}40`, background: `${p.color}12` }}
+            href={presaveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between w-full rounded-2xl px-4 py-3.5 transition-all hover:brightness-110 active:scale-[0.98]"
+            style={{ background: p.bg, border: `1px solid ${p.color}30` }}
           >
-            {p.label}
-          </span>
+            <span className="font-semibold text-sm" style={{ color: p.color }}>
+              {p.label}
+            </span>
+            <span
+              className="text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{ background: p.color, color: p.color === "#e0e0e0" ? "#000" : "#000" }}
+            >
+              Pre-save
+            </span>
+          </a>
         ))}
       </div>
 
       {/* Notify me on drop */}
-      <div className="border border-white/[0.08] rounded-xl p-4">
+      <div className="border border-white/[0.08] rounded-2xl p-4 mt-2">
         {notifyState === "done" ? (
           <div className="flex items-center justify-center gap-2 text-green-400 text-sm py-1">
             <Check size={15} /> You&apos;re on the list — we&apos;ll notify you when it drops!
@@ -93,7 +101,7 @@ export default function PresaveActions({
                 onChange={(e) => { setNotifyEmail(e.target.value); setNotifyState("idle"); }}
                 placeholder="your@email.com"
                 required
-                className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-white/30 outline-none text-white placeholder-white/20 text-sm px-3 py-2 rounded-lg transition-colors text-xs"
+                className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-white/30 outline-none text-white placeholder-white/20 text-sm px-3 py-2 rounded-lg transition-colors"
               />
               <button
                 type="submit"
@@ -111,7 +119,7 @@ export default function PresaveActions({
       {/* Copy link */}
       <button
         onClick={copyLink}
-        className="w-full border border-white/[0.08] hover:border-white/20 text-white/35 hover:text-white/60 font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+        className="w-full border border-white/[0.08] hover:border-white/20 text-white/35 hover:text-white/60 font-medium py-3 rounded-2xl transition-colors flex items-center justify-center gap-2 text-sm"
       >
         {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy link</>}
       </button>

@@ -194,7 +194,12 @@ export default async function PresavePage({ params }: Props) {
           {release.artist_name}
         </p>
 
-        <PresaveActions releaseId={release.id} presaveUrl={release.presave_url} />
+        <PresaveActions
+          releaseId={release.id}
+          presaveUrl={release.presave_url}
+          artistName={release.artist_name}
+          songTitle={title}
+        />
 
         <p className="text-white/20 text-xs text-center mt-10">
           Distributed by OrinlabÍ Records
