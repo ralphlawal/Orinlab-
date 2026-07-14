@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       supabase.from("label_profiles").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("support_tickets").select("*", { count: "exact", head: true }).eq("status", "open"),
       supabase.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist"),
+      supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist").is("read_at", null),
       supabase.from("playlist_pitches").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "approved").is("contract_signed_at", null),
       supabase.from("artist_profiles").select("email,bio,artist_image_url,instagram_handle,x_handle,tiktok_username,country,payout_method").eq("status", "approved"),

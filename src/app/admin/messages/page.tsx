@@ -118,6 +118,7 @@ function ArtistChats() {
   const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
   const [recording, setRecording] = useState(false);
   const [recordingSecs, setRecordingSecs] = useState(0);
+  const selectedEmailRef = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -201,13 +202,19 @@ function ArtistChats() {
             }
             return sel;
           });
-          // Bump unread count in thread list
+          // Bump unread only if this thread is not currently open
           setThreads((prev) =>
-            prev.map((t) =>
-              t.email === incoming.artist_email && incoming.sender === "artist"
-                ? { ...t, unread: t.unread + 1, lastContent: incoming.content || (incoming.attachment_type === "audio" ? "🎤 Voice message" : `📎 ${incoming.attachment_name ?? "File"}`), lastAt: incoming.created_at }
-                : t
-            )
+            prev.map((t) => {
+              if (t.email !== incoming.artist_email) return t;
+              const isActive = selectedEmailRef.current === incoming.artist_email;
+              const preview = incoming.content || (incoming.attachment_type === "audio" ? "🎤 Voice message" : `📎 ${incoming.attachment_name ?? "File"}`);
+              return {
+                ...t,
+                lastContent: preview,
+                lastAt: incoming.created_at,
+                unread: incoming.sender === "artist" && !isActive ? t.unread + 1 : t.unread,
+              };
+            })
           );
         }
       )
@@ -215,6 +222,9 @@ function ArtistChats() {
     return () => { supabase.removeChannel(channel); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Keep ref in sync so realtime handler can read current selected email
+  useEffect(() => { selectedEmailRef.current = selected?.email ?? null; }, [selected]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
