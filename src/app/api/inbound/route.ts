@@ -35,9 +35,39 @@ export async function POST(req: NextRequest) {
   const to = Array.isArray(toField) ? toField.join(", ") : str(toField);
   const subject = str(email.subject) || "(no subject)";
 
+  // Log all available keys for debugging
+  console.log("INBOUND EMAIL KEYS:", Object.keys(email));
+
   // Try every field name Resend might use for body content
-  const html = str(email.html) || str(email.html_body) || str(email.htmlBody) || str(email.body_html) || "";
-  const text = str(email.text) || str(email.text_body) || str(email.textBody) || str(email.body_text) || str(email.body) || "";
+  let html = str(email.html) || str(email.html_body) || str(email.htmlBody) || str(email.body_html) || "";
+  let text = str(email.text) || str(email.text_body) || str(email.textBody) || str(email.body_text) || str(email.body) || "";
+
+  // Nested body object: { body: { html, text } }
+  if (!html && !text && email.body && typeof email.body === "object" && !Array.isArray(email.body)) {
+    const b = email.body as Record<string, unknown>;
+    html = str(b.html) || str(b.htmlBody) || "";
+    text = str(b.text) || str(b.plain) || str(b.value) || "";
+  }
+
+  // Content array: [{ type: "text/html", value: "..." }, { type: "text/plain", value: "..." }]
+  if (!html && !text && Array.isArray(email.content)) {
+    for (const part of email.content as Array<Record<string, unknown>>) {
+      const t = str(part.type || part.mimeType || part.contentType).toLowerCase();
+      const v = str(part.value || part.body || part.data || part.content);
+      if (t.includes("html")) html = v;
+      else if (t.includes("plain") || t === "text") text = v;
+    }
+  }
+
+  // Parts array: [{ mimeType: "text/html", body: "..." }, ...]
+  if (!html && !text && Array.isArray(email.parts)) {
+    for (const part of email.parts as Array<Record<string, unknown>>) {
+      const t = str(part.mimeType || part.type || part.contentType).toLowerCase();
+      const v = str(part.body || part.data || part.value || part.content);
+      if (t.includes("html")) html = v;
+      else if (t.includes("plain") || t === "text") text = v;
+    }
+  }
 
   const messageId = str(email.message_id || email.messageId || email["message-id"] || payload.id) || crypto.randomUUID();
   const date = str(email.date || email.created_at || payload.created_at) || new Date().toISOString();
