@@ -12,9 +12,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
+  // Use a full-access key for inbound route creation (RESEND_API_KEY may be send-only)
+  const apiKey = process.env.RESEND_ADMIN_KEY ?? process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "RESEND_API_KEY not set" }, { status: 500 });
+    return NextResponse.json({ error: "RESEND_ADMIN_KEY not set in Vercel env vars" }, { status: 500 });
   }
 
   const res = await fetch("https://api.resend.com/inbound-routes", {
