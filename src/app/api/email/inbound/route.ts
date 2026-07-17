@@ -6,18 +6,7 @@ const db = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Resend inbound webhook — fires whenever an email arrives at info@orinlabi.com
 export async function POST(req: NextRequest) {
-  // Optional secret check: set INBOUND_WEBHOOK_SECRET in Vercel env vars
-  // and add ?secret=xxx to the webhook URL in the Resend dashboard
-  const secret = process.env.INBOUND_WEBHOOK_SECRET;
-  if (secret) {
-    const qs = req.nextUrl.searchParams.get("secret");
-    if (qs !== secret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
-
   let payload: Record<string, unknown>;
   try {
     payload = await req.json();
@@ -25,37 +14,49 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
 
-  // Resend inbound sends the email fields at the top level
-  const from       = String(payload.from ?? "");
-  const toField    = payload.to;
-  const to         = Array.isArray(toField) ? toField.join(", ") : String(toField ?? "");
-  const subject    = String(payload.subject ?? "(no subject)");
-  const html       = String(payload.html ?? "");
-  const text       = String(payload.text ?? "");
-  const messageId  = String(payload.message_id ?? payload.messageId ?? crypto.randomUUID());
-  const date       = String(payload.date ?? new Date().toISOString());
+  // Log the full payload so we can inspect it in Vercel logs
+  console.log("INBOUND EMAIL PAYLOAD:", JSON.stringify(payload, null, 2));
+
+  // Resend wraps email data under a "data" key for webhook events:
+  // { type: "email.received", data: { from, to, subject, html, text, ... } }
+  // But also supports flat format. Handle both.
+  const email = (payload.data && typeof payload.data === "object")
+    ? payload.data as Record<string, unknown>
+    : payload;
+
+  const from      = String(email.from ?? "");
+  const toField   = email.to;
+  const to        = Array.isArray(toField) ? toField.join(", ") : String(toField ?? "");
+  const subject   = String(email.subject ?? "(no subject)");
+  const html      = String(email.html ?? "");
+  const text      = String(email.text ?? "");
+  const messageId = String(email.message_id ?? email.messageId ?? (payload.id ?? crypto.randomUUID()));
+  const date      = String(email.date ?? email.created_at ?? payload.created_at ?? new Date().toISOString());
 
   if (!from) {
-    return NextResponse.json({ error: "Missing from" }, { status: 400 });
+    console.error("INBOUND: missing 'from' field. Full payload:", payload);
+    // Return 200 so Resend doesn't keep retrying with bad data
+    return NextResponse.json({ received: true, warning: "No from field" });
   }
 
   const { error } = await db.from("received_emails").upsert(
     {
       message_id:   messageId,
       from_address: from,
-      to_address:   to,
+      to_address:   to || "info@orinlabi.com",
       subject,
-      html_body:    html,
-      text_body:    text,
+      html_body:    html || null,
+      text_body:    text || null,
       received_at:  date,
     },
     { onConflict: "message_id" }
   );
 
   if (error) {
-    console.error("received_emails insert:", error);
-    return NextResponse.json({ error: "DB error" }, { status: 500 });
+    console.error("received_emails insert error:", error);
+    return NextResponse.json({ error: "DB error", detail: error.message }, { status: 500 });
   }
 
+  console.log("INBOUND: stored email from", from, "subject:", subject);
   return NextResponse.json({ success: true });
 }
