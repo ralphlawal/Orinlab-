@@ -271,6 +271,8 @@ function EmailPageInner() {
   const [sent, setSent]               = useState<SentEmail[]>([]);
   const [loadingInbox, setLoadingInbox] = useState(true);
   const [replyTo, setReplyTo]         = useState<{ to: string; subject: string } | null>(null);
+  const [setupState, setSetupState]   = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [setupMsg, setSetupMsg]       = useState("");
 
   // Realtime refresh for inbox
   const refreshInbox = async () => {
@@ -301,6 +303,28 @@ function EmailPageInner() {
   }, []);
 
   const unread = received.filter((e) => !e.read_at).length;
+
+  async function setupInbound() {
+    setSetupState("loading");
+    setSetupMsg("");
+    try {
+      const res = await fetch("/api/admin/setup-inbound-route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-email": adminEmail },
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setSetupState("done");
+        setSetupMsg("Inbound route created! Send a test email to info@orinlabi.com now.");
+      } else {
+        setSetupState("error");
+        setSetupMsg(json.detail?.message ?? json.error ?? "Failed — check Vercel logs.");
+      }
+    } catch {
+      setSetupState("error");
+      setSetupMsg("Network error.");
+    }
+  }
 
   function handleReply(email: ReceivedEmail) {
     setReplyTo({
@@ -336,6 +360,29 @@ function EmailPageInner() {
           </button>
         </div>
       </div>
+
+      {/* One-time inbound route setup */}
+      {setupState !== "done" && (
+        <div className="mb-5 flex items-center justify-between bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3">
+          <div>
+            <p className="text-amber-400 text-sm font-semibold">Inbound routing not configured yet</p>
+            <p className="text-amber-400/60 text-xs mt-0.5">{setupMsg || "Click to wire up receiving from Resend — one-time setup."}</p>
+          </div>
+          <button
+            onClick={setupInbound}
+            disabled={setupState === "loading"}
+            className="shrink-0 ml-4 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-xs font-bold px-4 py-2 rounded-lg transition-colors"
+          >
+            {setupState === "loading" ? "Setting up…" : setupState === "error" ? "Retry" : "Set up inbound"}
+          </button>
+        </div>
+      )}
+      {setupState === "done" && (
+        <div className="mb-5 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
+          <p className="text-green-400 text-sm font-semibold">Inbound routing active</p>
+          <p className="text-green-400/60 text-xs mt-0.5">{setupMsg}</p>
+        </div>
+      )}
 
       {tab === "inbox" && (
         <>
