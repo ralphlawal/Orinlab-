@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
-  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send, CreditCard, Zap,
 } from "lucide-react";
 
 type Counts = {
@@ -19,6 +19,7 @@ type Counts = {
   messages: number;
   pitches: number;
   compliance: number;
+  subscribers: number;
 };
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
@@ -44,7 +45,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [checking, setChecking]     = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0, pitches: 0, compliance: 0 });
+  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0, pitches: 0, compliance: 0, subscribers: 0 });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -64,6 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       { count: payouts },
       { count: messages },
       { count: pitches },
+      { count: subscribers },
       { data: approvedArtists },
       { data: approvedReleases },
     ] = await Promise.all([
@@ -73,6 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       supabase.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist").is("read_at", null),
       supabase.from("playlist_pitches").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("artist_profiles").select("*", { count: "exact", head: true }).eq("plan_status", "active"),
       supabase.from("artist_profiles").select("email,bio,artist_image_url,instagram_handle,x_handle,tiktok_username,country,payout_method").eq("status", "approved"),
       supabase.from("releases").select("email,store_links,lyrics,royalties_usd").eq("status", "approved"),
     ]);
@@ -101,6 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       messages: messages ?? 0,
       pitches: pitches ?? 0,
       compliance: complianceCount,
+      subscribers: subscribers ?? 0,
     });
   }, []);
 
@@ -158,7 +162,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     {
       label: "Finance",
       items: [
-        { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={17} />,      badge: counts.payouts,  superOnly: false },
+        { label: "Subscriptions", href: "/admin/subscriptions", icon: <CreditCard size={17} />,      badge: counts.subscribers, superOnly: false },
+        { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={17} />,      badge: counts.payouts,     superOnly: false },
+        { label: "Priority Distro", href: "/admin/releases",   icon: <Zap size={17} />,             badge: 0,                  superOnly: false },
       ],
     },
     {
@@ -205,10 +211,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`fixed inset-y-0 left-0 z-40 w-56 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         {/* Logo */}
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
-          <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
-            alt="OrinlabÍ Records" width={88} height={24} className="object-contain"
-          />
+          <Link href="/">
+            <Image
+              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
+              alt="OrinlabÍ Records" width={88} height={24} className="object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </Link>
           <p className="text-white/25 text-[11px] mt-1.5 font-medium tracking-wide uppercase">Admin Panel</p>
         </div>
 

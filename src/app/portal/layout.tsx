@@ -336,10 +336,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
         {/* Logo + identity */}
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.05]">
-          <Image
-            src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
-            alt="OrinlabÍ Records" width={88} height={24} className="object-contain"
-          />
+          <Link href="/">
+            <Image
+              src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
+              alt="OrinlabÍ Records" width={88} height={24} className="object-contain opacity-80 hover:opacity-100 transition-opacity"
+            />
+          </Link>
           <p className="text-white/20 text-[10px] mt-1.5 font-semibold tracking-widest uppercase">Artist Portal</p>
         </div>
 

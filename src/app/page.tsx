@@ -79,18 +79,18 @@ const getRealSpotlightArtists = unstable_cache(
 
 /* ── Floating DSP icons ───────────────────────────────────────────────────── */
 const HERO_PLATFORMS = [
-  { key: "spotify",       color: "#1DB954", size: 52, top: "9%",  left: "56%" },
-  { key: "apple_music",   color: "#FC3C44", size: 44, top: "22%", left: "79%" },
-  { key: "tiktok",        color: "#69C9D0", size: 40, top: "40%", left: "89%" },
-  { key: "boomplay",      color: "#FF6B35", size: 36, top: "60%", left: "81%" },
-  { key: "audiomack",     color: "#FFA500", size: 34, top: "75%", left: "62%" },
-  { key: "deezer",        color: "#A238FF", size: 32, top: "56%", left: "49%" },
-  { key: "amazon_music",  color: "#00A8E1", size: 38, top: "29%", left: "64%" },
-  { key: "tidal",         color: "#00FFFF", size: 30, top: "14%", left: "89%" },
-  { key: "soundcloud",    color: "#FF5500", size: 28, top: "85%", left: "74%" },
-  { key: "youtube_music", color: "#FF0000", size: 36, top: "47%", left: "71%" },
-  { key: "instagram",     color: "#E1306C", size: 26, top: "90%", left: "52%" },
-  { key: "anghami",       color: "#9B59B6", size: 30, top: "6%",  left: "71%" },
+  { key: "spotify",       color: "#1DB954", size: 52, top: "10%", left: "4%"  },
+  { key: "apple_music",   color: "#FC3C44", size: 44, top: "8%",  left: "80%" },
+  { key: "tiktok",        color: "#69C9D0", size: 40, top: "35%", left: "92%" },
+  { key: "boomplay",      color: "#FF6B35", size: 36, top: "65%", left: "86%" },
+  { key: "audiomack",     color: "#FFA500", size: 34, top: "78%", left: "62%" },
+  { key: "deezer",        color: "#A238FF", size: 32, top: "82%", left: "28%" },
+  { key: "amazon_music",  color: "#00A8E1", size: 38, top: "24%", left: "88%" },
+  { key: "tidal",         color: "#00FFFF", size: 30, top: "50%", left: "3%"  },
+  { key: "soundcloud",    color: "#FF5500", size: 28, top: "88%", left: "12%" },
+  { key: "youtube_music", color: "#FF0000", size: 36, top: "55%", left: "91%" },
+  { key: "instagram",     color: "#E1306C", size: 26, top: "20%", left: "10%" },
+  { key: "anghami",       color: "#9B59B6", size: 30, top: "40%", left: "5%"  },
 ];
 
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
@@ -134,8 +134,8 @@ function Hero({ s }: { s: HeroSettings }) {
         ))}
       </div>
 
-      {/* Hero content */}
-      <div className="relative z-10 w-full px-6 sm:px-10 lg:px-16 py-24 lg:max-w-[58%]">
+      {/* Hero content — centered */}
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 py-24 flex flex-col items-center text-center">
         <div
           className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-10"
           style={{ animation: "fadeSlideUp 0.6s ease-out both" }}
@@ -163,22 +163,22 @@ function Hero({ s }: { s: HeroSettings }) {
         </h1>
 
         <p
-          className="text-white/45 text-lg sm:text-xl max-w-lg mb-10 leading-relaxed"
+          className="text-white/45 text-lg sm:text-xl max-w-xl mb-10 leading-relaxed"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.2s both" }}
         >
-          {s.subheadline || "Upload to every platform. Keep 100% of your royalties. Your first release is completely free — no credit card required."}
+          {s.subheadline || "Get your music on Spotify, Apple Music, TikTok and 150+ platforms globally. Keep 100% of your royalties."}
         </p>
 
         <div
-          className="flex flex-col sm:flex-row items-start gap-3 mb-5"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.3s both" }}
         >
           <Link
-            href="/submit"
+            href="/pricing"
             className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-full text-base transition-all duration-200 hover:gap-3 group animate-cta-glow"
             style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)" }}
           >
-            Apply Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </Link>
           <Link
             href="/portal/login"
@@ -189,20 +189,20 @@ function Hero({ s }: { s: HeroSettings }) {
         </div>
         <div style={{ animation: "fadeSlideUp 0.7s ease-out 0.35s both" }}>
           <Link href="/pricing" className="text-white/30 hover:text-white/60 text-xs transition-colors">
-            How it works →
+            View pricing →
           </Link>
         </div>
         <div className="mb-12" />
 
         {/* Stats */}
         <div
-          className="flex items-center gap-10 flex-wrap mb-10"
+          className="flex items-center justify-center gap-10 flex-wrap mb-10"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.4s both" }}
         >
           {[
             { value: "∞",    label: "Releases" },
             { value: "150+", label: "Platforms" },
-            { value: "100%", label: "Ownership" },
+            { value: "100%", label: "Royalties" },
           ].map((stat) => (
             <div key={stat.label}>
               <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
@@ -320,18 +320,8 @@ function Distribute() {
         </AnimateIn>
         <AnimateIn delay={140}>
           <p className="text-white/40 mb-12 max-w-lg text-base leading-relaxed">
-            Drop your music on every platform. Spotify, Apple, TikTok, Amazon, YouTube — everywhere. Zero gatekeepers, every penny yours. Your first release is on us.
+            Drop your music on every platform. Spotify, Apple, TikTok, Amazon, YouTube — everywhere. Zero gatekeepers, every royalty yours.
           </p>
-        </AnimateIn>
-
-        {/* FREE FIRST RELEASE badge */}
-        <AnimateIn delay={180}>
-          <div className="inline-flex items-center gap-3 mb-3 bg-gradient-to-r from-green-500/10 to-teal-500/10 border border-green-500/25 rounded-2xl px-5 py-3">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-green-400 text-sm font-bold">First release completely FREE</span>
-            <span className="text-white/30 text-xs">· 15% fee on subsequent releases only</span>
-          </div>
-          <p className="text-white/20 text-[11px] mb-8">Terms &amp; conditions apply. <Link href="/terms" className="underline hover:text-white/40 transition-colors">See full terms →</Link></p>
         </AnimateIn>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-px bg-white/[0.05] rounded-2xl overflow-hidden border border-white/[0.05]">
@@ -352,9 +342,9 @@ function Distribute() {
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4">
           <AnimateIn delay={100}>
-            <Link href="/submit" className="inline-flex items-center gap-2 text-white font-bold px-7 py-3.5 rounded-full text-sm transition-all hover:gap-3 group"
+            <Link href="/pricing" className="inline-flex items-center gap-2 text-white font-bold px-7 py-3.5 rounded-full text-sm transition-all hover:gap-3 group"
               style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)", boxShadow: "0 0 20px rgba(0,123,255,0.3)" }}>
-              Start Releasing Free <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              Start Releasing <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </AnimateIn>
         </div>
@@ -366,10 +356,10 @@ function Distribute() {
 /* ── Stats (with CountUp) ─────────────────────────────────────────────────── */
 function Stats() {
   const items = [
-    { to: 150,  suffix: "+", label: "Stores & Platforms",  sub: "All the big names plus hidden gems you haven't discovered yet." },
-    { to: 100,  suffix: "%", label: "Royalty Payouts",      sub: "No deductions on your first release. 85% on everything after. T&Cs apply." },
-    { to: 0,    suffix: "",  label: "Cost to Start",        sub: "Your first distribution is completely free. No credit card needed. T&Cs apply.", prefix: "$" },
-    { to: 48,   suffix: "h", label: "Average Go-Live Time", sub: "Most releases are live on all platforms within two business days." },
+    { to: 150,  suffix: "+",     label: "Stores & Platforms",  sub: "All the big names plus hidden gems you haven't discovered yet." },
+    { to: 100,  suffix: "%",     label: "Royalties Kept",       sub: "Every penny from your streams goes straight to you. We never take a cut." },
+    { to: 3,    suffix: " Days", label: "Priority Delivery",    sub: "Fast-track your release to all 150+ stores in under 3 days with Priority Distribution." },
+    { to: 48,   suffix: "h",     label: "Average Go-Live Time", sub: "Most releases are live on all platforms within two business days." },
   ];
   return (
     <section className="py-20 px-6 border-y border-white/[0.05] relative overflow-hidden">
@@ -380,7 +370,7 @@ function Stats() {
         {items.map((s, i) => (
           <AnimateIn key={s.label} delay={i * 80}>
             <p className="text-[clamp(2.2rem,5vw,3.5rem)] font-bold text-white leading-none">
-              <CountUp to={s.to} prefix={s.prefix} suffix={s.suffix} duration={2000} />
+              <CountUp to={s.to} suffix={s.suffix} duration={2000} />
             </p>
             <p className="text-[#007bff] font-semibold text-sm mt-1.5 mb-1">{s.label}</p>
             <p className="text-white/25 text-xs leading-relaxed">{s.sub}</p>
@@ -509,7 +499,7 @@ function Monetize() {
             </p>
           </AnimateIn>
           <div className="space-y-3 mb-8">
-            {["100% of all streaming revenue (first release)", "YouTube Content ID earnings", "TikTok & Instagram Reels monetisation", "Auto royalty splits for collaborators", "Publishing · PRS, GEMA, ASCAP"].map((item, i) => (
+            {["100% of all streaming revenue", "YouTube Content ID earnings", "TikTok & Instagram Reels monetisation", "Auto royalty splits for collaborators", "Publishing · PRS, GEMA, ASCAP"].map((item, i) => (
               <AnimateIn key={item} delay={200 + i * 60}>
                 <div className="flex items-center gap-3">
                   <CheckCircle2 size={15} className="text-[#007bff] flex-shrink-0" />
@@ -519,9 +509,9 @@ function Monetize() {
             ))}
           </div>
           <AnimateIn delay={520}>
-            <Link href="/submit" className="inline-flex items-center gap-2 text-white font-bold px-7 py-3.5 rounded-full text-sm transition-all hover:gap-3 group"
+            <Link href="/pricing" className="inline-flex items-center gap-2 text-white font-bold px-7 py-3.5 rounded-full text-sm transition-all hover:gap-3 group"
               style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)", boxShadow: "0 0 25px rgba(0,123,255,0.3)" }}>
-              See What You&apos;re Missing <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              View Plans <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </AnimateIn>
         </div>
@@ -824,26 +814,25 @@ function CTA() {
         <AnimateIn className="py-16 sm:py-24">
           <p className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em] mb-5">Ready to release?</p>
           <h2 className="text-[clamp(3rem,8vw,6rem)] font-bold text-white leading-[0.95] tracking-tight mb-4">
-            Start free in<br />
+            Go live in<br />
             <span
               className="text-transparent bg-clip-text"
               style={{ backgroundImage: "linear-gradient(90deg, #007bff, #7c3aed, #ec4899, #007bff)", backgroundSize: "300% auto", animation: "shimmer 5s linear infinite" }}
             >
-              60 seconds.
+              under 48 hours.
             </span>
           </h2>
-          <p className="text-white/35 text-base max-w-sm mx-auto mb-3">
-            First release is completely free. No credit card required.
+          <p className="text-white/35 text-base max-w-sm mx-auto mb-10">
+            Professional distribution for African artists going global. Plans from $19.99/year. Keep 100% of your royalties.
           </p>
-          <p className="text-white/20 text-xs mb-10">From second release onwards: 85% to you, 15% to us. <Link href="/terms" className="underline hover:text-white/40 transition-colors">T&amp;Cs apply.</Link></p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/submit"
+            <Link href="/pricing"
               className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group animate-cta-glow"
               style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}>
-              Sign Up Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <Link href="/pricing" className="text-white/40 hover:text-white font-medium px-7 py-4 rounded-full border border-white/10 hover:border-white/30 transition-all duration-200 text-sm">
-              See how it works
+            <Link href="/about" className="text-white/40 hover:text-white font-medium px-7 py-4 rounded-full border border-white/10 hover:border-white/30 transition-all duration-200 text-sm">
+              Our story
             </Link>
           </div>
         </AnimateIn>
