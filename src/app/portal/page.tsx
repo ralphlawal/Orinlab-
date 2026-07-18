@@ -8,7 +8,7 @@ import {
   Music2, Clock, CheckCircle2, XCircle,
   ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
   BarChart2, DollarSign, Radio, Megaphone, AlertTriangle, Info,
-  ImageIcon, AtSign, CreditCard, Mic2, X, FileText,
+  ImageIcon, AtSign, CreditCard, Mic2, X,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,7 +28,6 @@ type Release = {
   streams: Record<string, number> | null;
   royalties_usd: number | null;
   store_links: Record<string, string> | null;
-  contract_signed_at: string | null;
 };
 
 type Pitch = {
@@ -387,7 +386,7 @@ export default function PortalDashboard() {
       const [releasesRes, profileRes, announcementsRes, pitchesRes, notifsRes] = await Promise.all([
         supabase
           .from("releases")
-          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links,contract_signed_at")
+          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links")
           .eq("email", session.user.email!)
           .order("submitted_at", { ascending: false }),
         supabase
@@ -515,20 +514,6 @@ export default function PortalDashboard() {
       href: "/portal/profile",
       cta: "Set Up Payouts",
       gradient: "linear-gradient(180deg, #10B981, #007bff)",
-    });
-  }
-  // Contract signing — show for approved releases with no contract yet
-  const unsignedContract = approved.find((r) => !r.contract_signed_at);
-  if (unsignedContract) {
-    allReminders.push({
-      id: `unsigned_contract_${unsignedContract.id}`,
-      icon: FileText,
-      iconColor: "#8B5CF6",
-      title: "Sign your distribution agreement",
-      body: `Your release "${unsignedContract.song_title}" is approved but your contract hasn't been signed yet. Sign it to lock in your distribution terms.`,
-      href: `/portal/contract/${unsignedContract.id}`,
-      cta: "Sign Now",
-      gradient: "linear-gradient(180deg, #8B5CF6, #007bff)",
     });
   }
 

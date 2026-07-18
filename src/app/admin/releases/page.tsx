@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download, Wrench } from "lucide-react";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download, Wrench, Zap } from "lucide-react";
 import { LISTENING_PLATFORMS } from "@/lib/platforms";
 import { PlatformIcon } from "@/components/PlatformIcon";
 
@@ -60,6 +60,8 @@ type Release = {
   store_platforms: string | null;
   youtube_content_id: boolean | null;
   distribution_stage: string | null;
+  distribution_priority: "standard" | "priority" | null;
+  priority_paid: boolean | null;
 };
 
 type Filter = "all" | "pending" | "approved" | "rejected" | "revision_requested";
@@ -155,6 +157,12 @@ export default function ReleasesPage() {
   const [dittoUploaded, setDittoUploaded] = useState(false);
   const [dittoPackCopied, setDittoPackCopied] = useState(false);
 
+  // Priority distribution
+  const [relPriority, setRelPriority] = useState<"standard" | "priority">("standard");
+  const [priorityPaid, setPriorityPaid] = useState(false);
+  const [savingPriority, setSavingPriority] = useState(false);
+  const [prioritySaved, setPrioritySaved] = useState(false);
+
   async function load(p = page) {
     setLoading(true);
     const from = p * PAGE_SIZE;
@@ -210,12 +218,23 @@ export default function ReleasesPage() {
     if (!reason) return;
     setSendingRevision(true);
 
-    // Update status
+    // Auto-push release date by 14 days
+    const newReleaseDate = new Date();
+    newReleaseDate.setDate(newReleaseDate.getDate() + 14);
+    const newReleaseDateStr = newReleaseDate.toISOString().slice(0, 10);
+    const newReleaseDateFormatted = newReleaseDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+    // Update status + release date
     await supabase.from("releases").update({
       status: "revision_requested",
       review_notes: `[Revision requested] ${reason}${note ? `\n\n${note}` : ""}`,
       reviewed_at: new Date().toISOString(),
+      release_date: newReleaseDateStr,
     }).eq("id", selected.id);
+
+    // Update local state
+    setEditReleaseDate(newReleaseDateStr);
+    setSelected((s) => s ? { ...s, status: "revision_requested", release_date: newReleaseDateStr } : s);
 
     // Email artist
     fetch("/api/email", {
@@ -223,7 +242,7 @@ export default function ReleasesPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "revision-requested",
-        data: { email: selected.email, artist_name: selected.artist_name, song_title: selected.song_title, reason, note },
+        data: { email: selected.email, artist_name: selected.artist_name, song_title: selected.song_title, reason, note: `${note ? note + "\n\n" : ""}Your release date has been moved to ${newReleaseDateFormatted} to allow time for the correction.` },
       }),
     }).catch(() => {});
 
@@ -232,7 +251,7 @@ export default function ReleasesPage() {
       email: selected.email,
       type:  "warning",
       title: `Action needed — ${selected.song_title}`,
-      body:  `We need you to update your submission. ${reason}${note ? " " + note : ""}`,
+      body:  `We need you to update your submission. ${reason}${note ? " " + note : ""}\n\nYour new target release date is ${newReleaseDateFormatted}.`,
       link:  `/portal/releases/${selected.id}`,
     }).then(() => {});
 
@@ -275,6 +294,9 @@ export default function ReleasesPage() {
     setPresaveSaved(false);
     setDittoUploaded(r.uploaded_to_ditto ?? false);
     setDittoPackCopied(false);
+    setRelPriority(r.distribution_priority === "priority" ? "priority" : "standard");
+    setPriorityPaid(r.priority_paid ?? false);
+    setPrioritySaved(false);
     setArtistProfile(undefined);
     supabase
       .from("artist_profiles")
@@ -319,6 +341,19 @@ export default function ReleasesPage() {
     setDittoSaved(true);
     setTimeout(() => setDittoSaved(false), 3000);
     load();
+  }
+
+  async function savePriority() {
+    if (!selected) return;
+    setSavingPriority(true);
+    await supabase.from("releases").update({
+      distribution_priority: relPriority,
+      priority_paid: relPriority === "priority" ? priorityPaid : false,
+    }).eq("id", selected.id);
+    setSelected((s) => s ? { ...s, distribution_priority: relPriority, priority_paid: relPriority === "priority" ? priorityPaid : false } : s);
+    setSavingPriority(false);
+    setPrioritySaved(true);
+    setTimeout(() => setPrioritySaved(false), 3000);
   }
 
   async function saveStoreLinks() {
@@ -710,6 +745,12 @@ export default function ReleasesPage() {
                       className="w-4 h-4 rounded accent-[#007bff] cursor-pointer flex-shrink-0" />
                     <h3 className="text-white font-semibold">{r.song_title}</h3>
                     <StatusBadge status={r.status} />
+                    {r.distribution_priority === "priority" && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${r.priority_paid ? "bg-violet-500/20 text-violet-300" : "bg-amber-500/15 text-amber-400"}`}>
+                        <Zap size={10} />
+                        {r.priority_paid ? "Priority ✓" : "Priority (unpaid)"}
+                      </span>
+                    )}
                     {r.explicit && (
                       <span className="text-xs bg-red-500/10 text-red-400 px-2 py-0.5 rounded-full font-medium">
                         Explicit
@@ -1536,6 +1577,46 @@ export default function ReleasesPage() {
                 )}
               </Section>
 
+              {/* Distribution priority */}
+              <Section title="Distribution Priority">
+                <div className="flex gap-2 mb-3">
+                  {(["standard", "priority"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => { setRelPriority(opt); setPrioritySaved(false); }}
+                      className={`flex-1 text-sm font-medium py-2 rounded-xl border transition-colors ${
+                        relPriority === opt
+                          ? opt === "priority"
+                            ? "bg-violet-500/20 border-violet-400/60 text-violet-300"
+                            : "bg-white/10 border-white/30 text-white"
+                          : "border-white/10 text-white/40 hover:text-white/70"
+                      }`}
+                    >
+                      {opt === "standard" ? "Standard (14 days, free)" : "Priority (≤3 days, paid)"}
+                    </button>
+                  ))}
+                </div>
+                {relPriority === "priority" && (
+                  <label className="flex items-center gap-3 cursor-pointer mb-3">
+                    <div
+                      onClick={() => { setPriorityPaid((v) => !v); setPrioritySaved(false); }}
+                      className={`w-10 h-5 rounded-full transition-colors flex-shrink-0 ${priorityPaid ? "bg-violet-500" : "bg-white/20"}`}
+                    >
+                      <div className={`w-4 h-4 bg-white rounded-full mt-0.5 transition-transform ${priorityPaid ? "translate-x-5 ml-0.5" : "ml-0.5"}`} />
+                    </div>
+                    <span className="text-sm text-white/70">Payment received</span>
+                  </label>
+                )}
+                <button
+                  onClick={() => requestUnlock(savePriority)}
+                  disabled={savingPriority || prioritySaved}
+                  className="w-full text-sm font-medium py-2.5 rounded-xl border border-violet-400/40 text-violet-300 hover:bg-violet-500/10 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                >
+                  {savingPriority ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
+                  {prioritySaved ? "Priority Saved ✓" : "Save Priority"}
+                </button>
+              </Section>
+
               {/* Review notes */}
               <div>
                 <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
@@ -1564,7 +1645,7 @@ export default function ReleasesPage() {
               </button>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setEditReleaseDate(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setRevisionPreset(REVISION_PRESETS[0].id); setRevisionNote(""); setRevisionSent(false); setArtistProfile(undefined); }}
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setEditReleaseDate(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setRevisionPreset(REVISION_PRESETS[0].id); setRevisionNote(""); setRevisionSent(false); setRelPriority("standard"); setPriorityPaid(false); setPrioritySaved(false); setArtistProfile(undefined); }}
                   className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
                   Cancel

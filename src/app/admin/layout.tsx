@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
-  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, FileText, ShieldAlert, Send,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send,
 } from "lucide-react";
 
 type Counts = {
@@ -18,7 +18,6 @@ type Counts = {
   payouts: number;
   messages: number;
   pitches: number;
-  unsignedContracts: number;
   compliance: number;
 };
 
@@ -45,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [checking, setChecking]     = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0, pitches: 0, unsignedContracts: 0, compliance: 0 });
+  const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0, pitches: 0, compliance: 0 });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -65,7 +64,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       { count: payouts },
       { count: messages },
       { count: pitches },
-      { count: unsignedContracts },
       { data: approvedArtists },
       { data: approvedReleases },
     ] = await Promise.all([
@@ -75,7 +73,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       supabase.from("payout_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
       supabase.from("messages").select("*", { count: "exact", head: true }).eq("sender", "artist").is("read_at", null),
       supabase.from("playlist_pitches").select("*", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("releases").select("*", { count: "exact", head: true }).eq("status", "approved").is("contract_signed_at", null),
       supabase.from("artist_profiles").select("email,bio,artist_image_url,instagram_handle,x_handle,tiktok_username,country,payout_method").eq("status", "approved"),
       supabase.from("releases").select("email,store_links,lyrics,royalties_usd").eq("status", "approved"),
     ]);
@@ -103,7 +100,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       payouts: payouts ?? 0,
       messages: messages ?? 0,
       pitches: pitches ?? 0,
-      unsignedContracts: unsignedContracts ?? 0,
       compliance: complianceCount,
     });
   }, []);
@@ -136,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases,          superOnly: false },
         { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: counts.pitches,           superOnly: false },
-        { label: "Contracts",     href: "/admin/contracts",     icon: <FileText size={17} />,        badge: counts.unsignedContracts, superOnly: false },
+
       ],
     },
     {
@@ -184,7 +180,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const allNavItems = visibleSections.flatMap(s => s.items);
 
   // Total pending for the hamburger dot
-  const totalPending = counts.releases + counts.labels + counts.support + counts.payouts + counts.unsignedContracts;
+  const totalPending = counts.releases + counts.labels + counts.support + counts.payouts;
 
   async function handleLogout() {
     await supabase.auth.signOut();

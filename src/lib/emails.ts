@@ -429,7 +429,7 @@ export function releaseDateEmail(data: {
 export function artistReminderEmail(data: {
   artistName: string;
   songTitle?: string;
-  reminderType: "profile" | "store-links" | "lyrics" | "payout-details" | "contract";
+  reminderType: "profile" | "store-links" | "lyrics" | "payout-details";
   missingItems?: string[];
 }) {
   const configs = {
@@ -473,16 +473,6 @@ export function artistReminderEmail(data: {
       ctaUrl: "https://orinlabi.com/portal/profile",
       ctaColor: "#dc2626",
     },
-    "contract": {
-      labelText: "One signature away",
-      labelColor: "#1e3a5f", labelBg: "#dbeafe",
-      accent: "#007bff",
-      heading: `${data.artistName}, your distribution agreement needs a signature.`,
-      intro: `Your release "${data.songTitle ?? "your release"}" is approved and ready — but your distribution contract hasn't been signed yet. Without it, we can't fully push your music to global platforms. It takes 60 seconds to sign and you only need to do it once.`,
-      cta: "Sign My Contract",
-      ctaUrl: "https://orinlabi.com/portal",
-      ctaColor: "#007bff",
-    },
   };
 
   const cfg = configs[data.reminderType];
@@ -503,7 +493,26 @@ export function artistReminderEmail(data: {
   `, cfg.accent);
 }
 
-/* ── 14. Revision request ── */
+/* ── 14. Priority payment confirmed ── */
+export function priorityPaymentEmail(data: {
+  artistName: string;
+  songTitle: string;
+  releaseId: string;
+}) {
+  const portalLink = `https://orinlabi.com/portal/releases/${data.releaseId}`;
+  return base(`
+    ${label("Payment confirmed", "#7c3aed", "#ede9fe")}
+    ${h1(`You're on the fast track, ${data.artistName}.`)}
+    ${p(`Your payment for <strong style="color:#0d0d0d;">Priority Distribution</strong> of <strong style="color:#0d0d0d;">"${data.songTitle}"</strong> has been confirmed. Your release will be delivered to all major platforms within <strong style="color:#0d0d0d;">3 days</strong>.`)}
+    ${divider()}
+    ${noteBox(`<strong style="color:#0d0d0d;">What happens next</strong><br/><br/>Our team will begin processing your release immediately. You will receive another notification when your music goes live on streaming platforms.`, "#7c3aed")}
+    ${divider()}
+    ${btn("View My Release", portalLink, "#7c3aed")}
+    ${muted(`Questions? Contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, "#7c3aed");
+}
+
+/* ── 15. Revision request ── */
 export function revisionRequestEmail(data: {
   artistName: string;
   songTitle: string;

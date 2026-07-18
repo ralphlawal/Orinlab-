@@ -134,7 +134,15 @@ export default function PortalLoginPage() {
               </button>
             </form>
 
-            <p className="text-center text-white/25 text-xs mt-8">
+            <p className="text-center text-white/25 text-xs mt-6">
+              By signing in, you agree to our{" "}
+              <a href="/terms" className="text-white/40 hover:text-white underline underline-offset-2">
+                Terms of Service & Distribution Agreement
+              </a>
+              .
+            </p>
+
+            <p className="text-center text-white/20 text-xs mt-4">
               Not yet an artist?{" "}
               <a href="/submit" className="text-[#007bff] hover:underline">
                 Apply for distribution

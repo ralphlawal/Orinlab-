@@ -87,6 +87,7 @@ export default function NewReleasePage() {
   const [newSongStory, setNewSongStory] = useState(draft?.song_story ?? "");
   const [newMixingEngineer, setNewMixingEngineer] = useState(draft?.mixing_engineer ?? "");
   const [newMasteringEngineer, setNewMasteringEngineer] = useState(draft?.mastering_engineer ?? "");
+  const [distributionPriority, setDistributionPriority] = useState<"standard" | "priority">("standard");
 
   const isMultiTrack = releaseType === "Album" || releaseType === "EP" || releaseType === "Compilation";
 
@@ -318,15 +319,20 @@ export default function NewReleasePage() {
         music_video_url:      newVideoUrl.trim() || null,
         song_story:           newSongStory.trim() || null,
         mixing_engineer:      newMixingEngineer.trim() || null,
-        mastering_engineer:   newMasteringEngineer.trim() || null,
-        status:               "pending",
+        mastering_engineer:      newMasteringEngineer.trim() || null,
+        distribution_priority:   distributionPriority,
+        status:                  "pending",
       };
 
       if (isMultiTrack && uploadedTracks.length > 0) {
         releasePayload.tracks = uploadedTracks;
       }
 
-      const { error: dbErr } = await supabase.from("releases").insert(releasePayload);
+      const { data: insertedRelease, error: dbErr } = await supabase
+        .from("releases")
+        .insert(releasePayload)
+        .select("id")
+        .single();
       if (dbErr) throw dbErr;
 
       fetch("/api/notify", {
@@ -377,6 +383,28 @@ export default function NewReleasePage() {
       }).catch(() => {});
 
       clearDraftStorage();
+
+      // If priority distribution, redirect to Stripe Checkout
+      if (distributionPriority === "priority" && insertedRelease?.id) {
+        setUploadProgress("Redirecting to payment…");
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            releaseId:   insertedRelease.id,
+            songTitle:   leadTitle,
+            artistName:  profile.artist_name,
+            artistEmail: profile.email,
+          }),
+        });
+        const json = await res.json();
+        if (json.url) {
+          window.location.href = json.url;
+          return;
+        }
+        // If Stripe fails, still show success — admin can chase payment manually
+      }
+
       setState("success");
     } catch (err: unknown) {
       const msg = err && typeof err === "object" && "message" in err
@@ -1008,6 +1036,37 @@ export default function NewReleasePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Distribution priority */}
+        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
+          <p className="text-white/70 text-xs uppercase tracking-widest font-medium mb-1">Distribution Speed</p>
+          <p className="text-white/40 text-xs mb-4">Choose how quickly your release is distributed.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setDistributionPriority("standard")}
+              className={`rounded-2xl border p-4 text-left transition-colors ${distributionPriority === "standard" ? "border-[#007bff]/60 bg-[#007bff]/10" : "border-white/[0.08] hover:border-white/20"}`}
+            >
+              <p className={`text-sm font-semibold mb-1 ${distributionPriority === "standard" ? "text-[#007bff]" : "text-white/70"}`}>Standard</p>
+              <p className="text-white/40 text-xs">~2 weeks · Free</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setDistributionPriority("priority")}
+              className={`rounded-2xl border p-4 text-left transition-colors ${distributionPriority === "priority" ? "border-violet-400/60 bg-violet-500/10" : "border-white/[0.08] hover:border-white/20"}`}
+            >
+              <p className={`text-sm font-semibold mb-1 ${distributionPriority === "priority" ? "text-violet-300" : "text-white/70"}`}>Priority ⚡</p>
+              <p className="text-white/40 text-xs">Under 3 days · Paid</p>
+            </button>
+          </div>
+          {distributionPriority === "priority" && (
+            <div className="mt-4 bg-violet-500/10 border border-violet-400/20 rounded-xl p-4 text-xs text-violet-200/80 space-y-1.5">
+              <p className="font-semibold text-violet-200">Priority distribution requires payment before we process your release.</p>
+              <p>Our team will send you a payment link after submission. Your release will be queued once payment is confirmed.</p>
+              <p>Contact us at <span className="text-violet-300">info@orinlabi.com</span> for pricing details.</p>
+            </div>
+          )}
         </div>
 
         {/* Pre-submission compliance reminder */}

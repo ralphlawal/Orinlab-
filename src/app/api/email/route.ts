@@ -5,6 +5,7 @@ import {
   takedownConfirmEmail, payoutConfirmEmail, supportConfirmEmail,
   pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
   releaseDateEmail, artistReminderEmail, revisionRequestEmail,
+  priorityPaymentEmail,
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
@@ -103,13 +104,12 @@ export async function POST(req: NextRequest) {
         releaseDate: data.release_date,
       });
     } else if (type === "artist-reminder") {
-      const reminderType = data.reminder_type as "profile" | "store-links" | "lyrics" | "payout-details" | "contract";
+      const reminderType = data.reminder_type as "profile" | "store-links" | "lyrics" | "payout-details";
       const subjectMap = {
         "profile":        `Your OrinlabÍ Records profile needs attention`,
         "store-links":    `Add your streaming links — ${data.song_title ?? "your release"} is live!`,
         "lyrics":         `Don't forget to add your lyrics — ${data.song_title ?? "your release"}`,
         "payout-details": `We can't pay you without your details — urgent`,
-        "contract":       `Sign your distribution agreement — ${data.song_title ?? "your release"} is waiting`,
       };
       subject = subjectMap[reminderType] ?? "A quick reminder from OrinlabÍ Records";
       html = artistReminderEmail({
@@ -117,6 +117,13 @@ export async function POST(req: NextRequest) {
         songTitle:    data.song_title,
         reminderType,
         missingItems: data.missing_items,
+      });
+    } else if (type === "payment-confirmed") {
+      subject = `Payment confirmed — Priority Distribution for ${data.song_title}`;
+      html = priorityPaymentEmail({
+        artistName: data.artist_name,
+        songTitle:  data.song_title,
+        releaseId:  data.release_id,
       });
     } else if (type === "revision-requested") {
       subject = `Action required on your submission — ${data.song_title}`;

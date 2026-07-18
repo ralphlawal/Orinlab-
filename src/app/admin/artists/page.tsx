@@ -8,7 +8,7 @@ import {
   ChevronDown, ChevronUp, Save, User, BarChart3, Send,
   UserCheck, UserX, TrendingUp, CreditCard, Link2,
   DollarSign, AlertTriangle, Zap, Radio,
-  FileText, MessageSquare,
+  FileText, MessageSquare, ShieldOff, ShieldCheck, Power, PowerOff, RotateCcw, Trash2,
 } from "lucide-react";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import { getPlatform } from "@/lib/platforms";
@@ -136,7 +136,7 @@ const MSG_TEMPLATES: MsgTemplate[] = [
 
 function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Partial<Artist>) => void }) {
   const { requestUnlock } = usePinGate();
-  const [editTab, setEditTab] = useState<"profile" | "social" | "ids" | "payment" | "releases" | "message">("profile");
+  const [editTab, setEditTab] = useState<"profile" | "social" | "ids" | "payment" | "releases" | "message" | "account">("profile");
 
   // Profile fields
   const [name,      setName]      = useState(artist.artist_name);
@@ -194,6 +194,58 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
   );
   const [savingRelease, setSavingRelease] = useState<string | null>(null);
   const [savedRelease,  setSavedRelease]  = useState<string | null>(null);
+
+  // Account tab
+  const [accountStatus, setAccountStatus] = useState<string>(artist.accountStatus ?? "active");
+  const [changingStatus, setChangingStatus] = useState(false);
+  const [statusChanged, setStatusChanged] = useState(false);
+  const [resetting, setResetting] = useState<string | null>(null);
+  const [resetDone, setResetDone] = useState<string | null>(null);
+
+  async function doChangeStatus(newStatus: string) {
+    setChangingStatus(true);
+    await supabase.from("artist_profiles").upsert(
+      { email: artist.email, account_status: newStatus },
+      { onConflict: "email" }
+    );
+    setAccountStatus(newStatus);
+
+    // Notify artist unless activating silently
+    const notifMap: Record<string, { title: string; body: string; type: "info" | "warning" | "error" }> = {
+      inactive:  { title: "Account set to inactive",  body: "Your OrinlabÍ Records account has been marked inactive. Contact us at info@orinlabi.com for more information.", type: "warning" },
+      suspended: { title: "Account suspended",         body: "Your OrinlabÍ Records account has been suspended. Contact us at info@orinlabi.com if you believe this is a mistake.", type: "error" },
+      takedown:  { title: "Releases under review",     body: "Your releases have been flagged for review and may be temporarily taken down. Contact info@orinlabi.com for details.", type: "error" },
+      active:    { title: "Account reactivated",       body: "Your OrinlabÍ Records account is now active again. Welcome back!", type: "info" },
+    };
+    const notif = notifMap[newStatus];
+    if (notif) {
+      supabase.from("notifications").insert({ email: artist.email, ...notif, link: "/portal" }).then(() => {});
+      fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "admin-message", data: { email: artist.email, content: `${notif.title}\n\n${notif.body}` } }),
+      }).catch(() => {});
+    }
+
+    onSaved({ accountStatus: newStatus as "active" | "suspended" });
+    setChangingStatus(false); setStatusChanged(true);
+    setTimeout(() => setStatusChanged(false), 3000);
+  }
+
+  async function doReset(action: "profile" | "releases") {
+    setResetting(action);
+    if (action === "profile") {
+      await supabase.from("artist_profiles").update({
+        bio: null, artist_image_url: null, instagram_handle: null, x_handle: null,
+        tiktok_username: null, youtube_channel: null, facebook_url: null, website_url: null,
+        payout_method: null, paypal_email: null, bank_name: null, bank_account_name: null,
+        bank_account_number: null, bank_country: null, mobile_money_provider: null, mobile_money_number: null,
+      }).eq("email", artist.email);
+    } else if (action === "releases") {
+      await supabase.from("releases").update({ status: "rejected", review_notes: "Account reset by admin." })
+        .eq("email", artist.email).eq("status", "pending");
+    }
+    setResetting(null); setResetDone(action);
+    setTimeout(() => setResetDone(null), 3000);
+  }
 
   // Message tab
   const [msgTemplateId, setMsgTemplateId] = useState("custom");
@@ -287,6 +339,7 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
     { id: "payment",  label: "Payment",  icon: CreditCard },
     { id: "releases", label: `Releases (${artist.releases.length})`, icon: BarChart3 },
     { id: "message",  label: "Message",  icon: Send },
+    { id: "account",  label: "Account",  icon: ShieldCheck },
   ] as const;
 
   const SaveBtn = ({ onClick, saving, saved, disabled }: { onClick: () => void; saving: boolean; saved: boolean; disabled?: boolean }) => (
@@ -532,6 +585,87 @@ function EditPanel({ artist, onSaved }: { artist: Artist; onSaved: (updated: Par
               {sendingMsg ? <><Loader2 size={12} className="animate-spin" /> Sending…</> : <><Send size={12} /> Send Notification + Email</>}
             </button>
           )}
+        </div>
+      )}
+
+      {/* Account tab */}
+      {editTab === "account" && (
+        <div className="space-y-6">
+          {/* Current status */}
+          <div>
+            <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Account Status</p>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { val: "active",    label: "Active",    icon: ShieldCheck, desc: "Normal access",               color: "border-green-500/40 text-green-400 bg-green-500/10" },
+                { val: "inactive",  label: "Inactive",  icon: PowerOff,    desc: "Restricted, can still log in", color: "border-yellow-500/40 text-yellow-400 bg-yellow-500/10" },
+                { val: "suspended", label: "Suspended", icon: ShieldOff,   desc: "Cannot log in",                color: "border-red-500/40 text-red-400 bg-red-500/10" },
+                { val: "takedown",  label: "Takedown",  icon: XCircle,     desc: "Releases pulled, locked",      color: "border-rose-700/40 text-rose-400 bg-rose-700/10" },
+              ] as const).map(({ val, label, icon: Icon, desc, color }) => (
+                <button
+                  key={val}
+                  onClick={() => requestUnlock(() => doChangeStatus(val))}
+                  disabled={changingStatus || accountStatus === val}
+                  className={`flex items-start gap-2.5 p-3 rounded-xl border text-left transition-all disabled:opacity-50 ${accountStatus === val ? color : "border-white/[0.08] text-white/40 hover:text-white hover:bg-white/[0.04]"}`}
+                >
+                  <Icon size={14} className="flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="text-[10px] opacity-60 leading-tight mt-0.5">{desc}</p>
+                  </div>
+                  {accountStatus === val && <CheckCircle2 size={12} className="ml-auto flex-shrink-0 mt-1" />}
+                </button>
+              ))}
+            </div>
+            {statusChanged && (
+              <p className="text-green-400 text-xs mt-2 flex items-center gap-1.5"><CheckCircle2 size={12} /> Status updated. Artist notified.</p>
+            )}
+          </div>
+
+          {/* Reactivate shortcut */}
+          {accountStatus !== "active" && (
+            <button
+              onClick={() => requestUnlock(() => doChangeStatus("active"))}
+              disabled={changingStatus}
+              className="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 text-green-400 border border-green-500/20 text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-40"
+            >
+              <ShieldCheck size={12} /> Reactivate Account
+            </button>
+          )}
+
+          {/* Reset options */}
+          <div>
+            <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Reset Options</p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3">
+                <div>
+                  <p className="text-white/70 text-sm font-medium">Clear Profile Data</p>
+                  <p className="text-white/30 text-xs mt-0.5">Removes bio, photo, social links, and payout info</p>
+                </div>
+                <button
+                  onClick={() => requestUnlock(() => doReset("profile"))}
+                  disabled={resetting === "profile"}
+                  className="flex items-center gap-1.5 text-xs font-semibold bg-white/[0.06] hover:bg-white/[0.12] text-white/50 hover:text-white px-3 py-2 rounded-lg transition-colors disabled:opacity-40 flex-shrink-0 ml-4"
+                >
+                  {resetting === "profile" ? <Loader2 size={11} className="animate-spin" /> : <RotateCcw size={11} />}
+                  {resetDone === "profile" ? "Done ✓" : "Reset Profile"}
+                </button>
+              </div>
+              <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3">
+                <div>
+                  <p className="text-white/70 text-sm font-medium">Reject Pending Releases</p>
+                  <p className="text-white/30 text-xs mt-0.5">Sets all pending submissions to rejected</p>
+                </div>
+                <button
+                  onClick={() => requestUnlock(() => doReset("releases"))}
+                  disabled={resetting === "releases"}
+                  className="flex items-center gap-1.5 text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 px-3 py-2 rounded-lg transition-colors disabled:opacity-40 flex-shrink-0 ml-4"
+                >
+                  {resetting === "releases" ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />}
+                  {resetDone === "releases" ? "Done ✓" : "Reject All Pending"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

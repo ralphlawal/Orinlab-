@@ -19,7 +19,8 @@
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
     "resend": "^6.12.4",
-    "simple-icons": "^16.24.1"
+    "simple-icons": "^16.24.1",
+    "stripe": "^22.3.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

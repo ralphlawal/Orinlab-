@@ -1,12 +1,15 @@
 export const metadata = {
-  title: "Terms of Service",
+  title: "Terms of Service & Distribution Agreement — OrinlabÍ Records",
+  description: "The terms that govern distribution, royalties, and your rights as an artist on OrinlabÍ Records.",
 };
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-3">
-      <h2 className="text-white font-semibold text-xl">{title}</h2>
-      <div className="text-white/60 leading-relaxed space-y-3">{children}</div>
+    <section className="space-y-3" id={`section-${number}`}>
+      <h2 className="text-white font-semibold text-lg">
+        <span className="text-white/30 mr-2">{number}.</span>{title}
+      </h2>
+      <div className="text-white/60 leading-relaxed text-sm space-y-3">{children}</div>
     </section>
   );
 }
@@ -16,119 +19,95 @@ export default function TermsPage() {
     <section className="pt-32 pb-24 px-4">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-3">Terms of Service</h1>
-        <p className="text-white/40 text-sm mb-12">Last updated: June 2026</p>
+        <p className="text-white/40 text-sm mb-2">Including the Distribution Agreement for all artists</p>
+        <p className="text-white/30 text-xs mb-12">Last updated: July 2026</p>
+
+        <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5 mb-12 text-sm text-white/60 leading-relaxed">
+          By using OrinlabÍ Records services — including the Artist Portal and submitting music for distribution — you agree to these Terms. They apply from the moment you first log in and cover every release you submit. You retain full ownership of your music at all times.
+        </div>
 
         <div className="space-y-10">
-          <Section title="1. Agreement to Terms">
+          <Section number="1" title="Grant of Rights">
             <p>
-              By accessing or using OrinlabÍ Records services — including our website, artist portal,
-              and distribution platform — you agree to be bound by these Terms of Service.
-              If you do not agree, please do not use our services.
+              The Artist grants to OrinlabÍ Records a <strong className="text-white/80">non-exclusive, worldwide licence</strong> to distribute, reproduce, transmit, and make available their releases and associated artwork and metadata on digital streaming and download platforms (&quot;DSPs&quot;), including Spotify, Apple Music, TikTok, YouTube Music, Amazon Music, Boomplay, Audiomack, Deezer, and TIDAL.
             </p>
             <p>
-              OrinlabÍ Records is operated by the{" "}
-              <a
-                href="https://ralphlawalgroup.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#007bff] hover:underline"
-              >
-                Ralph Lawal Group
-              </a>
-              . These terms govern your use of all OrinlabÍ Records services.
+              This licence is granted solely for the purposes of digital distribution and does not transfer ownership of any master recording, sound recording copyright, underlying musical composition, or any other intellectual property right to OrinlabÍ Records.
             </p>
           </Section>
 
-          <Section title="2. Eligibility">
+          <Section number="2" title="Term & Renewal">
             <p>
-              Any independent artist may submit music for distribution through OrinlabÍ Records.
-              Submitted music is reviewed by our team and approved promptly. You must be at least
-              18 years old, or have the consent of a parent or legal guardian, to apply for or
-              use our services.
+              These Terms commence on the date you first use the service and continue for an initial period of two (2) years. They automatically renew for successive one-year periods unless either party gives sixty (60) days&apos; written notice of non-renewal before the end of the then-current term.
+            </p>
+            <p>
+              The Artist may request early termination via the Artist Portal. Termination takes effect ninety (90) days from receipt of notice; distribution services continue normally during that period.
             </p>
           </Section>
 
-          <Section title="3. Artist Rights & Ownership">
-            <p>
-              Artists retain full ownership of their masters and copyrights. By submitting
-              your music for distribution, you grant OrinlabÍ Records a non-exclusive, worldwide,
-              royalty-free licence to distribute, reproduce, and make available your music
-              on streaming platforms solely for the purpose of fulfilling distribution.
-            </p>
-            <p>
-              Public credits on platforms will appear as ℗ [Year] [Copyright Owner] /
-              © [Year] [Copyright Owner] as specified in your application. You are responsible
-              for ensuring the accuracy of all copyright information you provide.
-            </p>
+          <Section number="3" title="Revenue Share & Royalties">
+            <p><strong className="text-white/80">Free first release.</strong> Your first release distributed through OrinlabÍ Records is distributed at no cost. You receive and retain 100% of Net Revenue generated by that release for as long as these Terms remain in force.</p>
+            <p><strong className="text-white/80">Subsequent releases.</strong> For your second and all further releases, OrinlabÍ Records remits 85% of Net Revenue to you and retains 15% as its standard distribution service fee. This fee covers delivery to all DSPs, ISRC/UPC management, metadata maintenance, royalty collection, and Artist Portal access.</p>
+            <p><strong className="text-white/80">Net Revenue</strong> means gross revenue actually received by OrinlabÍ Records from DSPs, less withholding taxes, banking transfer fees, currency conversion charges, or DSP-imposed deductions. It does not include amounts collected for third parties (e.g. publishing societies).</p>
+            <p><strong className="text-white/80">Royalty reporting.</strong> Quarterly statements are made available in the Artist Portal within 45 days of the close of each calendar quarter.</p>
+            <p><strong className="text-white/80">Payment.</strong> Royalties are paid when your cumulative unpaid balance reaches USD $50.00, within 30 days of the close of the applicable quarter. Balances below $50 roll forward without penalty.</p>
           </Section>
 
-          <Section title="4. Content Standards">
-            <p>
-              You are solely responsible for ensuring all submitted content:
-            </p>
+          <Section number="4" title="Artist Representations & Warranties">
+            <p>By submitting music, you represent and warrant that:</p>
             <ul className="list-disc list-inside space-y-2 pl-1">
-              <li>Is original and does not infringe any third-party intellectual property rights</li>
-              <li>Does not contain defamatory, obscene, or unlawful material</li>
-              <li>Complies with all applicable laws and platform policies</li>
-              <li>Accurately reflects the metadata and credits you provide</li>
+              <li>You own or have cleared all rights in the release, including masters, compositions, lyrics, and any sampled material</li>
+              <li>The release does not infringe any third-party intellectual property right or violate any applicable law</li>
+              <li>You have full legal capacity to enter into these Terms</li>
+              <li>All featured artists, co-writers, and producers have consented to distribution under these Terms</li>
+              <li>All metadata, credits, and copyright information you provide are accurate and complete</li>
             </ul>
-            <p>
-              OrinlabÍ Records reserves the right to reject or remove content that violates these
-              standards or the policies of partner streaming platforms, without liability.
-            </p>
           </Section>
 
-          <Section title="5. Distribution & Royalties">
-            <p>
-              Distribution through OrinlabÍ Records is provided to approved artists under terms
-              agreed in your individual artist agreement. We do not take a commission on your streaming royalties.
-            </p>
-            <p>
-              Royalties are collected from streaming platforms and disbursed to artists
-              according to the specific terms agreed upon in your individual artist agreement.
-              OrinlabÍ Records does not guarantee specific royalty amounts, as these depend on
-              platform payment structures beyond our control.
-            </p>
+          <Section number="5" title="Delivery Standards & Metadata">
+            <p>You agree to deliver releases in the required format: WAV or FLAC audio at minimum 16-bit / 44.1 kHz; cover artwork at minimum 3,000 × 3,000 pixels in JPEG or PNG format; and accurate metadata including ISRC codes, songwriter and producer credits, publishing information, and release date.</p>
+            <p>OrinlabÍ Records is not liable for errors or delays caused by inaccurate or non-conforming files or metadata you provide. We reserve the right to reject non-conforming submissions and will notify you with reasons within five (5) business days.</p>
           </Section>
 
-          <Section title="6. Termination">
-            <p>
-              Either party may terminate the distribution relationship with written notice.
-              Upon termination, we will initiate the removal of your music from streaming
-              platforms. Removal timelines are subject to each platform's processing schedule
-              and may take 4–8 weeks to take full effect.
-            </p>
+          <Section number="6" title="Content Compliance & Takedowns">
+            <p>You agree not to submit releases containing unlicensed samples, infringing content, hate speech, content that sexualises minors, or material that violates any applicable law.</p>
+            <p>If a DSP issues a takedown, content dispute, or copyright claim, OrinlabÍ Records will notify you promptly and you agree to cooperate to resolve it. We reserve the right to remove a release from platforms without prior notice if we receive a valid legal demand or a sustained copyright infringement claim. Royalties accrued before removal will be paid in accordance with Section 3.</p>
           </Section>
 
-          <Section title="7. Limitation of Liability">
-            <p>
-              OrinlabÍ Records is not liable for any indirect, incidental, or consequential damages
-              arising from your use of our services, including but not limited to loss of
-              revenue, data, or business opportunities. Our total liability for any claim
-              shall not exceed the amount paid by you to OrinlabÍ Records in the preceding 12 months
-              (which shall not exceed the amount paid by you to OrinlabÍ Records under your artist agreement).
-            </p>
+          <Section number="7" title="Intellectual Property & Credits">
+            <p>You retain full ownership of all intellectual property in your releases, including the sound recording copyright and underlying musical composition. OrinlabÍ Records acquires no ownership interest under these Terms.</p>
+            <p>Public credits (℗ and © lines) on DSPs will reflect your own name or label name as provided in your submission metadata — not OrinlabÍ Records. OrinlabÍ Records may appear solely as the &quot;Distributed by&quot; entity where DSPs separately display distributor information; this does not constitute a claim of ownership or co-authorship.</p>
           </Section>
 
-          <Section title="8. Changes to These Terms">
-            <p>
-              We may update these Terms of Service at any time. Material changes will be
-              communicated by posting an updated version on this page with a revised date.
-              Continued use of our services after changes take effect constitutes acceptance.
-            </p>
+          <Section number="8" title="Termination">
+            <p>Either party may terminate by giving sixty (60) days&apos; written notice. OrinlabÍ Records may terminate immediately if you materially breach these Terms and fail to cure within fourteen (14) days of notice, provide materially false representations, or engage in conduct that brings OrinlabÍ Records into disrepute.</p>
+            <p>On termination, OrinlabÍ Records will initiate takedown from all DSPs within thirty (30) business days. Royalties accrued before the termination date will be paid within ninety (90) days.</p>
           </Section>
 
-          <Section title="9. Governing Law">
-            <p>
-              These Terms are governed by the laws of the Federal Republic of Nigeria.
-              Any disputes shall be subject to the exclusive jurisdiction of the courts of
-              Lagos State, Nigeria.
-            </p>
+          <Section number="9" title="Limitation of Liability">
+            <p>To the maximum extent permitted by law:</p>
+            <ul className="list-disc list-inside space-y-2 pl-1">
+              <li>OrinlabÍ Records&apos;s aggregate liability shall not exceed the total Net Revenue remitted to you in the six calendar months preceding the event giving rise to the claim</li>
+              <li>OrinlabÍ Records is not liable for indirect, incidental, consequential, special, or punitive damages, including loss of profits, revenue, data, or business opportunity</li>
+              <li>OrinlabÍ Records is not liable for delays or failures caused by DSP technical systems, force majeure events, or your failure to deliver conforming files</li>
+            </ul>
           </Section>
 
-          <Section title="10. Contact">
+          <Section number="10" title="Confidentiality">
+            <p>Each party agrees to treat as confidential any non-public information received from the other in connection with these Terms — including royalty statements, business terms, and analytics — and will not disclose it to third parties without prior written consent, except as required by applicable law.</p>
+          </Section>
+
+          <Section number="11" title="Governing Law & Dispute Resolution">
+            <p>These Terms are governed by the laws of the Federal Republic of Nigeria. Disputes will first be addressed through thirty (30) days of good-faith negotiation, then mediation. If mediation fails, disputes are subject to the exclusive jurisdiction of the competent courts of Lagos State, Nigeria.</p>
+          </Section>
+
+          <Section number="12" title="Changes to These Terms">
+            <p>OrinlabÍ Records may update these Terms at any time. Material changes will be communicated via the Artist Portal no less than thirty (30) days before taking effect. Continued use of the service after that period constitutes acceptance.</p>
+          </Section>
+
+          <Section number="13" title="Contact">
             <p>
-              For questions about these Terms, email us at{" "}
+              For questions about these Terms, email{" "}
               <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">
                 info@orinlabi.com
               </a>
