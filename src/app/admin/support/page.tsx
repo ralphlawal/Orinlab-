@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, LifeBuoy, CheckCircle2, Clock, ChevronDown, ChevronUp,
-  MessageCircle, Send,
+  MessageCircle, Send, ShieldAlert,
 } from "lucide-react";
 
 type Ticket = {
@@ -30,6 +30,7 @@ export default function SupportAdminPage() {
   const { requestUnlock } = usePinGate();
   const [tickets, setTickets]   = useState<Ticket[]>([]);
   const [loading, setLoading]   = useState(true);
+  const [rlsBlocked, setRlsBlocked] = useState(false);
   const [filter, setFilter]     = useState<"all" | "open" | "in_progress" | "closed">("open");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -40,8 +41,18 @@ export default function SupportAdminPage() {
     setLoading(true);
     let q = supabase.from("support_tickets").select("*").order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter);
-    const { data } = await q;
-    setTickets((data ?? []) as Ticket[]);
+    const { data, error } = await q;
+    if (error) console.error("support_tickets:", error.message);
+    const rows = (data ?? []) as Ticket[];
+    setTickets(rows);
+    // Detect RLS block: no data returned but filter is "all" — likely policy missing
+    if (!error && rows.length === 0 && filter === "all") {
+      // Double-check: try counting without filter
+      const { count } = await supabase.from("support_tickets").select("*", { count: "exact", head: true });
+      setRlsBlocked(count === 0 || count === null);
+    } else {
+      setRlsBlocked(false);
+    }
     setLoading(false);
   }
 
@@ -104,6 +115,26 @@ export default function SupportAdminPage() {
           ))}
         </div>
       </div>
+
+      {/* RLS warning — shown when tickets exist in DB but admin can't read them */}
+      {!loading && rlsBlocked && (
+        <div className="bg-amber-500/10 border border-amber-400/25 rounded-2xl p-5 space-y-3">
+          <div className="flex items-center gap-2 text-amber-400 font-semibold text-sm">
+            <ShieldAlert size={16} />
+            Supabase RLS is blocking ticket reads
+          </div>
+          <p className="text-white/50 text-xs leading-relaxed">
+            The <code className="text-white/70 bg-white/[0.06] px-1 py-0.5 rounded">support_tickets</code> table has a Row Level Security policy that only lets artists read their own tickets. Run the SQL below in your <strong className="text-white/70">Supabase Dashboard → SQL Editor</strong> to fix it:
+          </p>
+          <pre className="bg-black/40 border border-white/[0.08] rounded-xl px-4 py-3 text-[11px] text-green-300 overflow-x-auto whitespace-pre-wrap">{`-- Allow authenticated users to read all support tickets
+-- (Artists are restricted by .eq("email", ...) in the portal code)
+CREATE POLICY "admin_read_all_support_tickets"
+ON support_tickets
+FOR SELECT
+TO authenticated
+USING (true);`}</pre>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center h-48"><Loader2 size={28} className="text-[#007bff] animate-spin" /></div>

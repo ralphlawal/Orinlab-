@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
-  Music2, Plus, Trash2, Save,
+  Music2, Plus, Trash2, Save, Zap,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -88,6 +88,17 @@ export default function NewReleasePage() {
   const [newMixingEngineer, setNewMixingEngineer] = useState(draft?.mixing_engineer ?? "");
   const [newMasteringEngineer, setNewMasteringEngineer] = useState(draft?.mastering_engineer ?? "");
   const [distributionPriority, setDistributionPriority] = useState<"standard" | "priority">("standard");
+  const [releaseDateValue, setReleaseDateValue] = useState(draft?.releaseDate ?? "");
+
+  const isUrgentRelease = (() => {
+    if (!releaseDateValue) return false;
+    const diff = (new Date(releaseDateValue).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+    return diff <= 7;
+  })();
+
+  useEffect(() => {
+    if (isUrgentRelease) setDistributionPriority("priority");
+  }, [isUrgentRelease]);
 
   const isMultiTrack = releaseType === "Album" || releaseType === "EP" || releaseType === "Compilation";
 
@@ -570,7 +581,25 @@ export default function NewReleasePage() {
             )}
             <Select label="Genre" name="genre" options={genres} required value={genre} onChange={(v) => setGenre(v)} />
             <Select label="Language" name="language" options={languages} required value={language} onChange={(v) => setLanguage(v)} />
-            <Field label="Desired Release Date" name="releaseDate" type="date" required defaultValue={draft?.releaseDate} />
+            <div>
+              <label className="block text-white/70 text-sm font-medium mb-2">
+                Desired Release Date<span className="text-[#007bff] ml-1">*</span>
+              </label>
+              <input
+                type="date"
+                name="releaseDate"
+                required
+                value={releaseDateValue}
+                onChange={(e) => setReleaseDateValue(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
+              />
+              {isUrgentRelease && (
+                <p className="mt-1.5 text-amber-400 text-xs flex items-center gap-1.5">
+                  <Zap size={11} /> Release within 7 days — Priority Distribution required.
+                </p>
+              )}
+            </div>
             <Select label="Explicit Content" name="explicit" options={["Clean", "Explicit"]} required value={explicitContent} onChange={(v) => setExplicitContent(v)} />
             {!isMultiTrack && (
               <Select label="Track Version" name="trackVersion" options={trackVersions} required value={trackVersion} onChange={(v) => setTrackVersion(v)} />
@@ -1039,30 +1068,52 @@ export default function NewReleasePage() {
         </div>
 
         {/* Distribution priority */}
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6">
-          <p className="text-white/70 text-xs uppercase tracking-widest font-medium mb-1">Distribution Speed</p>
-          <p className="text-white/40 text-xs mb-4">Choose how quickly your release is distributed.</p>
+        <div className={`rounded-2xl p-6 ${isUrgentRelease ? "bg-amber-500/[0.06] border border-amber-400/25" : "bg-white/[0.03] border border-white/[0.08]"}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-white/70 text-xs uppercase tracking-widest font-medium">Distribution Speed</p>
+            {isUrgentRelease && (
+              <span className="flex items-center gap-1 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                <Zap size={10} /> Urgent
+              </span>
+            )}
+          </div>
+          <p className="text-white/40 text-xs mb-4">
+            {isUrgentRelease
+              ? "Your release date is within 7 days — Priority Distribution is required and will be charged automatically."
+              : "Choose how quickly your release is distributed."}
+          </p>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
-              onClick={() => setDistributionPriority("standard")}
-              className={`rounded-2xl border p-4 text-left transition-colors ${distributionPriority === "standard" ? "border-[#007bff]/60 bg-[#007bff]/10" : "border-white/[0.08] hover:border-white/20"}`}
+              disabled={isUrgentRelease}
+              onClick={() => !isUrgentRelease && setDistributionPriority("standard")}
+              className={`rounded-2xl border p-4 text-left transition-colors ${
+                isUrgentRelease
+                  ? "border-white/[0.04] opacity-30 cursor-not-allowed"
+                  : distributionPriority === "standard"
+                    ? "border-[#007bff]/60 bg-[#007bff]/10"
+                    : "border-white/[0.08] hover:border-white/20"
+              }`}
             >
-              <p className={`text-sm font-semibold mb-1 ${distributionPriority === "standard" ? "text-[#007bff]" : "text-white/70"}`}>Standard</p>
-              <p className="text-white/40 text-xs">~2 weeks · Free</p>
+              <p className={`text-sm font-semibold mb-1 ${!isUrgentRelease && distributionPriority === "standard" ? "text-[#007bff]" : "text-white/70"}`}>Standard</p>
+              <p className="text-white/40 text-xs">~2 weeks · Included</p>
             </button>
             <button
               type="button"
               onClick={() => setDistributionPriority("priority")}
               className={`rounded-2xl border p-4 text-left transition-colors ${distributionPriority === "priority" ? "border-violet-400/60 bg-violet-500/10" : "border-white/[0.08] hover:border-white/20"}`}
             >
-              <p className={`text-sm font-semibold mb-1 ${distributionPriority === "priority" ? "text-violet-300" : "text-white/70"}`}>Priority ⚡</p>
+              <p className={`text-sm font-semibold mb-1 ${distributionPriority === "priority" ? "text-violet-300" : "text-white/70"}`}>
+                Priority <Zap size={12} className="inline" />
+              </p>
               <p className="text-white/40 text-xs">Under 3 days · Paid</p>
             </button>
           </div>
           {distributionPriority === "priority" && (
             <div className="mt-4 bg-violet-500/10 border border-violet-400/20 rounded-xl p-4 text-xs text-violet-200/80 space-y-1.5">
-              <p className="font-semibold text-violet-200">Priority distribution requires payment before we process your release.</p>
+              <p className="font-semibold text-violet-200">
+                {isUrgentRelease ? "Priority Distribution is mandatory for releases within 7 days." : "Priority distribution requires payment before we process your release."}
+              </p>
               <p>Our team will send you a payment link after submission. Your release will be queued once payment is confirmed.</p>
               <p>Contact us at <span className="text-violet-300">info@orinlabi.com</span> for pricing details.</p>
             </div>
