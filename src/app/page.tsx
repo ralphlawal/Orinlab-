@@ -78,7 +78,7 @@ const getRealSpotlightArtists = unstable_cache(
 );
 
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
-function Hero({ s }: { s: HeroSettings }) {
+function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
   return (
     <section className="relative min-h-screen flex overflow-hidden bg-[#050505] noise-overlay">
       {/* Ambient blobs */}
@@ -168,19 +168,50 @@ function Hero({ s }: { s: HeroSettings }) {
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.45s both" }}
         >
           <div className="flex -space-x-2.5">
-            {(["#007bff", "#7c3aed", "#ec4899", "#10b981", "#f59e0b"]).map((color, i) => (
-              <div
-                key={i}
-                className="w-9 h-9 rounded-full border-2 border-[#050505] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                style={{ background: `linear-gradient(135deg, ${color}, ${color}99)`, zIndex: 5 - i }}
-              >
-                {["A", "K", "D", "M", "T"][i]}
-              </div>
-            ))}
+            {artists.length > 0
+              ? artists.slice(0, 5).map((artist, i) => (
+                  artist.profile_image_url ? (
+                    <div
+                      key={i}
+                      title={artist.artist_name}
+                      className="w-9 h-9 rounded-full border-2 border-[#050505] overflow-hidden flex-shrink-0"
+                      style={{ zIndex: 5 - i }}
+                    >
+                      <Image
+                        src={artist.profile_image_url}
+                        alt={artist.artist_name}
+                        width={36}
+                        height={36}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      key={i}
+                      title={artist.artist_name}
+                      className="w-9 h-9 rounded-full border-2 border-[#050505] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                      style={{ background: `linear-gradient(135deg, #007bff, #7c3aed)`, zIndex: 5 - i }}
+                    >
+                      {artist.artist_name.charAt(0).toUpperCase()}
+                    </div>
+                  )
+                ))
+              : (["#007bff", "#7c3aed", "#ec4899", "#10b981", "#f59e0b"]).map((color, i) => (
+                  <div
+                    key={i}
+                    className="w-9 h-9 rounded-full border-2 border-[#050505] flex-shrink-0"
+                    style={{ background: `linear-gradient(135deg, ${color}, ${color}99)`, zIndex: 5 - i }}
+                  />
+                ))
+            }
           </div>
           <div>
             <p className="text-white text-sm font-semibold">Ready to go global?</p>
-            <p className="text-white/35 text-xs">Join artists distributing with OrinlabÍ</p>
+            <p className="text-white/35 text-xs">
+              {artists.length > 0
+                ? `Join ${artists[0].artist_name} and more artists on OrinlabÍ`
+                : "Join artists distributing with OrinlabÍ"}
+            </p>
           </div>
         </div>
 
@@ -907,7 +938,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Hero s={hero} />
+      <Hero s={hero} artists={spotlightArtists} />
       <PlatformTicker />
       <Distribute />
       <Stats />

@@ -11,7 +11,7 @@ import { usePinGate } from "@/context/AdminPinContext";
 type Post = {
   id: string; title: string; slug: string; excerpt: string;
   content: string; category: string; featured: boolean; published: boolean;
-  cover_image_url: string;
+  cover_image_url: string; meta_description: string;
 };
 
 export default function EditPostPage() {
