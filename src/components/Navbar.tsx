@@ -124,7 +124,7 @@ export default function Navbar() {
             Artist Login
           </Link>
           <Link
-            href="/submit"
+            href="/pricing"
             className="relative inline-flex items-center gap-1.5 text-white text-[13px] font-bold px-5 py-2.5 rounded-full transition-all duration-200 overflow-hidden group"
             style={{
               background: "linear-gradient(135deg, #007bff, #7c3aed)",
@@ -134,7 +134,7 @@ export default function Navbar() {
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(0,123,255,0)"; }}
           >
             <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-200" />
-            <span className="relative">Try For Free</span>
+            <span className="relative">Get Started</span>
             <ArrowRight size={13} className="relative group-hover:translate-x-0.5 transition-transform duration-150" />
           </Link>
         </div>
@@ -182,11 +182,11 @@ export default function Navbar() {
               Artist Login
             </Link>
             <Link
-              href="/submit"
+              href="/pricing"
               className="block text-center text-white text-sm font-bold px-5 py-3 rounded-full transition-all"
               style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}
             >
-              Try For Free →
+              Get Started →
             </Link>
           </div>
         </div>

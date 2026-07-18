@@ -362,10 +362,10 @@ function CTA() {
         <AnimateIn delay={200}>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              href="/submit"
+              href="/pricing"
               className="inline-flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-bold px-9 py-4 rounded-full transition-all duration-200 hover:shadow-[0_0_40px_rgba(0,123,255,0.4)] hover:gap-3 group"
             >
-              Try For Free <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
+              Get Started <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               href="/contact"
