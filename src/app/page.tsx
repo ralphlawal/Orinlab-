@@ -77,22 +77,6 @@ const getRealSpotlightArtists = unstable_cache(
   { revalidate: 300, tags: ["releases"] }
 );
 
-/* ── Floating DSP icons ───────────────────────────────────────────────────── */
-const HERO_PLATFORMS = [
-  { key: "spotify",       color: "#1DB954", size: 52, top: "10%", left: "4%"  },
-  { key: "apple_music",   color: "#FC3C44", size: 44, top: "8%",  left: "80%" },
-  { key: "tiktok",        color: "#69C9D0", size: 40, top: "35%", left: "92%" },
-  { key: "boomplay",      color: "#FF6B35", size: 36, top: "65%", left: "86%" },
-  { key: "audiomack",     color: "#FFA500", size: 34, top: "78%", left: "62%" },
-  { key: "deezer",        color: "#A238FF", size: 32, top: "82%", left: "28%" },
-  { key: "amazon_music",  color: "#00A8E1", size: 38, top: "24%", left: "88%" },
-  { key: "tidal",         color: "#00FFFF", size: 30, top: "50%", left: "3%"  },
-  { key: "soundcloud",    color: "#FF5500", size: 28, top: "88%", left: "12%" },
-  { key: "youtube_music", color: "#FF0000", size: 36, top: "55%", left: "91%" },
-  { key: "instagram",     color: "#E1306C", size: 26, top: "20%", left: "10%" },
-  { key: "anghami",       color: "#9B59B6", size: 30, top: "40%", left: "5%"  },
-];
-
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 function Hero({ s }: { s: HeroSettings }) {
   return (
@@ -110,29 +94,6 @@ function Hero({ s }: { s: HeroSettings }) {
           backgroundSize: "60px 60px",
         }}
       />
-
-      {/* Floating platform icons — scattered across full background */}
-      <div className="absolute inset-0 pointer-events-none hidden lg:block">
-        {HERO_PLATFORMS.map((p, i) => (
-          <div
-            key={p.key}
-            className="absolute flex items-center justify-center rounded-2xl"
-            style={{
-              top: p.top, left: p.left,
-              width: p.size + 28, height: p.size + 28,
-              background: `${p.color}12`,
-              border: `1px solid ${p.color}25`,
-              willChange: "transform",
-              animation: i % 2 === 0 ? `platformFloat ${3.5 + (i % 3) * 0.8}s ease-in-out infinite` : undefined,
-              animationDelay: i % 2 === 0 ? `${i * 0.4}s` : undefined,
-            }}
-          >
-            <span style={{ color: p.color }}>
-              <PlatformIcon platformKey={p.key} size={p.size} />
-            </span>
-          </div>
-        ))}
-      </div>
 
       {/* ── Left column ── */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-8 sm:px-12 lg:pl-16 xl:pl-24 pt-28 pb-24 lg:py-0 min-w-0">
@@ -301,9 +262,13 @@ function Hero({ s }: { s: HeroSettings }) {
           </Link>
 
           <p className="text-center text-white/20 text-xs mt-4 relative z-10">
-            Already an artist?{" "}
+            Artist or label?{" "}
             <Link href="/portal/login" className="text-[#007bff]/60 hover:text-[#007bff] transition-colors">
               Log in
+            </Link>
+            <span className="mx-1.5 opacity-40">·</span>
+            <Link href="/pricing" className="text-[#007bff]/60 hover:text-[#007bff] transition-colors">
+              Sign up
             </Link>
           </p>
         </div>
