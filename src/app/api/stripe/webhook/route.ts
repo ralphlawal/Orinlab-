@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { PLANS } from "@/lib/stripePlans";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() { return new Stripe(process.env.STRIPE_SECRET_KEY!); }
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    event = getStripe().webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     console.error("Webhook signature failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true });
     }
 
-    const customer   = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+    const customer   = await getStripe().customers.retrieve(customerId) as Stripe.Customer;
     const email      = customer.email;
     if (!email) return NextResponse.json({ received: true });
 
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
   if (event.type === "customer.subscription.deleted") {
     const sub        = event.data.object as Stripe.Subscription;
     const customerId = sub.customer as string;
-    const customer   = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+    const customer   = await getStripe().customers.retrieve(customerId) as Stripe.Customer;
     const email      = customer.email;
     if (!email) return NextResponse.json({ received: true });
 
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
   if (event.type === "invoice.payment_failed") {
     const invoice    = event.data.object as Stripe.Invoice;
     const customerId = invoice.customer as string;
-    const customer   = await stripe.customers.retrieve(customerId) as Stripe.Customer;
+    const customer   = await getStripe().customers.retrieve(customerId) as Stripe.Customer;
     const email      = customer.email;
     if (email) {
       await supabase.from("notifications").insert({

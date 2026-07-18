@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() { return new Stripe(process.env.STRIPE_SECRET_KEY!); }
 
 const PRIORITY_PRICE_USD = 1500; // $15.00 in cents
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get("origin") ?? "https://orinlabi.com";
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       customer_email: artistEmail,
       line_items: [

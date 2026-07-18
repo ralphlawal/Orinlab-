@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { PLANS, ADDONS } from "@/lib/stripePlans";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() { return new Stripe(process.env.STRIPE_SECRET_KEY!); }
 const ORIGIN = "https://orinlabi.com";
 
 export async function POST(req: NextRequest) {
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       const plan = PLANS.find(p => p.key === priceKey);
       if (!plan) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         mode: "subscription",
         customer_email: email,
         line_items: [{ price: plan.priceId, quantity: 1 }],
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         ? `${addon.description} — "${songTitle}"`
         : addon.description;
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         mode: "payment",
         customer_email: email,
         line_items: [{
