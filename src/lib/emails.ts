@@ -502,3 +502,24 @@ export function artistReminderEmail(data: {
     ${muted(`You are receiving this because you are an OrinlabÍ Records artist. Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
   `, cfg.accent);
 }
+
+/* ── 14. Revision request ── */
+export function revisionRequestEmail(data: {
+  artistName: string;
+  songTitle: string;
+  reason: string;
+  note: string;
+}) {
+  return base(`
+    ${label("Action required on your submission", "#d97706", "#fef3c7")}
+    ${h1(`We need you to update your submission, ${data.artistName}.`)}
+    ${p(`Your submission for <strong style="color:#0d0d0d;">${data.songTitle}</strong> needs some attention before we can proceed. Please read the details below and resubmit once you have made the corrections.`)}
+    ${divider()}
+    ${sectionLabel("What Needs to Be Fixed")}
+    ${noteBox(`<strong style="color:#0d0d0d;">${data.reason}</strong>${data.note ? `<br/><br/>${data.note.replace(/\n/g, "<br/>")}` : ""}`, "#d97706")}
+    ${divider()}
+    ${p("Log in to your portal, make the necessary changes, and resubmit your release. Our team will review the updated version as quickly as possible.")}
+    ${btn("Go to My Portal", PORTAL, "#d97706")}
+    ${muted(`Questions about what's needed? Reply to this email or contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a> and we will help you get it right.`)}
+  `, "#d97706");
+}

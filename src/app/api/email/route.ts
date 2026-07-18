@@ -4,7 +4,7 @@ import {
   submissionEmail, approvalEmail, rejectionEmail, liveEmail,
   takedownConfirmEmail, payoutConfirmEmail, supportConfirmEmail,
   pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
-  releaseDateEmail, artistReminderEmail,
+  releaseDateEmail, artistReminderEmail, revisionRequestEmail,
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
@@ -117,6 +117,14 @@ export async function POST(req: NextRequest) {
         songTitle:    data.song_title,
         reminderType,
         missingItems: data.missing_items,
+      });
+    } else if (type === "revision-requested") {
+      subject = `Action required on your submission — ${data.song_title}`;
+      html = revisionRequestEmail({
+        artistName: data.artist_name,
+        songTitle:  data.song_title,
+        reason:     data.reason,
+        note:       data.note ?? "",
       });
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });

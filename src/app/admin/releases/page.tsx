@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download } from "lucide-react";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download, Wrench } from "lucide-react";
 import { LISTENING_PLATFORMS } from "@/lib/platforms";
 import { PlatformIcon } from "@/components/PlatformIcon";
 
@@ -62,7 +62,7 @@ type Release = {
   distribution_stage: string | null;
 };
 
-type Filter = "all" | "pending" | "approved" | "rejected";
+type Filter = "all" | "pending" | "approved" | "rejected" | "revision_requested";
 
 type ArtistProfile = {
   artist_type: string | null;
@@ -121,6 +121,20 @@ export default function ReleasesPage() {
   const [search, setSearch] = useState("");
   const [notifyingLive, setNotifyingLive] = useState(false);
   const [liveNotified, setLiveNotified] = useState(false);
+
+  // Revision request
+  const REVISION_PRESETS = [
+    { id: "audio", label: "Audio quality issue", reason: "The audio file does not meet our quality standards." },
+    { id: "artwork", label: "Artwork doesn't meet specs", reason: "The cover art does not meet platform requirements (must be square JPG/PNG, at least 3000×3000 px, no URLs or logos)." },
+    { id: "metadata", label: "Incomplete metadata", reason: "Required metadata is missing or incorrect (songwriters, copyright owner, release date, or genre)." },
+    { id: "copyright", label: "Copyright / licensing issue", reason: "There is an issue with the copyright or licensing information. Please provide proof of ownership or a valid licence for any samples used." },
+    { id: "format", label: "Wrong file format", reason: "The submitted audio file is in the wrong format. Please resubmit as a lossless WAV or FLAC file." },
+    { id: "custom", label: "Custom message", reason: "" },
+  ];
+  const [revisionPreset, setRevisionPreset] = useState(REVISION_PRESETS[0].id);
+  const [revisionNote, setRevisionNote] = useState("");
+  const [sendingRevision, setSendingRevision] = useState(false);
+  const [revisionSent, setRevisionSent] = useState(false);
 
   // Distribution stage
   const [distStage, setDistStage] = useState<"submitted" | "in_distribution" | "live">("submitted");
@@ -188,6 +202,46 @@ export default function ReleasesPage() {
     setLiveNotified(true);
   }
 
+  async function requestRevision() {
+    if (!selected) return;
+    const preset = REVISION_PRESETS.find((p) => p.id === revisionPreset);
+    const reason = revisionPreset === "custom" ? revisionNote.trim() : preset?.reason ?? "";
+    const note   = revisionPreset === "custom" ? "" : revisionNote.trim();
+    if (!reason) return;
+    setSendingRevision(true);
+
+    // Update status
+    await supabase.from("releases").update({
+      status: "revision_requested",
+      review_notes: `[Revision requested] ${reason}${note ? `\n\n${note}` : ""}`,
+      reviewed_at: new Date().toISOString(),
+    }).eq("id", selected.id);
+
+    // Email artist
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "revision-requested",
+        data: { email: selected.email, artist_name: selected.artist_name, song_title: selected.song_title, reason, note },
+      }),
+    }).catch(() => {});
+
+    // In-app notification
+    supabase.from("notifications").insert({
+      email: selected.email,
+      type:  "warning",
+      title: `Action needed — ${selected.song_title}`,
+      body:  `We need you to update your submission. ${reason}${note ? " " + note : ""}`,
+      link:  `/portal/releases/${selected.id}`,
+    }).then(() => {});
+
+    setSendingRevision(false);
+    setRevisionSent(true);
+    setSelected((s) => s ? { ...s, status: "revision_requested" } : s);
+    load();
+  }
+
   function openRelease(r: Release) {
     setSelected(r);
     setNotes(r.review_notes ?? "");
@@ -204,6 +258,9 @@ export default function ReleasesPage() {
     setRoyaltiesSaved(false);
     setMetaSaved(false);
     setLiveNotified(false);
+    setRevisionPreset(REVISION_PRESETS[0].id);
+    setRevisionNote("");
+    setRevisionSent(false);
     setSplits([]);
     setSplitsSaved(false);
     supabase.from("royalty_splits").select("name,email,percentage").eq("release_id", r.id)
@@ -526,6 +583,9 @@ export default function ReleasesPage() {
     setRoyaltiesSaved(false);
     setMetaSaved(false);
     setLiveNotified(false);
+    setRevisionPreset(REVISION_PRESETS[0].id);
+    setRevisionNote("");
+    setRevisionSent(false);
     setArtistProfile(undefined);
     load();
   }
@@ -578,15 +638,21 @@ export default function ReleasesPage() {
           />
           {/* Filter tabs */}
           <div className="flex gap-2 bg-white/[0.04] border border-white/[0.06] p-1 rounded-xl">
-            {(["pending", "approved", "rejected", "all"] as Filter[]).map((f) => (
+            {([
+              { val: "pending", label: "Pending" },
+              { val: "revision_requested", label: "Needs Revision" },
+              { val: "approved", label: "Approved" },
+              { val: "rejected", label: "Rejected" },
+              { val: "all", label: "All" },
+            ] as { val: Filter; label: string }[]).map(({ val, label }) => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg capitalize transition-colors ${
-                  filter === f ? "bg-[#007bff] text-white" : "text-white/40 hover:text-white"
+                key={val}
+                onClick={() => setFilter(val)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                  filter === val ? "bg-[#007bff] text-white" : "text-white/40 hover:text-white"
                 }`}
               >
-                {f}
+                {label}
               </button>
             ))}
           </div>
@@ -1425,6 +1491,51 @@ export default function ReleasesPage() {
                 </Section>
               )}
 
+              {/* Request Revision */}
+              <Section title="Request Revision">
+                <p className="text-white/30 text-xs mb-4">
+                  Ask the artist to fix something without fully rejecting. Sends an email + portal notification and marks the submission as needing revision.
+                </p>
+                <div className="space-y-2 mb-3">
+                  {REVISION_PRESETS.map((p) => (
+                    <label key={p.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${revisionPreset === p.id ? "border-amber-500/40 bg-amber-500/[0.07]" : "border-white/[0.06] hover:border-white/[0.14] bg-white/[0.02]"}`}>
+                      <input
+                        type="radio"
+                        name="revisionPreset"
+                        value={p.id}
+                        checked={revisionPreset === p.id}
+                        onChange={() => setRevisionPreset(p.id)}
+                        className="mt-0.5 accent-amber-400 flex-shrink-0"
+                      />
+                      <div>
+                        <p className={`text-sm font-medium ${revisionPreset === p.id ? "text-amber-300" : "text-white/70"}`}>{p.label}</p>
+                        {p.reason && revisionPreset === p.id && (
+                          <p className="text-white/35 text-xs mt-0.5 leading-relaxed">{p.reason}</p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <textarea
+                  value={revisionNote}
+                  onChange={(e) => setRevisionNote(e.target.value)}
+                  rows={3}
+                  placeholder={revisionPreset === "custom" ? "Describe exactly what the artist needs to fix…" : "Add extra context (optional)…"}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-amber-500/50 outline-none text-white/70 placeholder-white/25 text-sm px-4 py-3 rounded-xl resize-none transition-colors mb-3"
+                />
+                <button
+                  onClick={() => requestUnlock(requestRevision)}
+                  disabled={sendingRevision || revisionSent || (revisionPreset === "custom" && !revisionNote.trim())}
+                  className="flex items-center gap-2 text-sm font-semibold bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-40 text-amber-400 px-5 py-2.5 rounded-xl transition-colors border border-amber-500/20"
+                >
+                  {sendingRevision ? <Loader2 size={14} className="animate-spin" /> : <Wrench size={14} />}
+                  {revisionSent ? "Revision Request Sent ✓" : "Send Revision Request"}
+                </button>
+                {revisionSent && (
+                  <p className="text-amber-400/60 text-xs mt-2">Email and in-app notification sent. Status updated to "Revision Requested".</p>
+                )}
+              </Section>
+
               {/* Review notes */}
               <div>
                 <label className="block text-white/50 text-xs uppercase tracking-widest mb-2">
@@ -1453,7 +1564,7 @@ export default function ReleasesPage() {
               </button>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setEditReleaseDate(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setArtistProfile(undefined); }}
+                  onClick={() => { setSelected(null); setNotes(""); setStoreLinks({}); setStreams({}); setRoyalties(""); setEditIsrc(""); setEditUpc(""); setEditReleaseDate(""); setSplits([]); setSplitsSaved(false); setLinksSaved(false); setStreamsSaved(false); setRoyaltiesSaved(false); setMetaSaved(false); setStageSaved(false); setRevisionPreset(REVISION_PRESETS[0].id); setRevisionNote(""); setRevisionSent(false); setArtistProfile(undefined); }}
                   className="flex-1 text-sm font-medium text-white/50 hover:text-white border border-white/10 hover:border-white/30 py-3 rounded-xl transition-colors"
                 >
                   Cancel
@@ -1489,13 +1600,17 @@ export default function ReleasesPage() {
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
-    pending: "bg-yellow-400/10 text-yellow-400",
-    approved: "bg-green-400/10 text-green-400",
-    rejected: "bg-red-400/10 text-red-400",
+    pending:              "bg-yellow-400/10 text-yellow-400",
+    approved:             "bg-green-400/10 text-green-400",
+    rejected:             "bg-red-400/10 text-red-400",
+    revision_requested:   "bg-amber-500/10 text-amber-400",
+  };
+  const labels: Record<string, string> = {
+    revision_requested: "Needs Revision",
   };
   return (
     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${map[status] ?? "bg-white/10 text-white/40"}`}>
-      {status}
+      {labels[status] ?? status}
     </span>
   );
 }
