@@ -210,9 +210,9 @@ function Hero({ s }: { s: HeroSettings }) {
           {/* Plan tiles */}
           <div className="space-y-2.5 mb-6 relative z-10">
             {[
-              { name: "Artist",   price: "$19.99",  period: "/yr", desc: "Unlimited releases · 1 artist",   color: "#007bff", popular: false },
-              { name: "Pro",      price: "$59.99",  period: "/yr", desc: "Priority distro · Analytics",     color: "#7c3aed", popular: true  },
-              { name: "Label 5",  price: "$109.99", period: "/yr", desc: "Up to 5 artists · Full suite",    color: "#f59e0b", popular: false },
+              { name: "Starter",  price: "$19",  period: "/yr", desc: "Unlimited releases · 1 artist",     color: "#007bff", popular: false },
+              { name: "Pro",      price: "$59",  period: "/yr", desc: "Release Protection · Publishing",   color: "#7c3aed", popular: true  },
+              { name: "Label 5",  price: "$109", period: "/yr", desc: "Up to 5 artists · Full suite",      color: "#f59e0b", popular: false },
             ].map((plan) => (
               <Link
                 key={plan.name}
@@ -876,7 +876,7 @@ function CTA() {
             </span>
           </h2>
           <p className="text-white/35 text-base max-w-sm mx-auto mb-10">
-            Professional distribution for African artists going global. Plans from $19.99/year. Keep 100% of your royalties.
+            Professional distribution for African artists going global. Plans from $19/year. Keep 100% of your royalties.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/pricing"

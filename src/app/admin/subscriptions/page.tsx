@@ -15,7 +15,7 @@ type Subscriber = {
 };
 
 const PLAN_LABELS: Record<string, string> = {
-  artist: "Artist",
+  artist: "Starter",
   pro: "Pro",
   label_5: "Label 5",
   label_10: "Label 10",
@@ -133,8 +133,8 @@ export default function AdminSubscriptionsPage() {
           <p className="text-[#007bff] text-2xl font-bold">
             ${activeSubs.reduce((sum, s) => {
               const prices: Record<string, number> = {
-                artist: 19.99, pro: 59.99, label_5: 109.99, label_10: 139.99,
-                label_15: 179.99, label_20: 219.99, label_30: 269.99, label_40: 319.99,
+                artist: 19, pro: 59, label_5: 109, label_10: 139,
+                label_15: 179, label_20: 219, label_30: 269, label_40: 319,
               };
               return sum + ((prices[s.plan ?? ""] ?? 0) / 12);
             }, 0).toFixed(0)}

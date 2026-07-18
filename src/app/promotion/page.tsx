@@ -34,9 +34,9 @@ const SERVICES = [
   {
     tag: "PRIORITY",
     icon: <Zap size={24} />,
-    title: "Priority Distribution",
-    desc: "Skip the queue. Your release goes live on all stores within 3 days instead of the standard 2-week window.",
-    price: "$14.99",
+    title: "Expedited Release",
+    desc: "Skip the queue. Your release goes live on all stores within 3 days instead of the standard 2+ week window.",
+    price: "$60",
     href: "/portal/services",
     color: "#f59e0b",
   },
