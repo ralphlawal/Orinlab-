@@ -493,7 +493,22 @@ export function artistReminderEmail(data: {
   `, cfg.accent);
 }
 
-/* ── 14. Priority payment confirmed ── */
+/* ── 14. Plan activated ── */
+export function planActivatedEmail(data: { artistName?: string; planName: string; expiresAt: string }) {
+  const expiry = new Date(data.expiresAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return base(`
+    ${label("Subscription activated", "#7c3aed", "#ede9fe")}
+    ${h1(`You're on the ${data.planName} plan${data.artistName ? `, ${data.artistName}` : ""}.`)}
+    ${p(`Your <strong style="color:#0d0d0d;">OrinlabÍ Records ${data.planName}</strong> subscription is now active. You can submit unlimited releases and keep 100% of your royalties.`)}
+    ${divider()}
+    ${noteBox(`Your plan renews on <strong style="color:#0d0d0d;">${expiry}</strong>. Manage your billing anytime from your portal.`, "#7c3aed")}
+    ${divider()}
+    ${btn("Go to My Portal", "https://orinlabi.com/portal", "#7c3aed")}
+    ${muted(`Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, "#7c3aed");
+}
+
+/* ── 15. Priority payment confirmed ── */
 export function priorityPaymentEmail(data: {
   artistName: string;
   songTitle: string;

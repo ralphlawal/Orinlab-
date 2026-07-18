@@ -6,6 +6,7 @@ import {
   pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
   releaseDateEmail, artistReminderEmail, revisionRequestEmail,
   priorityPaymentEmail,
+  planActivatedEmail,
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
@@ -117,6 +118,12 @@ export async function POST(req: NextRequest) {
         songTitle:    data.song_title,
         reminderType,
         missingItems: data.missing_items,
+      });
+    } else if (type === "plan-activated") {
+      subject = `Your ${data.plan_name} plan is now active — OrinlabÍ Records`;
+      html = planActivatedEmail({
+        planName:  data.plan_name,
+        expiresAt: data.expires_at,
       });
     } else if (type === "payment-confirmed") {
       subject = `Payment confirmed — Priority Distribution for ${data.song_title}`;

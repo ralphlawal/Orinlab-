@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Loader2, Mail, KeyRound } from "lucide-react";
 
 export default function PortalLoginPage() {
-  const router = useRouter();
+  const router  = useRouter();
+  const params  = useSearchParams();
+  const planKey = params.get("plan");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
@@ -76,6 +78,20 @@ export default function PortalLoginPage() {
         setError(verifyError.message || "Could not verify the code. Please try again.");
       }
     } else {
+      // If coming from pricing page with a plan, go straight to subscribe
+      if (planKey) {
+        const session = await supabase.auth.getSession();
+        const userEmail = session.data.session?.user?.email;
+        if (userEmail) {
+          const res = await fetch("/api/stripe/subscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ priceKey: planKey, email: userEmail, mode: "subscription" }),
+          });
+          const { url } = await res.json();
+          if (url) { window.location.href = url; return; }
+        }
+      }
       router.replace("/portal");
     }
   }
