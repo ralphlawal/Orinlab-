@@ -96,22 +96,22 @@ const HERO_PLATFORMS = [
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 function Hero({ s }: { s: HeroSettings }) {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-[#050505] noise-overlay">
-      {/* Ambient background — kept small for GPU performance */}
-      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#007bff]/10 rounded-full blur-[90px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[380px] h-[380px] bg-violet-600/8 rounded-full blur-[80px] pointer-events-none" />
-      <div className="absolute top-2/3 left-1/3 w-[250px] h-[250px] bg-pink-600/6 rounded-full blur-[60px] pointer-events-none" />
+    <section className="relative min-h-screen flex overflow-hidden bg-[#050505] noise-overlay">
+      {/* Ambient blobs */}
+      <div className="absolute top-1/4 left-1/4 w-[700px] h-[700px] bg-[#007bff]/7 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/3 w-[450px] h-[450px] bg-violet-600/6 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] bg-pink-600/5 rounded-full blur-[80px] pointer-events-none" />
 
       {/* Subtle grid */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.025]"
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
           backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
 
-      {/* Floating platform icons */}
+      {/* Floating platform icons — scattered across full background */}
       <div className="absolute inset-0 pointer-events-none hidden lg:block">
         {HERO_PLATFORMS.map((p, i) => (
           <div
@@ -120,8 +120,8 @@ function Hero({ s }: { s: HeroSettings }) {
             style={{
               top: p.top, left: p.left,
               width: p.size + 28, height: p.size + 28,
-              background: `${p.color}16`,
-              border: `1px solid ${p.color}30`,
+              background: `${p.color}12`,
+              border: `1px solid ${p.color}25`,
               willChange: "transform",
               animation: i % 2 === 0 ? `platformFloat ${3.5 + (i % 3) * 0.8}s ease-in-out infinite` : undefined,
               animationDelay: i % 2 === 0 ? `${i * 0.4}s` : undefined,
@@ -134,100 +134,188 @@ function Hero({ s }: { s: HeroSettings }) {
         ))}
       </div>
 
-      {/* Hero content — centered */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-10 py-24 flex flex-col items-center text-center">
+      {/* ── Left column ── */}
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 sm:px-12 lg:pl-16 xl:pl-24 pt-28 pb-24 lg:py-0 min-w-0">
+        {/* Badge */}
         <div
-          className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-10"
+          className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-8 self-start"
           style={{ animation: "fadeSlideUp 0.6s ease-out both" }}
         >
           <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
-          {s.badge || "Global Music Distribution · 150+ Platforms"}
+          {s.badge || "African music, distributed globally"}
         </div>
 
+        {/* Giant headline */}
         <h1
-          className="font-bold leading-[0.93] tracking-tight mb-8"
+          className="font-black leading-[0.88] tracking-tight mb-7"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.1s both" }}
         >
-          <span className="block text-[clamp(3.5rem,11vw,8.5rem)] text-white">Release</span>
-          <span
-            className="block text-[clamp(3.5rem,11vw,8.5rem)] text-transparent bg-clip-text"
-            style={{
-              backgroundImage: "linear-gradient(90deg, #007bff, #7c3aed, #ec4899, #007bff)",
-              backgroundSize: "300% auto",
-              animation: "shimmer 5s linear infinite",
-            }}
-          >
-            unlimited
-          </span>
-          <span className="block text-[clamp(3.5rem,11vw,8.5rem)] text-white">music.</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">Release</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-[#007bff]">unlimited</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">music.</span>
         </h1>
 
+        {/* Subheadline */}
         <p
-          className="text-white/45 text-lg sm:text-xl max-w-xl mb-10 leading-relaxed"
+          className="text-white/50 text-base sm:text-lg leading-relaxed mb-8 max-w-lg"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.2s both" }}
         >
-          {s.subheadline || "Get your music on Spotify, Apple Music, TikTok and 150+ platforms globally. Keep 100% of your royalties."}
+          {s.subheadline || "Upload to every platform, access industry tools & keep 100% of your royalties. Stay independent."}
         </p>
 
+        {/* Feature bullets — 2×2 grid */}
         <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5"
+          className="grid grid-cols-2 gap-x-8 gap-y-3.5 mb-10 max-w-md"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.3s both" }}
         >
-          <Link
-            href="/pricing"
-            className="inline-flex items-center gap-2 text-white font-bold px-8 py-4 rounded-full text-base transition-all duration-200 hover:gap-3 group animate-cta-glow"
-            style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)" }}
-          >
-            Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-          <Link
-            href="/portal/login"
-            className="inline-flex items-center gap-2 text-white font-semibold px-7 py-4 rounded-full border border-white/20 hover:border-white/40 hover:bg-white/[0.05] text-base transition-all duration-200"
-          >
-            Artist Login
-          </Link>
-        </div>
-        <div style={{ animation: "fadeSlideUp 0.7s ease-out 0.35s both" }}>
-          <Link href="/pricing" className="text-white/30 hover:text-white/60 text-xs transition-colors">
-            View pricing →
-          </Link>
-        </div>
-        <div className="mb-12" />
-
-        {/* Stats */}
-        <div
-          className="flex items-center justify-center gap-10 flex-wrap mb-10"
-          style={{ animation: "fadeSlideUp 0.7s ease-out 0.4s both" }}
-        >
           {[
-            { value: "∞",    label: "Releases" },
-            { value: "150+", label: "Platforms" },
-            { value: "100%", label: "Royalties" },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <div className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</div>
-              <div className="text-white/25 text-xs uppercase tracking-widest mt-0.5">{stat.label}</div>
+            "Unlimited releases",
+            "150+ music platforms",
+            "Publishing & sync earnings",
+            "Trusted by independent artists",
+          ].map((item) => (
+            <div key={item} className="flex items-center gap-2.5">
+              <CheckCircle2 size={15} className="text-[#007bff] flex-shrink-0" />
+              <span className="text-white/60 text-sm">{item}</span>
             </div>
           ))}
         </div>
 
-        {/* Trust badge */}
-        <div style={{ animation: "fadeSlideUp 0.7s ease-out 0.5s both" }}>
-          <a
-            href="https://ralphlawalgroup.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-white/20 hover:text-white/40 text-[11px] transition-colors"
+        {/* Mobile CTAs */}
+        <div
+          className="flex flex-col sm:flex-row gap-3 mb-10 lg:hidden"
+          style={{ animation: "fadeSlideUp 0.7s ease-out 0.35s both" }}
+        >
+          <Link
+            href="/pricing"
+            className="inline-flex items-center justify-center gap-2 text-white font-bold px-8 py-4 rounded-full text-sm transition-all hover:gap-3 group animate-cta-glow"
+            style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)" }}
           >
-            <span className="w-px h-3 bg-white/15 rounded-full" />
+            Get Started <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+          <Link
+            href="/portal/login"
+            className="inline-flex items-center justify-center gap-2 text-white font-semibold px-7 py-4 rounded-full border border-white/20 hover:border-white/40 text-sm transition-all"
+          >
+            Artist Login
+          </Link>
+        </div>
+
+        {/* Social proof */}
+        <div
+          className="flex items-center gap-4"
+          style={{ animation: "fadeSlideUp 0.7s ease-out 0.45s both" }}
+        >
+          <div className="flex -space-x-2.5">
+            {(["#007bff", "#7c3aed", "#ec4899", "#10b981", "#f59e0b"]).map((color, i) => (
+              <div
+                key={i}
+                className="w-9 h-9 rounded-full border-2 border-[#050505] flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${color}, ${color}99)`, zIndex: 5 - i }}
+              >
+                {["A", "K", "D", "M", "T"][i]}
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="text-white text-sm font-semibold">Ready to go global?</p>
+            <p className="text-white/35 text-xs">Join artists distributing with OrinlabÍ</p>
+          </div>
+        </div>
+
+        {/* Trust badge — desktop bottom */}
+        <div
+          className="mt-10 hidden lg:flex items-center gap-2 text-white/20 text-[11px]"
+          style={{ animation: "fadeSlideUp 0.7s ease-out 0.55s both" }}
+        >
+          <span className="w-px h-3 bg-white/15 rounded-full" />
+          <a href="https://ralphlawalgroup.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/40 transition-colors">
             A Ralph Lawal Group Company
-            <span className="w-px h-3 bg-white/15 rounded-full" />
           </a>
+          <span className="w-px h-3 bg-white/15 rounded-full" />
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 text-white/25 animate-bounce-chevron">
+      {/* ── Right column — plan card (desktop only) ── */}
+      <div className="hidden lg:flex flex-col justify-center pr-10 xl:pr-16 py-28 w-[440px] xl:w-[480px] flex-shrink-0 relative z-10">
+        <div className="relative bg-white/[0.04] backdrop-blur-md border border-white/[0.08] rounded-2xl p-7 overflow-hidden">
+          {/* Card glows */}
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#007bff]/10 rounded-full blur-[60px] pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-violet-600/8 rounded-full blur-[50px] pointer-events-none" />
+
+          <h2 className="text-white font-bold text-xl mb-1 relative z-10">Get started today</h2>
+          <p className="text-white/35 text-sm mb-6 relative z-10">Choose a plan and release globally</p>
+
+          {/* Plan tiles */}
+          <div className="space-y-2.5 mb-6 relative z-10">
+            {[
+              { name: "Artist",   price: "$19.99",  period: "/yr", desc: "Unlimited releases · 1 artist",   color: "#007bff", popular: false },
+              { name: "Pro",      price: "$59.99",  period: "/yr", desc: "Priority distro · Analytics",     color: "#7c3aed", popular: true  },
+              { name: "Label 5",  price: "$109.99", period: "/yr", desc: "Up to 5 artists · Full suite",    color: "#f59e0b", popular: false },
+            ].map((plan) => (
+              <Link
+                key={plan.name}
+                href="/pricing"
+                className="flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 hover:-translate-y-px"
+                style={{
+                  borderColor: plan.popular ? `${plan.color}35` : "rgba(255,255,255,0.06)",
+                  background: plan.popular ? `${plan.color}0c` : "rgba(255,255,255,0.01)",
+                }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${plan.color}18`, color: plan.color }}
+                  >
+                    <Music size={13} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-white text-sm font-semibold">{plan.name}</span>
+                      {plan.popular && (
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
+                          style={{ background: `${plan.color}25`, color: plan.color }}
+                        >
+                          Popular
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-white/30 text-xs truncate">{plan.desc}</p>
+                  </div>
+                </div>
+                <div className="text-right flex-shrink-0 ml-3">
+                  <span className="text-white font-bold text-sm">{plan.price}</span>
+                  <span className="text-white/25 text-[11px]">{plan.period}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            href="/pricing"
+            className="flex items-center justify-center gap-2 w-full text-white font-bold py-3.5 rounded-xl text-sm transition-all hover:gap-3 group relative z-10"
+            style={{ background: "linear-gradient(135deg, #007bff, #6d28d9)" }}
+          >
+            See All Plans <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+
+          <p className="text-center text-white/20 text-xs mt-4 relative z-10">
+            Already an artist?{" "}
+            <Link href="/portal/login" className="text-[#007bff]/60 hover:text-[#007bff] transition-colors">
+              Log in
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Scroll chevron — desktop */}
+      <div className="absolute bottom-8 left-16 xl:left-24 text-white/20 animate-bounce-chevron hidden lg:block">
         <ChevronDown size={22} />
+      </div>
+      {/* Scroll chevron — mobile */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/20 animate-bounce-chevron lg:hidden">
+        <ChevronDown size={20} />
       </div>
 
       <style>{`
