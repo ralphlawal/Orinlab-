@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard, DollarSign, Megaphone, Wrench, FolderOpen,
   MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus, ShieldOff, Globe,
-  ImageIcon, Music2, CreditCard,
+  ImageIcon, Music2, CreditCard, BarChart3,
 } from "lucide-react";
 
 export const PORTAL_LANG_KEY = "orinlabi_portal_lang";
@@ -88,6 +88,7 @@ const NAV_SECTIONS: NavSection[] = [
     color: "#60a5fa",
     items: [
       { href: "/portal",               label: "My Releases",  icon: <LayoutDashboard size={16} />, exact: true,  badge: "none" as const },
+      { href: "/portal/analytics",     label: "Analytics",    icon: <BarChart3 size={16} />,       exact: false, badge: "none" as const },
       { href: "/portal/releases/new",  label: "New Release",  icon: <Plus size={16} />,            exact: false, badge: "none" as const },
     ],
   },
@@ -95,18 +96,18 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Finances",
     color: "#34d399",
     items: [
-      { href: "/portal/earnings",  label: "Earnings",   icon: <DollarSign size={16} />,  exact: false, badge: "none" as const },
-      { href: "/portal/billing",   label: "Billing",    icon: <CreditCard size={16} />,  exact: false, badge: "none" as const },
-      { href: "/portal/services",  label: "Services",   icon: <Megaphone size={16} />,   exact: false, badge: "none" as const },
+      { href: "/portal/earnings",  label: "Earnings",  icon: <DollarSign size={16} />, exact: false, badge: "none" as const },
+      { href: "/portal/billing",   label: "Billing",   icon: <CreditCard size={16} />, exact: false, badge: "none" as const },
     ],
   },
   {
     label: "Growth",
     color: "#c084fc",
     items: [
-      { href: "/portal/pitch",   label: "Promote",  icon: <Megaphone size={16} />,  exact: false, badge: "none" as const },
-      { href: "/portal/tools",   label: "Tools",    icon: <Wrench size={16} />,     exact: false, badge: "none" as const },
-      { href: "/portal/assets",  label: "Assets",   icon: <FolderOpen size={16} />, exact: false, badge: "none" as const },
+      { href: "/portal/services",  label: "Promotion",  icon: <Megaphone size={16} />,  exact: false, badge: "none" as const },
+      { href: "/portal/pitch",     label: "Playlists",  icon: <Music2 size={16} />,     exact: false, badge: "none" as const },
+      { href: "/portal/tools",     label: "Tools",      icon: <Wrench size={16} />,     exact: false, badge: "none" as const },
+      { href: "/portal/assets",    label: "Assets",     icon: <FolderOpen size={16} />, exact: false, badge: "none" as const },
     ],
   },
   {
