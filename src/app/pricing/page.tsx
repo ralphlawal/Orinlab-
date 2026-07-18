@@ -26,15 +26,10 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="relative pt-36 pb-16 px-6 text-center overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-violet-500/10 rounded-full blur-[140px] pointer-events-none" />
-        {/* Ankara diamond pattern */}
-        <div className="absolute inset-0 pointer-events-none" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.035)' stroke-width='0.8'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40 Z'/%3E%3Cpath d='M40 14 L66 40 L40 66 L14 40 Z'/%3E%3Ccircle cx='40' cy='40' r='7' stroke-width='0.6'/%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: "80px 80px",
-        }} />
         <div className="relative z-10 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-10">
             <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-pulse" />
-            Simple, transparent pricing — billed annually in Naira
+            Simple, transparent pricing — billed annually
           </div>
           <h1 className="text-[clamp(3rem,8vw,5.5rem)] font-bold text-white leading-[0.95] tracking-tight mb-6">
             Release your music.<br /><span className="text-violet-400">Keep everything.</span>
@@ -71,7 +66,7 @@ export default function PricingPage() {
                   <div className="mb-6">
                     <p className="text-white/50 text-xs font-bold uppercase tracking-widest mb-2">{plan.name}</p>
                     <div className="flex items-end gap-1 mb-1">
-                      <span className="text-white text-5xl font-bold">₦{plan.amountNgn.toLocaleString("en-NG")}</span>
+                      <span className="text-white text-5xl font-bold">${plan.amountUsd}</span>
                       <span className="text-white/40 text-sm mb-2">/year</span>
                     </div>
                     <p className="text-white/40 text-sm">
@@ -168,7 +163,7 @@ export default function PricingPage() {
                 <p className="text-white font-bold text-lg mb-1">{plan.name}</p>
                 <p className="text-white/40 text-xs mb-4">Up to {plan.artistsLimit} artists</p>
                 <div className="flex items-end gap-1 mb-5">
-                  <span className="text-white font-bold text-2xl">₦{plan.amountNgn.toLocaleString("en-NG")}</span>
+                  <span className="text-white font-bold text-2xl">${plan.amountUsd}</span>
                   <span className="text-white/30 text-xs mb-1">/yr</span>
                 </div>
                 <button
@@ -240,7 +235,7 @@ export default function PricingPage() {
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-white font-bold">₦{addon.amountNgn.toLocaleString("en-NG")}</p>
+                    <p className="text-white font-bold">${addon.amountUsd}</p>
                     <p className="text-white/30 text-xs">
                       {isAnnual ? "per year" : isPerRelease ? "per release" : "one-time"}
                     </p>
@@ -275,7 +270,7 @@ export default function PricingPage() {
               { q: "What is Release Protection?", a: "Release Protection means your music stays on every platform permanently, even if you stop your subscription. It's included free on Pro and all Label plans. Starter subscribers lose this protection — their releases are removed if the subscription lapses." },
               { q: "Can I upgrade my plan later?", a: "Yes — upgrade or downgrade anytime from the billing section of your portal. Changes take effect immediately." },
               { q: "What is an Expedited Release?", a: "An add-on that gets your release delivered to all platforms within 3 days instead of the standard 2+ week window. Costs $60 per release. Also automatically applied when your desired release date is within 7 days." },
-              { q: "What does the Music Publishing add-on include?", a: "Publishing royalty collection — we register your songs with collection societies and collect mechanical, performance, and sync royalties on your behalf. Included in Pro and all Label plans. Available as an add-on (₦59,900/year) for Starter subscribers." },
+              { q: "What does the Music Publishing add-on include?", a: "Publishing royalty collection — we register your songs with collection societies and collect mechanical, performance, and sync royalties on your behalf. Included in Pro and all Label plans. Available as an add-on ($39.99/year) for Starter subscribers." },
               { q: "Do I own my music?", a: "Absolutely. OrinlabÍ Records never claims ownership of your masters, publishing, or any intellectual property. We are purely a distribution and royalty collection service." },
             ].map(({ q, a }) => (
               <details key={q} className="group bg-white/[0.03] border border-white/[0.07] rounded-2xl">
@@ -299,13 +294,13 @@ export default function PricingPage() {
             onClick={() => subscribe("artist")}
             className="inline-flex items-center justify-center gap-2 bg-[#007bff] hover:bg-[#0069d9] text-white font-bold px-8 py-4 rounded-full transition-all hover:shadow-[0_0_30px_rgba(0,123,255,0.4)]"
           >
-            Start with Starter — ₦29,900/yr <ArrowRight size={15} />
+            Start with Starter — $19/yr <ArrowRight size={15} />
           </button>
           <button
             onClick={() => subscribe("pro")}
             className="inline-flex items-center justify-center gap-2 bg-violet-500/20 hover:bg-violet-500/30 border border-violet-400/40 text-violet-300 font-bold px-8 py-4 rounded-full transition-all"
           >
-            <Star size={14} /> Get Pro — ₦89,900/yr
+            <Star size={14} /> Get Pro — $59/yr
           </button>
           <Link href="/contact" className="inline-flex items-center justify-center gap-2 border border-white/[0.12] hover:border-white/30 text-white/60 hover:text-white font-semibold px-8 py-4 rounded-full transition-all">
             Talk to us

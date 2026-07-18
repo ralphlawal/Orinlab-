@@ -113,7 +113,7 @@ export default function BillingPage() {
                   <Crown size={16} className="text-violet-400" />
                   <p className="text-white font-bold text-xl">{activePlan.name}</p>
                 </div>
-                <p className="text-white/50 text-sm">₦{activePlan.amountNgn.toLocaleString("en-NG")}/year · renews {expiry}</p>
+                <p className="text-white/50 text-sm">${activePlan.amountUsd}/year · renews {expiry}</p>
                 <p className="text-white/40 text-xs mt-1">
                   {profile?.plan_status === "active" ? "✓ Active" : profile?.plan_status}
                 </p>
@@ -150,7 +150,7 @@ export default function BillingPage() {
                   <p className="text-white/40 text-xs">{plan.artistsLimit === 1 ? "1 artist" : `Up to ${plan.artistsLimit} artists`} · Keep 100% royalties</p>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <p className="text-white font-bold">₦{plan.amountNgn.toLocaleString("en-NG")}<span className="text-white/30 text-xs font-normal">/yr</span></p>
+                  <p className="text-white font-bold">${plan.amountUsd}<span className="text-white/30 text-xs font-normal">/yr</span></p>
                   <button
                     onClick={() => handleSubscribe(plan.key)}
                     disabled={upgrading === plan.key}
@@ -171,14 +171,14 @@ export default function BillingPage() {
         <div>
           <p className="text-white/50 text-sm font-medium mb-4">Upgrade your plan:</p>
           <div className="space-y-2">
-            {PLANS.filter(p => p.amountNgn > activePlan.amountNgn).map((plan) => (
+            {PLANS.filter(p => p.amountUsd > activePlan.amountUsd).map((plan) => (
               <div key={plan.key} className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.07] bg-white/[0.02] px-5 py-3.5">
                 <div>
                   <p className="text-white/70 font-medium text-sm">{plan.name}</p>
                   <p className="text-white/30 text-xs">{plan.artistsLimit === 1 ? "1 artist" : `Up to ${plan.artistsLimit} artists`}</p>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <p className="text-white/60 font-semibold text-sm">₦{plan.amountNgn.toLocaleString("en-NG")}/yr</p>
+                  <p className="text-white/60 font-semibold text-sm">${plan.amountUsd}/yr</p>
                   <button
                     onClick={() => handleSubscribe(plan.key)}
                     disabled={!!upgrading}
@@ -208,7 +208,7 @@ export default function BillingPage() {
                   <p className="text-white/30 text-xs">{addon.description}</p>
                 </div>
               </div>
-              <p className="text-white/60 font-semibold text-sm flex-shrink-0">₦{addon.amountNgn.toLocaleString("en-NG")}</p>
+              <p className="text-white/60 font-semibold text-sm flex-shrink-0">${addon.amountUsd}</p>
             </div>
           ))}
         </div>

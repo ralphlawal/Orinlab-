@@ -18,7 +18,7 @@ const SERVICES = [
     icon: <Music2 size={24} />,
     title: "Playlist Pitching",
     desc: "We pitch your track to our active network of playlist curators across Spotify, Apple Music, Tidal and YouTube Music.",
-    price: "₦14,900",
+    price: "$9.99",
     href: "/portal/services",
     color: "#007bff",
   },
@@ -27,7 +27,7 @@ const SERVICES = [
     icon: <Film size={24} />,
     title: "Promo Video",
     desc: "Professional promotional video for your release — perfect for social media, story reels and YouTube shorts.",
-    price: "₦29,900",
+    price: "$19.99",
     href: "/portal/services",
     color: "#7c3aed",
   },
@@ -36,7 +36,7 @@ const SERVICES = [
     icon: <Zap size={24} />,
     title: "Expedited Release",
     desc: "Skip the queue. Your release goes live on all stores within 3 days instead of the standard 2+ week window.",
-    price: "₦95,000",
+    price: "$60",
     href: "/portal/services",
     color: "#f59e0b",
   },
@@ -45,7 +45,7 @@ const SERVICES = [
     icon: <Palette size={24} />,
     title: "Cover Art Design",
     desc: "Professional cover art created by our in-house design team, tailored to your genre and brand identity.",
-    price: "₦22,900",
+    price: "$15.00",
     href: "/portal/services",
     color: "#10b981",
   },
@@ -73,7 +73,7 @@ const PACKAGES = [
   {
     name: "Promo",
     tagline: "For artists releasing singles",
-    price: "₦35,900",
+    price: "$22.99",
     note: "one-time per release",
     popular: false,
     features: [
@@ -88,7 +88,7 @@ const PACKAGES = [
   {
     name: "Promo+",
     tagline: "Everything, plus visuals",
-    price: "₦79,900",
+    price: "$49.99",
     note: "one-time per release",
     popular: true,
     features: [

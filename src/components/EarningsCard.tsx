@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 const ROWS = [
-  { label: "Streaming royalties", value: "₦286,000", pct: 88, color: "#007bff" },
-  { label: "TikTok & Reels",      value: "₦55,600",  pct: 54, color: "#69C9D0" },
-  { label: "YouTube Content ID",  value: "₦43,100",  pct: 40, color: "#FF0000" },
-  { label: "Publishing · MCSN",   value: "₦25,200",  pct: 26, color: "#A238FF" },
-  { label: "Mechanical splits",   value: "₦16,300",  pct: 18, color: "#FFA500" },
+  { label: "Streaming royalties", value: "$842",  pct: 88, color: "#007bff" },
+  { label: "TikTok & Reels",      value: "$164",  pct: 54, color: "#69C9D0" },
+  { label: "YouTube Content ID",  value: "$127",  pct: 40, color: "#FF0000" },
+  { label: "Publishing · PRS…",   value: "$74",   pct: 26, color: "#A238FF" },
+  { label: "Mechanical splits",   value: "$48",   pct: 18, color: "#FFA500" },
 ];
 
 export function EarningsCard() {
@@ -89,7 +89,7 @@ export function EarningsCard() {
             className="text-3xl font-bold text-transparent bg-clip-text"
             style={{ backgroundImage: "linear-gradient(90deg, #007bff, #a855f7)" }}
           >
-            ₦426,200
+            $1,255.00
           </p>
         </div>
       </div>

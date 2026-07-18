@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       html = takedownConfirmEmail({ artistName: data.artist_name, songTitle: data.song_title });
     } else if (type === "payout-confirmation") {
       subject = `Payout request received — ${data.song_title}`;
-      html = payoutConfirmEmail({ artistName: data.artist_name, songTitle: data.song_title, amountNgn: Number(data.amount_ngn ?? data.amount_usd ?? 0) });
+      html = payoutConfirmEmail({ artistName: data.artist_name, songTitle: data.song_title, amountUsd: Number(data.amount_usd ?? 0) });
     } else if (type === "support-confirmation") {
       subject = `Your support ticket is open — ${data.subject}`;
       html = supportConfirmEmail({ artistName: data.artist_name, subject: data.subject, category: data.category });

@@ -59,7 +59,7 @@ function Story() {
                 {[
                   { v: "150+", l: "Platforms" },
                   { v: "100%", l: "Ownership" },
-                  { v: "₦0",   l: "To Start" },
+                  { v: "$0",   l: "To Start" },
                   { v: "48h",  l: "Go-Live" },
                 ].map((s) => (
                   <div key={s.l} className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-4 text-center">

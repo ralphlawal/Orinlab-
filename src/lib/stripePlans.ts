@@ -5,7 +5,7 @@ export interface Plan {
   key: PlanKey;
   name: string;
   priceId: string;
-  amountNgn: number;
+  amountUsd: number;
   artistsLimit: number;
   features: string[];
   highlight?: boolean;
@@ -15,7 +15,7 @@ export interface Addon {
   key: AddonKey;
   name: string;
   priceId: string;
-  amountNgn: number;
+  amountUsd: number;
   description: string;
 }
 
@@ -24,7 +24,7 @@ export const PLANS: Plan[] = [
     key: "artist",
     name: "Starter",
     priceId: "price_1TuVvKAQoQeWz6I9D7rvn8Iu",
-    amountNgn: 29900,
+    amountUsd: 19,
     artistsLimit: 1,
     features: [
       "1 artist",
@@ -42,7 +42,7 @@ export const PLANS: Plan[] = [
     key: "pro",
     name: "Pro",
     priceId: "price_1TuVvLAQoQeWz6I9V8EpK6wz",
-    amountNgn: 89900,
+    amountUsd: 59,
     artistsLimit: 2,
     highlight: true,
     features: [
@@ -64,7 +64,7 @@ export const PLANS: Plan[] = [
     key: "label_5",
     name: "Label 5",
     priceId: "price_1TuVvLAQoQeWz6I9xakbaccX",
-    amountNgn: 169900,
+    amountUsd: 109,
     artistsLimit: 5,
     features: [
       "Up to 5 artists",
@@ -78,7 +78,7 @@ export const PLANS: Plan[] = [
     key: "label_10",
     name: "Label 10",
     priceId: "price_1TuVvMAQoQeWz6I9KjKKHNjI",
-    amountNgn: 219900,
+    amountUsd: 139,
     artistsLimit: 10,
     features: [
       "Up to 10 artists",
@@ -92,7 +92,7 @@ export const PLANS: Plan[] = [
     key: "label_15",
     name: "Label 15",
     priceId: "price_1TuVvMAQoQeWz6I9KFTSaNcK",
-    amountNgn: 279900,
+    amountUsd: 179,
     artistsLimit: 15,
     features: [
       "Up to 15 artists",
@@ -106,7 +106,7 @@ export const PLANS: Plan[] = [
     key: "label_20",
     name: "Label 20",
     priceId: "price_1TuVvNAQoQeWz6I9Rq7GTccM",
-    amountNgn: 349900,
+    amountUsd: 219,
     artistsLimit: 20,
     features: [
       "Up to 20 artists",
@@ -120,7 +120,7 @@ export const PLANS: Plan[] = [
     key: "label_30",
     name: "Label 30",
     priceId: "price_1TuVvNAQoQeWz6I9JACRLb9v",
-    amountNgn: 429900,
+    amountUsd: 269,
     artistsLimit: 30,
     features: [
       "Up to 30 artists",
@@ -134,7 +134,7 @@ export const PLANS: Plan[] = [
     key: "label_40",
     name: "Label 40",
     priceId: "price_1TuVvOAQoQeWz6I9o1Vtn0qv",
-    amountNgn: 509900,
+    amountUsd: 319,
     artistsLimit: 40,
     features: [
       "Up to 40 artists",
@@ -151,35 +151,35 @@ export const ADDONS: Addon[] = [
     key: "addon_priority",
     name: "Expedited Release",
     priceId: "price_1TuVvPAQoQeWz6I9Mw6yAa7d",
-    amountNgn: 95000,
+    amountUsd: 60,
     description: "Delivered to all platforms within 3 days (instead of 2+ weeks)",
   },
   {
     key: "addon_publishing",
     name: "Music Publishing",
     priceId: "price_publishing_placeholder",
-    amountNgn: 59900,
+    amountUsd: 39.99,
     description: "Publishing royalty collection — Starter plan add-on, billed annually",
   },
   {
     key: "addon_pitch",
     name: "Playlist Pitch",
     priceId: "price_1TuVvPAQoQeWz6I9fztaAgNJ",
-    amountNgn: 14900,
+    amountUsd: 9.99,
     description: "Pitch your release to curated playlists",
   },
   {
     key: "addon_video",
     name: "Music Video Distribution",
     priceId: "price_1TuVvQAQoQeWz6I9b6NJ6Oho",
-    amountNgn: 29900,
+    amountUsd: 19.99,
     description: "Distribute your video to YouTube, Vevo & more",
   },
   {
     key: "addon_cover",
     name: "Cover Song Licence",
     priceId: "price_1TuVvQAQoQeWz6I9HA3Oufsh",
-    amountNgn: 22900,
+    amountUsd: 15.00,
     description: "Mechanical licence for cover song releases",
   },
 ];

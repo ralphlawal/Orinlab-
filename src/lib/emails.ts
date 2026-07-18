@@ -221,7 +221,7 @@ export function takedownConfirmEmail(data: { artistName: string; songTitle: stri
 }
 
 /* ── 5. Payout request confirmation ── */
-export function payoutConfirmEmail(data: { artistName: string; songTitle: string; amountNgn: number }) {
+export function payoutConfirmEmail(data: { artistName: string; songTitle: string; amountUsd: number }) {
   return base(`
     ${label("Show me the money 💸", "#166534", "#dcfce7")}
     ${h1("Your payout request is logged.")}
@@ -229,7 +229,7 @@ export function payoutConfirmEmail(data: { artistName: string; songTitle: string
     ${divider()}
     ${infoTable([
       ["Release",          data.songTitle],
-      ["Amount Requested", `₦${data.amountNgn.toLocaleString("en-NG")}`],
+      ["Amount Requested", `$${data.amountUsd.toFixed(2)} USD`],
       ["Status",           "Pending — under review"],
     ])}
     ${divider()}

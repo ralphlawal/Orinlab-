@@ -46,12 +46,10 @@ export async function POST(req: NextRequest) {
     const periodEnd  = (sub as unknown as { current_period_end: number }).current_period_end;
     const expiresAt  = new Date(periodEnd * 1000).toISOString();
     const isActive   = sub.status === "active" || sub.status === "trialing";
-    // Keep plan key on past_due/unpaid — give a grace period, don't lock them out immediately
-    const keepPlan   = isActive || sub.status === "past_due" || sub.status === "unpaid";
 
     await supabase.from("artist_profiles").upsert({
       email,
-      plan:                   keepPlan ? plan.key : null,
+      plan:                   isActive ? plan.key : null,
       plan_status:            sub.status,
       stripe_customer_id:     customerId,
       stripe_subscription_id: sub.id,
@@ -86,17 +84,6 @@ export async function POST(req: NextRequest) {
     const email      = customer.email;
     if (!email) return NextResponse.json({ received: true });
 
-    // Fetch profile BEFORE clearing so we can apply Release Protection logic
-    const { data: profile } = await supabase
-      .from("artist_profiles")
-      .select("plan, artist_name")
-      .eq("email", email)
-      .single();
-
-    const cancelledPlan = profile?.plan ?? null;
-    const isStarter     = !cancelledPlan || cancelledPlan === "artist";
-    const isPro         = cancelledPlan === "pro" || cancelledPlan?.startsWith("label_");
-
     await supabase.from("artist_profiles").upsert({
       email,
       plan:                   null,
@@ -105,36 +92,13 @@ export async function POST(req: NextRequest) {
       plan_expires_at:        null,
     }, { onConflict: "email" });
 
-    if (isStarter) {
-      // Starter: no Release Protection — music will be taken down
-      await supabase.from("notifications").insert({
-        email,
-        type:  "plan",
-        title: "Your subscription has ended — music will be removed",
-        body:  "Your Starter plan has been cancelled. Your releases will be taken down from all stores within 7 days. Resubscribe to keep your music live.",
-        link:  "/pricing",
-      });
-
-      // Alert admin to initiate takedown
-      fetch(`${SITE}/api/notify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type:    "admin-alert",
-          subject: `TAKEDOWN REQUIRED — Starter cancellation: ${email}`,
-          body:    `Artist ${profile?.artist_name ?? email} cancelled their Starter plan. No Release Protection. Initiate store takedown within 7 days.`,
-        }),
-      }).catch(() => {});
-    } else if (isPro) {
-      // Pro/Label: Release Protection — music stays live
-      await supabase.from("notifications").insert({
-        email,
-        type:  "plan",
-        title: "Plan cancelled — your music stays live",
-        body:  "Your Pro/Label plan has been cancelled, but your music remains live on all stores thanks to Release Protection. Resubscribe anytime to submit new releases.",
-        link:  "/pricing",
-      });
-    }
+    await supabase.from("notifications").insert({
+      email,
+      type:  "plan",
+      title: "Your subscription has ended",
+      body:  "Your OrinlabÍ Records plan has been cancelled. You can resubscribe anytime to continue releasing music.",
+      link:  "/pricing",
+    });
   }
 
   // ── Payment failed ────────────────────────────────────────────────────────
@@ -200,49 +164,6 @@ export async function POST(req: NextRequest) {
           link:  `/portal/releases/${releaseId}`,
         });
       }
-    }
-
-    // Promo video payment
-    if (addonKey === "addon_video" && releaseId) {
-      await supabase.from("releases").update({ video_paid: true }).eq("id", releaseId);
-      if (artistEmail) {
-        await supabase.from("notifications").insert({
-          email: artistEmail,
-          type:  "payment",
-          title: "Promo video payment confirmed",
-          body:  `Your promo video order for "${songTitle}" has been received. Our team will be in touch within 2 business days.`,
-          link:  `/portal/releases/${releaseId}`,
-        });
-      }
-    }
-
-    // Cover art payment
-    if (addonKey === "addon_cover" && releaseId) {
-      await supabase.from("releases").update({ cover_paid: true }).eq("id", releaseId);
-      if (artistEmail) {
-        await supabase.from("notifications").insert({
-          email: artistEmail,
-          type:  "payment",
-          title: "Cover art payment confirmed",
-          body:  `Your cover art order for "${songTitle}" has been received. Our design team will be in touch within 2 business days.`,
-          link:  `/portal/releases/${releaseId}`,
-        });
-      }
-    }
-
-    // Music Publishing add-on (annual subscription add-on paid one-time checkout)
-    if (addonKey === "addon_publishing" && artistEmail) {
-      await supabase.from("artist_profiles").upsert({
-        email: artistEmail,
-        publishing_enabled: true,
-      }, { onConflict: "email" });
-      await supabase.from("notifications").insert({
-        email: artistEmail,
-        type:  "payment",
-        title: "Music Publishing activated",
-        body:  "Your Music Publishing add-on is now active. We will register your works and collect publishing royalties on your behalf.",
-        link:  "/portal/billing",
-      });
     }
 
     // Notify admin of all add-on payments

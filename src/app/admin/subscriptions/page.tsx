@@ -131,13 +131,13 @@ export default function AdminSubscriptionsPage() {
         <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
           <p className="text-white/35 text-xs mb-1">MRR (est.)</p>
           <p className="text-[#007bff] text-2xl font-bold">
-            ₦{activeSubs.reduce((sum, s) => {
+            ${activeSubs.reduce((sum, s) => {
               const prices: Record<string, number> = {
-                artist: 29900, pro: 89900, label_5: 169900, label_10: 219900,
-                label_15: 279900, label_20: 349900, label_30: 429900, label_40: 509900,
+                artist: 19, pro: 59, label_5: 109, label_10: 139,
+                label_15: 179, label_20: 219, label_30: 269, label_40: 319,
               };
               return sum + ((prices[s.plan ?? ""] ?? 0) / 12);
-            }, 0).toLocaleString("en-NG", { maximumFractionDigits: 0 })}
+            }, 0).toFixed(0)}
           </p>
         </div>
       </div>

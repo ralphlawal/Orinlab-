@@ -86,19 +86,9 @@ function Hero({ s }: { s: HeroSettings }) {
       <div className="absolute bottom-0 right-1/3 w-[450px] h-[450px] bg-violet-600/6 rounded-full blur-[110px] pointer-events-none" />
       <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] bg-pink-600/5 rounded-full blur-[80px] pointer-events-none" />
 
-      {/* Ankara-inspired geometric pattern overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.045)' stroke-width='0.8'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40 Z'/%3E%3Cpath d='M40 12 L68 40 L40 68 L12 40 Z'/%3E%3Ccircle cx='40' cy='40' r='8' stroke-width='0.6'/%3E%3Cpath d='M0 0 L12 12 M80 0 L68 12 M0 80 L12 68 M80 80 L68 68' stroke='rgba(255,255,255,0.025)'/%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: "80px 80px",
-          opacity: 1,
-        }}
-      />
-
       {/* Subtle grid */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.015]"
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
           backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
@@ -113,7 +103,7 @@ function Hero({ s }: { s: HeroSettings }) {
           style={{ animation: "fadeSlideUp 0.6s ease-out both" }}
         >
           <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
-          {s.badge || "Naija sound. Global stages."}
+          {s.badge || "African music, distributed globally"}
         </div>
 
         {/* Giant headline */}
@@ -121,9 +111,9 @@ function Hero({ s }: { s: HeroSettings }) {
           className="font-black leading-[0.88] tracking-tight mb-7"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.1s both" }}
         >
-          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">Carry your</span>
-          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-[#007bff]">sound</span>
-          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">everywhere.</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">Release</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-[#007bff]">unlimited</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">music.</span>
         </h1>
 
         {/* Subheadline */}
@@ -131,7 +121,7 @@ function Hero({ s }: { s: HeroSettings }) {
           className="text-white/50 text-base sm:text-lg leading-relaxed mb-8 max-w-lg"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.2s both" }}
         >
-          {s.subheadline || "From Lagos to London. Upload once, land on every platform — Boomplay, Spotify, Audiomack & 150+ stores. Keep 100% of your royalties."}
+          {s.subheadline || "Upload to every platform, access industry tools & keep 100% of your royalties. Stay independent."}
         </p>
 
         {/* Feature bullets — 2×2 grid */}
@@ -141,9 +131,9 @@ function Hero({ s }: { s: HeroSettings }) {
         >
           {[
             "Unlimited releases",
-            "Boomplay, Spotify & 150+ more",
-            "Publishing & sync royalties",
-            "Built for Afrobeats & beyond",
+            "150+ music platforms",
+            "Publishing & sync earnings",
+            "Trusted by independent artists",
           ].map((item) => (
             <div key={item} className="flex items-center gap-2.5">
               <CheckCircle2 size={15} className="text-[#007bff] flex-shrink-0" />
@@ -189,8 +179,8 @@ function Hero({ s }: { s: HeroSettings }) {
             ))}
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">Ready to blow globally?</p>
-            <p className="text-white/35 text-xs">Join Naija artists distributing with OrinlabÍ</p>
+            <p className="text-white text-sm font-semibold">Ready to go global?</p>
+            <p className="text-white/35 text-xs">Join artists distributing with OrinlabÍ</p>
           </div>
         </div>
 
@@ -214,15 +204,15 @@ function Hero({ s }: { s: HeroSettings }) {
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#007bff]/10 rounded-full blur-[60px] pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-violet-600/8 rounded-full blur-[50px] pointer-events-none" />
 
-          <h2 className="text-white font-bold text-xl mb-1 relative z-10">Oya, get started</h2>
-          <p className="text-white/35 text-sm mb-6 relative z-10">Pick a plan. Release your sound worldwide.</p>
+          <h2 className="text-white font-bold text-xl mb-1 relative z-10">Get started today</h2>
+          <p className="text-white/35 text-sm mb-6 relative z-10">Choose a plan and release globally</p>
 
           {/* Plan tiles */}
           <div className="space-y-2.5 mb-6 relative z-10">
             {[
-              { name: "Starter",  price: "₦29,900",  period: "/yr", desc: "Unlimited releases · 1 artist",     color: "#007bff", popular: false },
-              { name: "Pro",      price: "₦89,900",  period: "/yr", desc: "Release Protection · Publishing",   color: "#7c3aed", popular: true  },
-              { name: "Label 5",  price: "₦169,900", period: "/yr", desc: "Up to 5 artists · Full suite",      color: "#f59e0b", popular: false },
+              { name: "Starter",  price: "$19",  period: "/yr", desc: "Unlimited releases · 1 artist",     color: "#007bff", popular: false },
+              { name: "Pro",      price: "$59",  period: "/yr", desc: "Release Protection · Publishing",   color: "#7c3aed", popular: true  },
+              { name: "Label 5",  price: "$109", period: "/yr", desc: "Up to 5 artists · Full suite",      color: "#f59e0b", popular: false },
             ].map((plan) => (
               <Link
                 key={plan.name}
@@ -508,7 +498,7 @@ function LiveGrowth() {
           {[
             { value: "24K", label: "Avg streams / month", sub: "across all platforms in year 1", color: "#1DB954" },
             { value: "+127%", label: "Avg growth rate",      sub: "month-over-month for distributed artists", color: "#69C9D0" },
-            { value: "₦3.4B", label: "Paid to artists",      sub: "in royalties since launch", color: "#FC3C44" },
+            { value: "$2.1M", label: "Paid to artists",      sub: "in royalties since launch", color: "#FC3C44" },
           ].map((s, i) => (
             <AnimateIn key={s.label} delay={i * 70}>
               <div className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 rounded-xl p-5 hover:-translate-y-0.5">
@@ -600,11 +590,6 @@ const FEATURE_META = [
 function Grow({ items }: { items: FeatureCard[] }) {
   return (
     <section className="py-24 px-6 border-t border-white/[0.05] bg-white/[0.01] relative overflow-hidden">
-      {/* Ankara Adire circle pattern */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.03)' stroke-width='0.7'%3E%3Ccircle cx='30' cy='30' r='26'/%3E%3Ccircle cx='30' cy='30' r='16'/%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3Cline x1='30' y1='4' x2='30' y2='56' stroke-width='0.4'/%3E%3Cline x1='4' y1='30' x2='56' y2='30' stroke-width='0.4'/%3E%3Cline x1='11' y1='11' x2='49' y2='49' stroke-width='0.4'/%3E%3Cline x1='49' y1='11' x2='11' y2='49' stroke-width='0.4'/%3E%3C/g%3E%3C/svg%3E")`,
-        backgroundSize: "60px 60px",
-      }} />
       {/* Color pop */}
       <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-amber-500/8 rounded-full blur-[70px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
@@ -878,31 +863,26 @@ function CTA() {
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[200px] bg-[#007bff]/10 rounded-full blur-[70px]" />
       </div>
-      {/* Ankara chevron pattern on CTA */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 20 L20 0 L40 20' fill='none' stroke='rgba(255,255,255,0.025)' stroke-width='0.7'/%3E%3Cpath d='M0 10 L10 0 M30 0 L40 10' fill='none' stroke='rgba(255,255,255,0.015)' stroke-width='0.5'/%3E%3C/svg%3E")`,
-        backgroundSize: "40px 20px",
-      }} />
       <div className="max-w-4xl mx-auto text-center relative z-10">
         <AnimateIn className="py-16 sm:py-24">
-          <p className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em] mb-5">Time to blow globally</p>
+          <p className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em] mb-5">Ready to release?</p>
           <h2 className="text-[clamp(3rem,8vw,6rem)] font-bold text-white leading-[0.95] tracking-tight mb-4">
-            Your music,<br />
+            Go live in<br />
             <span
               className="text-transparent bg-clip-text"
               style={{ backgroundImage: "linear-gradient(90deg, #007bff, #7c3aed, #ec4899, #007bff)", backgroundSize: "300% auto", animation: "shimmer 5s linear infinite" }}
             >
-              everywhere.
+              under 48 hours.
             </span>
           </h2>
           <p className="text-white/35 text-base max-w-sm mx-auto mb-10">
-            From Lagos to the world — professional distribution built for African artists. Plans from ₦29,900/year. 0% royalty commission.
+            Professional distribution for African artists going global. Plans from $19/year. Keep 100% of your royalties.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/pricing"
               className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group animate-cta-glow"
               style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}>
-              Oya, Start Now <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link href="/about" className="text-white/40 hover:text-white font-medium px-7 py-4 rounded-full border border-white/10 hover:border-white/30 transition-all duration-200 text-sm">
               Our story
