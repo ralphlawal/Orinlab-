@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
         line_items: [{
           quantity: 1,
           price_data: {
-            currency: "usd",
-            unit_amount: Math.round(addon.amountUsd * 100),
+            currency: "ngn",
+            unit_amount: Math.round(addon.amountNgn * 100),
             product_data: {
               name: `OrinlabÍ Records — ${addon.name}`,
               description,

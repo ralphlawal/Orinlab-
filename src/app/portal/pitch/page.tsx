@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Loader2, CheckCircle2, ChevronDown, Radio, Tv, Mic2,
-  Globe, Music2, Newspaper, ChevronRight, ArrowLeft,
+  Globe, Music2, Newspaper, ChevronRight, ArrowLeft, Lock,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -34,6 +34,7 @@ export default function PromotePage() {
   const [loading, setLoading]       = useState(true);
   const [email, setEmail]           = useState("");
   const [artistName, setArtistName] = useState("");
+  const [userPlan, setUserPlan]     = useState<string | null>(null);
 
   // Form state
   const [step, setStep]           = useState<"select" | "form">("select");
@@ -49,19 +50,30 @@ export default function PromotePage() {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
-      setEmail(data.session.user.email!);
-      const { data: rls } = await supabase
-        .from("releases")
-        .select("id, song_title, genre, status, artist_name")
-        .eq("email", data.session.user.email!)
-        .in("status", ["approved", "pending"])
-        .order("submitted_at", { ascending: false });
+      const userEmail = data.session.user.email!;
+      setEmail(userEmail);
+
+      const [{ data: rls }, { data: profile }] = await Promise.all([
+        supabase
+          .from("releases")
+          .select("id, song_title, genre, status, artist_name")
+          .eq("email", userEmail)
+          .in("status", ["approved", "pending"])
+          .order("submitted_at", { ascending: false }),
+        supabase
+          .from("artist_profiles")
+          .select("plan")
+          .eq("email", userEmail)
+          .single(),
+      ]);
+
       const list = (rls ?? []) as Release[];
       setReleases(list);
       if (list.length > 0) {
         setReleaseId(list[0].id);
         setArtistName(list[0].artist_name);
       }
+      setUserPlan(profile?.plan ?? null);
       setLoading(false);
     });
   }, []);
@@ -163,6 +175,8 @@ export default function PromotePage() {
     </section>
   );
 
+  const isPro = userPlan === "pro" || (userPlan?.startsWith("label_") ?? false);
+
   // Step 1 — pick pitch type
   if (step === "select") return (
     <section className="max-w-2xl mx-auto px-4 py-10">
@@ -171,22 +185,46 @@ export default function PromotePage() {
         <p className="text-white/40 text-sm">Choose a promotion service to pitch your music.</p>
       </div>
       <div className="space-y-3">
-        {PITCH_TYPES.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => selectType(t.key)}
-            className="w-full flex items-center gap-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/[0.14] rounded-2xl p-5 text-left transition-all group"
-          >
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${t.color}`}>
-              <t.icon size={20} />
+        {PITCH_TYPES.map((t) => {
+          const locked = t.key === "sync" && !isPro;
+          return locked ? (
+            <div
+              key={t.key}
+              className="w-full flex items-center gap-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 opacity-60 cursor-not-allowed"
+            >
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/10 bg-white/5 text-white/25">
+                <t.icon size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-white/50 font-semibold text-sm">{t.label}</p>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#7c3aed]/15 text-[#7c3aed] border border-[#7c3aed]/20">
+                    <Lock size={9} /> Pro
+                  </span>
+                </div>
+                <p className="text-white/25 text-xs mt-0.5">{t.desc}</p>
+              </div>
+              <Link href="/pricing" className="text-[#007bff] text-xs font-semibold hover:underline flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                Upgrade
+              </Link>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold text-sm">{t.label}</p>
-              <p className="text-white/40 text-xs mt-0.5">{t.desc}</p>
-            </div>
-            <ChevronRight size={16} className="text-white/20 group-hover:text-white/50 transition-colors flex-shrink-0" />
-          </button>
-        ))}
+          ) : (
+            <button
+              key={t.key}
+              onClick={() => selectType(t.key)}
+              className="w-full flex items-center gap-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/[0.14] rounded-2xl p-5 text-left transition-all group"
+            >
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${t.color}`}>
+                <t.icon size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-semibold text-sm">{t.label}</p>
+                <p className="text-white/40 text-xs mt-0.5">{t.desc}</p>
+              </div>
+              <ChevronRight size={16} className="text-white/20 group-hover:text-white/50 transition-colors flex-shrink-0" />
+            </button>
+          );
+        })}
       </div>
     </section>
   );

@@ -102,8 +102,8 @@ function AnnouncementBar({ onDismiss }: { onDismiss: () => void }) {
       <div className="max-w-7xl mx-auto px-10 sm:px-8 flex items-center justify-center h-9 gap-2.5 relative">
         <Sparkles size={12} className="text-white/80 flex-shrink-0" />
         <p className="text-white text-[11px] sm:text-xs font-semibold tracking-wide text-center">
-          <span className="hidden sm:inline">African music, distributed globally — plans from $19/year. Keep 100% of your royalties.</span>
-          <span className="sm:hidden">Plans from $19/yr — keep 100% royalties.</span>
+          <span className="hidden sm:inline">African music, distributed globally — plans from ₦29,900/year. Keep 100% of your royalties.</span>
+          <span className="sm:hidden">Plans from ₦29,900/yr — keep 100% royalties.</span>
           <Link href="/pricing" className="ml-2 underline underline-offset-2 hover:no-underline font-bold opacity-90 hover:opacity-100">
             See plans →
           </Link>

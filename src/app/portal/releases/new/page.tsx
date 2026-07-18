@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
-  Music2, Plus, Trash2, Save, Zap,
+  Music2, Plus, Trash2, Save, Zap, Lock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -61,6 +61,7 @@ export default function NewReleasePage() {
     tracks: (() => { try { const t = draft?._tracks ? JSON.parse(draft._tracks) : null; return t?.length ? t.map((tr: { title: string; version: string; explicit: boolean; instrumental: boolean }) => ({ title: tr.title ?? "", file: null, version: tr.version ?? "Original", explicit: tr.explicit ?? false, instrumental: tr.instrumental ?? false })) : null; } catch { return null; } })() ?? [{ title: "", file: null, version: "Original", explicit: false, instrumental: false }],
   });
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
+  const [userPlan, setUserPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -133,14 +134,23 @@ export default function NewReleasePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/portal/login"); return; }
 
-      const { data } = await supabase
-        .from("releases")
-        .select("artist_name, email")
-        .eq("email", session.user.email!)
-        .eq("status", "approved")
-        .order("submitted_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const [{ data }, { data: planProfile }] = await Promise.all([
+        supabase
+          .from("releases")
+          .select("artist_name, email")
+          .eq("email", session.user.email!)
+          .eq("status", "approved")
+          .order("submitted_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("artist_profiles")
+          .select("plan")
+          .eq("email", session.user.email!)
+          .single(),
+      ]);
+
+      setUserPlan(planProfile?.plan ?? null);
 
       // Allow resubmission from a rejected release even if no approved releases
       const hasApproved = !!data;
@@ -561,18 +571,32 @@ export default function NewReleasePage() {
             Release Details
           </h2>
           <div className="grid sm:grid-cols-2 gap-5">
-            <Select
-              label="Release Type"
-              name="releaseType"
-              options={["Single", "EP", "Album", "Compilation"]}
-              required
-              value={releaseType}
-              onChange={(v) => {
-                setReleaseType(v);
-                setTracks([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
-                setAudioFile(null);
-              }}
-            />
+            {(() => {
+              const isPro = userPlan === "pro" || (userPlan?.startsWith("label_") ?? false);
+              return (
+                <div>
+                  <Select
+                    label="Release Type"
+                    name="releaseType"
+                    options={isPro ? ["Single", "EP", "Album", "Compilation"] : ["Single", "EP", "Album"]}
+                    required
+                    value={releaseType}
+                    onChange={(v) => {
+                      setReleaseType(v);
+                      setTracks([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
+                      setAudioFile(null);
+                    }}
+                  />
+                  {!isPro && (
+                    <p className="mt-1.5 flex items-center gap-1 text-[11px] text-white/30">
+                      <Lock size={10} />
+                      Compilation releases require a{" "}
+                      <Link href="/pricing" className="text-[#007bff] hover:underline">Pro or Label plan</Link>
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
             {!isMultiTrack && (
               <Field label="Song Title" name="songTitle" required defaultValue={draft?.songTitle} />
             )}
@@ -600,6 +624,19 @@ export default function NewReleasePage() {
                 </p>
               )}
             </div>
+            {(userPlan === "pro" || (userPlan?.startsWith("label_") ?? false)) && (
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">
+                  Exact Release Time <span className="text-[11px] text-white/30 font-normal">(UTC, Pro)</span>
+                </label>
+                <input
+                  type="time"
+                  name="releaseTime"
+                  defaultValue="00:00"
+                  className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-sm px-4 py-3 rounded-xl transition-colors"
+                />
+              </div>
+            )}
             <Select label="Explicit Content" name="explicit" options={["Clean", "Explicit"]} required value={explicitContent} onChange={(v) => setExplicitContent(v)} />
             {!isMultiTrack && (
               <Select label="Track Version" name="trackVersion" options={trackVersions} required value={trackVersion} onChange={(v) => setTrackVersion(v)} />
@@ -1047,23 +1084,48 @@ export default function NewReleasePage() {
               </div>
             )}
             {/* YouTube Content ID */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-white font-medium text-sm mb-1">YouTube Content ID</p>
-                  <p className="text-white/40 text-xs leading-relaxed">
-                    If someone uploads your music to YouTube, Ditto detects it, claims it, and collects the revenue for you. Recommended for all releases.
-                  </p>
+            {(() => {
+              const isPro = userPlan === "pro" || (userPlan?.startsWith("label_") ?? false);
+              return isPro ? (
+                <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-white font-medium text-sm mb-1">YouTube Content ID</p>
+                      <p className="text-white/40 text-xs leading-relaxed">
+                        If someone uploads your music to YouTube, we detect it, claim it, and collect the revenue for you. Recommended for all releases.
+                      </p>
+                    </div>
+                    <button type="button"
+                      onClick={() => setYoutubeContentId(!youtubeContentId)}
+                      className={`flex-shrink-0 w-12 h-6 rounded-full border transition-colors relative ${
+                        youtubeContentId ? "bg-[#007bff] border-[#007bff]" : "bg-white/[0.06] border-white/[0.12]"
+                      }`}>
+                      <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${youtubeContentId ? "left-6" : "left-0.5"}`} />
+                    </button>
+                  </div>
                 </div>
-                <button type="button"
-                  onClick={() => setYoutubeContentId(!youtubeContentId)}
-                  className={`flex-shrink-0 w-12 h-6 rounded-full border transition-colors relative ${
-                    youtubeContentId ? "bg-[#007bff] border-[#007bff]" : "bg-white/[0.06] border-white/[0.12]"
-                  }`}>
-                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all ${youtubeContentId ? "left-6" : "left-0.5"}`} />
-                </button>
-              </div>
-            </div>
+              ) : (
+                <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 opacity-60">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-white/50 font-medium text-sm">YouTube Content ID</p>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#7c3aed]/15 text-[#7c3aed] border border-[#7c3aed]/20">
+                          <Lock size={9} /> Pro
+                        </span>
+                      </div>
+                      <p className="text-white/25 text-xs leading-relaxed">
+                        Available on Pro and Label plans.{" "}
+                        <Link href="/pricing" className="text-[#007bff] hover:underline">Upgrade to enable →</Link>
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0 w-12 h-6 rounded-full bg-white/[0.04] border border-white/[0.08] relative cursor-not-allowed">
+                      <span className="absolute top-0.5 left-0.5 w-5 h-5 bg-white/20 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
 
