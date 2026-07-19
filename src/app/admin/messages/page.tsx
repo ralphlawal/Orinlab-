@@ -123,12 +123,16 @@ function ArtistChats() {
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
+  const adminEmailRef = useRef<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      adminEmailRef.current = data.session?.user?.email ?? "";
+    });
     loadThreads();
     return () => {
       if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
@@ -311,6 +315,10 @@ function ArtistChats() {
     return { url: data.publicUrl };
   }
 
+  function adminHeaders(): HeadersInit {
+    return { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current };
+  }
+
   function startEdit(m: ChatMsg) {
     requestUnlock(() => {
       setEditingId(m.id);
@@ -323,13 +331,20 @@ function ArtistChats() {
     if (!newText) return;
     setMsgs(prev => prev.map(m => m.id === id ? { ...m, content: newText } : m));
     setEditingId(null);
-    await supabase.from("messages").update({ content: newText }).eq("id", id);
+    await fetch(`/api/admin/messages?id=${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: adminHeaders(),
+      body: JSON.stringify({ content: newText }),
+    });
   }
 
   function deleteMsg(id: string) {
     requestUnlock(async () => {
       setMsgs(prev => prev.filter(m => m.id !== id));
-      await supabase.from("messages").delete().eq("id", id);
+      await fetch(`/api/admin/messages?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: adminHeaders(),
+      });
     });
   }
 
