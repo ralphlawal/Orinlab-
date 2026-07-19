@@ -11,11 +11,11 @@ const FAQS = [
     items: [
       {
         q: "How does OrinlabÍ Records distribution work?",
-        a: "You submit your release through our application form. Our team reviews it within 24–48 hours. If approved, we distribute your music to 150+ streaming platforms worldwide — including Spotify, Apple Music, Boomplay, Audiomack, Deezer, TIDAL, and more.",
+        a: "Subscribe to a plan, upload your release, and we deliver it to 150+ streaming platforms worldwide — including Spotify, Apple Music, Boomplay, Audiomack, Deezer, TIDAL, and more. Most releases go live within 24–48 hours.",
       },
       {
         q: "What happens after I submit my release?",
-        a: "Every submission is reviewed by our team personally. We assess sound quality, artwork, and release metadata. If everything meets our standards, your release is approved and distributed to 150+ platforms worldwide.",
+        a: "After you submit, we verify your release meets platform standards — artwork specs, audio quality, and metadata. Once cleared, it's delivered to all 150+ platforms. You'll be notified by email and in your portal when it's live.",
       },
       {
         q: "How long does it take for my music to go live?",
@@ -65,7 +65,7 @@ const FAQS = [
       },
       {
         q: "What if my submission is not approved?",
-        a: "We review every submission carefully. If your release doesn't meet our quality standards, you're welcome to resubmit after making improvements. We may provide notes on what to improve. Keep creating — the door is always open.",
+        a: "If your release doesn't pass our platform checks, you'll receive feedback on what to fix — artwork specs, audio quality, or metadata. You can resubmit once the issues are resolved at no extra cost.",
       },
       {
         q: "Can I submit more than one release?",

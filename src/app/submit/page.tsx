@@ -463,8 +463,7 @@ export default function SubmitPage() {
             </span>
           </h1>
           <p className="text-white/50 leading-relaxed max-w-lg mx-auto text-base">
-            Fill in your details below. Our team personally reviews every submission
-            and responds promptly. Selected artists get global distribution to 150+ platforms.
+            Fill in your details below. Once approved, you'll get instant access to distribute to 150+ platforms worldwide and keep 100% of your royalties.
           </p>
         </div>
       </section>

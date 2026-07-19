@@ -27,7 +27,7 @@ function Hero() {
         </AnimateIn>
         <AnimateIn delay={160}>
           <p className="text-white/50 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto">
-            OrinlabÍ Records is a global music distribution platform for independent creators everywhere. We help artists release worldwide, earn fairly, and own their legacy — with a team personally invested in every artist we work with.
+            OrinlabÍ Records is a global music distribution platform for independent creators everywhere. We help artists release worldwide, earn fairly, and own their legacy — built by Africans, for the world.
           </p>
         </AnimateIn>
       </div>
@@ -204,7 +204,7 @@ function Standards() {
           </AnimateIn>
           <AnimateIn delay={140}>
             <p className="text-white/45 leading-relaxed">
-              Our team personally reviews every application. We are not driven by follower counts or streaming numbers — we listen to your music and assess it on its own merit.
+              We built OrinlabÍ Records to give African artists the same distribution infrastructure the biggest labels have — without the gatekeeping. Upload, distribute, and earn on your own terms.
             </p>
           </AnimateIn>
         </div>

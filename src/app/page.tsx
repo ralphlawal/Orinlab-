@@ -704,7 +704,7 @@ function Why({ items }: { items: WhyCard[] }) {
           </AnimateIn>
           <AnimateIn delay={140}>
             <p className="text-white/40 leading-relaxed mb-8 text-base">
-              Distribution should be earned, not just purchased. Every application is personally reviewed by our team — no algorithms, no shortcuts. We work only with artists we genuinely believe in, and for those we do, we go all the way.
+              Upload your music, set your release date, and we deliver to 150+ platforms worldwide. Fast, straightforward, and always in your control — you keep every penny you earn.
             </p>
           </AnimateIn>
           <AnimateIn delay={200}>

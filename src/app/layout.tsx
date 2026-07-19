@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "OrinlabÍ Records – Global Music Distribution for Independent Artists",
     description:
-      "Submit your music and get approved to release on 150+ platforms worldwide. Keep ownership of your masters. Every submission reviewed by our team.",
+      "Distribute your music to 150+ platforms worldwide. Keep 100% of your royalties, own your masters, and reach fans everywhere.",
     siteName: "OrinlabÍ Records",
     type: "website",
     url: "https://orinlabi.com",

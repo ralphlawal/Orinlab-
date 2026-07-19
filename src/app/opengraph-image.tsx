@@ -86,8 +86,7 @@ export default function OGImage() {
             lineHeight: 1.5,
           }}
         >
-          Release unlimited music. Keep 100% of your royalties. Every application
-          reviewed by our team. Keep ownership of your masters.
+          Release unlimited music. Keep 100% of your royalties. Distribute to 150+ platforms worldwide. Own your masters.
         </div>
 
         {/* Brand */}
