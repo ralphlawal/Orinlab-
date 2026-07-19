@@ -61,14 +61,17 @@ const getRealSpotlightArtists = unstable_cache(
         }
       }
 
-      return unique.slice(0, 4).map((a) => ({
-        artist_name: a.artist_name,
-        genre: a.genre ?? null,
-        country: a.country ?? null,
-        song_title: a.song_title ?? null,
-        cover_art_url: a.cover_art_url ?? null,
-        profile_image_url: photoMap[a.email] ?? null,
-      }));
+      return unique
+        .map((a) => ({
+          artist_name: a.artist_name,
+          genre: a.genre ?? null,
+          country: a.country ?? null,
+          song_title: a.song_title ?? null,
+          cover_art_url: a.cover_art_url ?? null,
+          profile_image_url: photoMap[a.email] ?? null,
+        }))
+        .filter((a) => a.profile_image_url !== null)
+        .slice(0, 5);
     } catch {
       return [];
     }

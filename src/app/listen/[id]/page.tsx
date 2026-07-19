@@ -73,9 +73,6 @@ export async function generateMetadata({
     openGraph: {
       title: `${release.song_title} · ${release.artist_name}`,
       description: `${verb} ${release.song_title}`,
-      images: release.cover_art_url
-        ? [{ url: release.cover_art_url, width: 1200, height: 1200 }]
-        : [],
       type: "music.song",
       siteName: "OrinlabÍ",
     },
@@ -83,7 +80,6 @@ export async function generateMetadata({
       card: "summary_large_image",
       title: `${release.song_title} · ${release.artist_name}`,
       description: `${verb} ${release.song_title}`,
-      images: release.cover_art_url ? [release.cover_art_url] : [],
     },
   };
 }

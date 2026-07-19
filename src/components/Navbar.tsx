@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import {
-  Menu, X, ArrowRight, Sparkles, ChevronDown,
+  Menu, X, ArrowRight, ChevronDown,
   Music2, Zap, Globe2, DollarSign, BarChart3,
   Megaphone, PlayCircle, Users, FileText, BarChart2, CreditCard,
 } from "lucide-react";
@@ -94,33 +94,6 @@ const NAV: NavEntry[] = [
   { label: "About",   href: "/about" },
 ];
 
-function AnnouncementBar({ onDismiss }: { onDismiss: () => void }) {
-  return (
-    <div className="relative overflow-hidden" style={{ background: "linear-gradient(90deg, #1a56ff 0%, #7c3aed 50%, #db2777 100%)" }}>
-      <div
-        className="absolute inset-0 opacity-20 pointer-events-none"
-        style={{ backgroundImage: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)", backgroundSize: "200% 100%", animation: "shimmer 3s linear infinite" }}
-      />
-      <div className="max-w-7xl mx-auto px-10 sm:px-8 flex items-center justify-center h-9 gap-2.5 relative">
-        <Sparkles size={12} className="text-white/80 flex-shrink-0" />
-        <p className="text-white text-[11px] sm:text-xs font-semibold tracking-wide text-center">
-          <span className="hidden sm:inline">African music, distributed globally — plans from $19/year. Keep 100% of your royalties.</span>
-          <span className="sm:hidden">Plans from $19/yr — keep 100% royalties.</span>
-          <Link href="/pricing" className="ml-2 underline underline-offset-2 hover:no-underline font-bold opacity-90 hover:opacity-100">
-            See plans →
-          </Link>
-        </p>
-        <button
-          onClick={onDismiss}
-          className="absolute right-3 sm:right-5 text-white/60 hover:text-white transition-colors p-1 rounded"
-          aria-label="Dismiss"
-        >
-          <X size={13} />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function DropdownPanel({ nav, onClose }: { nav: NavDropdown; onClose: () => void }) {
   return (
@@ -206,14 +179,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen]     = useState(false);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [scrolled, setScrolled]         = useState(false);
-  const [showBanner, setShowBanner]     = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
-
-  useEffect(() => {
-    if (!sessionStorage.getItem("orinlabi_banner_v2")) setShowBanner(true);
-  }, []);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -222,11 +190,6 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => { setMobileOpen(false); setOpenDropdown(null); }, [pathname]);
-
-  function dismissBanner() {
-    sessionStorage.setItem("orinlabi_banner_v2", "1");
-    setShowBanner(false);
-  }
 
   function openMenu(label: string) {
     if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -248,8 +211,6 @@ export default function Navbar() {
         scrolled ? "bg-black/95 backdrop-blur-xl border-b border-white/[0.07]" : "bg-transparent"
       }`}
     >
-      {showBanner && <AnnouncementBar onDismiss={dismissBanner} />}
-
       <nav className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16 md:h-[72px]">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
