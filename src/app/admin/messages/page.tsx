@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, Send, MessageSquare, Mail, CheckCheck, ArrowLeft,
-  Paperclip, Mic, MicOff, X, FileText,
+  Paperclip, Mic, MicOff, X, FileText, Trash2, Pencil, Check,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -121,6 +121,9 @@ function ArtistChats() {
   const selectedEmailRef = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -309,6 +312,28 @@ function ArtistChats() {
     return { url: data.publicUrl };
   }
 
+  function startEdit(m: ChatMsg) {
+    requestUnlock(() => {
+      setEditingId(m.id);
+      setEditText(m.content);
+    });
+  }
+
+  async function saveEdit(id: string) {
+    const newText = editText.trim();
+    if (!newText) return;
+    setMsgs(prev => prev.map(m => m.id === id ? { ...m, content: newText } : m));
+    setEditingId(null);
+    await supabase.from("messages").update({ content: newText }).eq("id", id);
+  }
+
+  function deleteMsg(id: string) {
+    requestUnlock(async () => {
+      setMsgs(prev => prev.filter(m => m.id !== id));
+      await supabase.from("messages").delete().eq("id", id);
+    });
+  }
+
   async function sendMsg() {
     const content = text.trim();
     if ((!content && !attachment) || !selected || sending || recording) return;
@@ -440,32 +465,103 @@ function ArtistChats() {
                 <div className="text-center py-12 text-white/30 text-sm">No messages yet. Start the conversation.</div>
               ) : (
                 msgs.map((m) => (
-                  <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    key={m.id}
+                    className={`flex items-center gap-1.5 ${m.sender === "admin" ? "justify-end" : "justify-start"}`}
+                    onMouseEnter={() => setHoveredId(m.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    {/* Admin message actions — shown to left of bubble */}
+                    {m.sender === "admin" && hoveredId === m.id && editingId !== m.id && (
+                      <div className="flex items-center gap-0.5 order-first">
+                        <button
+                          onClick={() => startEdit(m)}
+                          title="Edit"
+                          className="p-1.5 rounded-lg text-white/25 hover:text-white/70 hover:bg-white/[0.05] transition-colors"
+                        >
+                          <Pencil size={12} />
+                        </button>
+                        <button
+                          onClick={() => deleteMsg(m.id)}
+                          title="Delete"
+                          className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
+
                     <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                       m.sender === "admin"
                         ? "bg-[#007bff] text-white rounded-br-sm"
                         : "bg-white/[0.07] text-white/85 rounded-bl-sm"
-                    }`}>
+                    } ${editingId === m.id ? "w-72 max-w-[85%]" : ""}`}>
                       {m.sender === "artist" && (
                         <p className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest mb-1">
                           {m.artist_name || selected.name}
                         </p>
                       )}
-                      {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
-                      {m.attachment_url && m.attachment_type && (
-                        <AttachmentBubble
-                          url={m.attachment_url}
-                          type={m.attachment_type}
-                          name={m.attachment_name}
-                          isAdmin={m.sender === "admin"}
-                        />
+                      {editingId === m.id ? (
+                        <>
+                          <textarea
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); saveEdit(m.id); }
+                              if (e.key === "Escape") setEditingId(null);
+                            }}
+                            autoFocus
+                            rows={3}
+                            style={{ resize: "none" }}
+                            className="w-full bg-white/20 text-white placeholder-white/50 text-sm px-2 py-1.5 rounded-lg outline-none border border-white/30 focus:border-white/60"
+                          />
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              onClick={() => saveEdit(m.id)}
+                              className="flex items-center gap-1 text-xs font-semibold text-white bg-white/20 hover:bg-white/30 px-2.5 py-1 rounded-lg transition-colors"
+                            >
+                              <Check size={11} /> Save
+                            </button>
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="text-xs text-white/60 hover:text-white px-2 py-1 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {m.content && <p className="whitespace-pre-wrap break-words">{m.content}</p>}
+                          {m.attachment_url && m.attachment_type && (
+                            <AttachmentBubble
+                              url={m.attachment_url}
+                              type={m.attachment_type}
+                              name={m.attachment_name}
+                              isAdmin={m.sender === "admin"}
+                            />
+                          )}
+                          <p className={`text-[10px] mt-1.5 ${m.sender === "admin" ? "text-white/50" : "text-white/30"}`}>
+                            {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                            {" · "}
+                            {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                          </p>
+                        </>
                       )}
-                      <p className={`text-[10px] mt-1.5 ${m.sender === "admin" ? "text-white/50" : "text-white/30"}`}>
-                        {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                        {" · "}
-                        {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                      </p>
                     </div>
+
+                    {/* Artist message delete — shown to right of bubble */}
+                    {m.sender === "artist" && hoveredId === m.id && (
+                      <div className="order-last">
+                        <button
+                          onClick={() => deleteMsg(m.id)}
+                          title="Delete"
+                          className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))
               )}
