@@ -7,7 +7,7 @@ const ORIGIN = "https://orinlabi.com";
 
 export async function POST(req: NextRequest) {
   try {
-    const { priceKey, email, artistName, releaseId, songTitle, mode } = await req.json();
+    const { priceKey, email, artistName, releaseId, songTitle, mode, returnTo } = await req.json();
     // mode: "subscription" | "addon"
 
     if (!priceKey || !email) {
@@ -18,12 +18,18 @@ export async function POST(req: NextRequest) {
       const plan = PLANS.find(p => p.key === priceKey);
       if (!plan) return NextResponse.json({ error: "Unknown plan" }, { status: 400 });
 
+      // returnTo must be a relative /portal/* path to prevent open redirects
+      const safeReturn = typeof returnTo === "string" && returnTo.startsWith("/portal/") ? returnTo : null;
+      const successUrl = safeReturn
+        ? `${ORIGIN}${safeReturn}?subscribed=1&plan=${plan.key}`
+        : `${ORIGIN}/portal/billing?subscribed=1&plan=${plan.key}`;
+
       const session = await getStripe().checkout.sessions.create({
         mode: "subscription",
         customer_email: email,
         line_items: [{ price: plan.priceId, quantity: 1 }],
         metadata: { plan_key: plan.key, artist_email: email, artist_name: artistName ?? "" },
-        success_url: `${ORIGIN}/portal/billing?subscribed=1&plan=${plan.key}`,
+        success_url: successUrl,
         cancel_url: `${ORIGIN}/pricing`,
         allow_promotion_codes: true,
       });

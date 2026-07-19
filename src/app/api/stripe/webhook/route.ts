@@ -120,7 +120,27 @@ export async function POST(req: NextRequest) {
 
   // ── One-time checkout (add-ons + priority distribution) ──────────────────
   if (event.type === "checkout.session.completed") {
-    const session     = event.data.object as Stripe.Checkout.Session;
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    // Subscription checkout — activate plan immediately (don't wait for subscription.created)
+    if (session.mode === "subscription" && session.subscription) {
+      const sub     = await getStripe().subscriptions.retrieve(session.subscription as string);
+      const priceId = sub.items.data[0]?.price.id;
+      const plan    = PLANS.find(p => p.priceId === priceId);
+      const email   = session.customer_email ?? (session.customer_details as { email?: string } | null)?.email ?? null;
+
+      if (plan && email) {
+        await supabase.from("artist_profiles").upsert({
+          email,
+          plan:                   plan.key,
+          plan_status:            "active",
+          stripe_customer_id:     session.customer as string,
+          stripe_subscription_id: session.subscription as string,
+        }, { onConflict: "email" });
+      }
+      return NextResponse.json({ received: true });
+    }
+
     if (session.mode !== "payment") return NextResponse.json({ received: true });
 
     const releaseId   = session.metadata?.release_id;

@@ -5,9 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Upload, CheckCircle2, AlertCircle, Loader2, ArrowLeft,
-  Music2, Plus, Trash2, Save, Zap,
+  Music2, Plus, Trash2, Save, Zap, Lock, ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { PLANS } from "@/lib/stripePlans";
 
 const genres = [
   "Afrobeats", "Afropop", "Highlife", "Amapiano", "Afro-soul", "Afro-fusion",
@@ -29,6 +30,8 @@ const trackVersions = [
 type ArtistProfile = {
   artist_name: string;
   email: string;
+  plan: string | null;
+  plan_status: string | null;
 };
 
 type Track = { title: string; file: File | null; version: string; explicit: boolean; instrumental: boolean };
@@ -62,6 +65,7 @@ export default function NewReleasePage() {
   });
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscribing, setSubscribing] = useState<string | null>(null);
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -133,14 +137,18 @@ export default function NewReleasePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/portal/login"); return; }
 
-      const { data } = await supabase
-        .from("releases")
-        .select("artist_name, email")
-        .eq("email", session.user.email!)
-        .eq("status", "approved")
-        .order("submitted_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const email = session.user.email!;
+
+      const [{ data }, { data: planData }] = await Promise.all([
+        supabase.from("releases").select("artist_name, email")
+          .eq("email", email).eq("status", "approved")
+          .order("submitted_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("artist_profiles").select("plan, plan_status")
+          .eq("email", email).maybeSingle(),
+      ]);
+
+      const plan       = planData?.plan ?? null;
+      const planStatus = planData?.plan_status ?? null;
 
       // Allow resubmission from a rejected release even if no approved releases
       const hasApproved = !!data;
@@ -154,20 +162,18 @@ export default function NewReleasePage() {
         const { data: prev } = await supabase
           .from("releases")
           .select("artist_name, email, song_title, genre, language, release_type, copyright_owner, copyright_year")
-          .eq("id", fromId)
-          .eq("email", session.user.email!)
-          .maybeSingle();
+          .eq("id", fromId).eq("email", email).maybeSingle();
         if (prev) {
           setGenre(prev.genre ?? "");
           setLanguage(prev.language ?? "");
           setReleaseType(prev.release_type ?? "Single");
-          setProfile({ artist_name: prev.artist_name, email: prev.email });
+          setProfile({ artist_name: prev.artist_name, email: prev.email, plan, plan_status: planStatus });
           setLoading(false);
           return;
         }
       }
 
-      setProfile(data as ArtistProfile);
+      setProfile({ ...(data as { artist_name: string; email: string }), plan, plan_status: planStatus });
       setLoading(false);
     }
     load();
@@ -431,6 +437,25 @@ export default function NewReleasePage() {
     }
   }
 
+  async function handleSubscribe(planKey: string) {
+    if (!profile) return;
+    setSubscribing(planKey);
+    const res = await fetch("/api/stripe/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        priceKey:   planKey,
+        email:      profile.email,
+        artistName: profile.artist_name,
+        mode:       "subscription",
+        returnTo:   "/portal/releases/new",
+      }),
+    });
+    const { url } = await res.json();
+    if (url) window.location.href = url;
+    else setSubscribing(null);
+  }
+
   if (loading) {
     return (
       <section className="max-w-2xl mx-auto px-4 py-12 space-y-8">
@@ -440,6 +465,79 @@ export default function NewReleasePage() {
         <div className="skeleton h-72 rounded-2xl" />
         <div className="skeleton h-48 rounded-2xl" />
         <div className="skeleton h-14 rounded-full" />
+      </section>
+    );
+  }
+
+  const hasActivePlan = profile?.plan_status === "active" && !!profile?.plan;
+  const justSubscribed = searchParams.get("subscribed") === "1";
+
+  if (!hasActivePlan) {
+    const gatePlans = PLANS.filter(p => p.key === "artist" || p.key === "pro");
+    return (
+      <section className="max-w-2xl mx-auto px-4 py-16 text-center">
+        {/* Icon */}
+        <div className="w-16 h-16 bg-[#007bff]/10 border border-[#007bff]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <Lock size={28} className="text-[#007bff]" />
+        </div>
+
+        <h1 className="text-white font-bold text-2xl mb-3">Subscription required</h1>
+        <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto mb-10">
+          Choose a plan to start releasing music to 150+ platforms and keep 100% of your royalties.
+        </p>
+
+        {/* Plan cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
+          {gatePlans.map((plan) => (
+            <div
+              key={plan.key}
+              className={`rounded-2xl border p-5 flex flex-col gap-4 ${
+                plan.highlight
+                  ? "border-violet-400/30 bg-violet-500/5"
+                  : "border-white/[0.08] bg-white/[0.03]"
+              }`}
+            >
+              {plan.highlight && (
+                <span className="self-start text-[10px] font-bold uppercase tracking-widest text-violet-400 bg-violet-500/10 px-2.5 py-1 rounded-full">
+                  Most Popular
+                </span>
+              )}
+              <div>
+                <p className="text-white font-bold text-lg">{plan.name}</p>
+                <p className="text-white/40 text-xs mt-0.5">
+                  ${plan.amountUsd}<span className="text-white/20">/year</span>
+                </p>
+              </div>
+              <ul className="space-y-1.5 flex-1">
+                {plan.features.slice(0, 5).map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-white/55 text-xs">
+                    <CheckCircle2 size={12} className="text-[#007bff] flex-shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => handleSubscribe(plan.key)}
+                disabled={!!subscribing}
+                className={`w-full flex items-center justify-center gap-2 font-semibold text-sm py-3 rounded-xl transition-colors disabled:opacity-50 ${
+                  plan.highlight
+                    ? "bg-violet-500 hover:bg-violet-400 text-white"
+                    : "bg-[#007bff] hover:bg-[#0069d9] text-white"
+                }`}
+              >
+                {subscribing === plan.key
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <ArrowRight size={14} />}
+                Get {plan.name}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-white/20 text-xs">
+          Need more artists?{" "}
+          <a href="/pricing" className="text-[#007bff] hover:underline">See all Label plans →</a>
+        </p>
       </section>
     );
   }
