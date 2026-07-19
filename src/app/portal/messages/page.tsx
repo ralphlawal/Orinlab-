@@ -140,6 +140,22 @@ export default function PortalMessagesPage() {
           });
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `artist_email=eq.${email}` },
+        (payload) => {
+          const updated = payload.new as Msg;
+          setMsgs((prev) => prev.map((m) => m.id === updated.id ? { ...m, content: updated.content } : m));
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "messages" },
+        (payload) => {
+          const deletedId = (payload.old as { id: string }).id;
+          setMsgs((prev) => prev.filter((m) => m.id !== deletedId));
+        }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [email]);
