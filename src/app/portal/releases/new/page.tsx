@@ -427,7 +427,9 @@ export default function NewReleasePage() {
       const msg = err && typeof err === "object" && "message" in err
         ? String((err as { message: unknown }).message)
         : "";
-      if (msg.toLowerCase().includes("storage") || msg.toLowerCase().includes("bucket")) {
+      if (msg.toLowerCase().includes("exceeded") || msg.toLowerCase().includes("maximum size") || msg.toLowerCase().includes("too large") || msg.toLowerCase().includes("payload too large")) {
+        setErrorMsg("Your file is too large to upload. Please compress your audio to a smaller WAV or use a high-quality MP3 (320 kbps), and ensure your cover art is under 50 MB.");
+      } else if (msg.toLowerCase().includes("storage") || msg.toLowerCase().includes("bucket")) {
         setErrorMsg("File upload failed. Please check your files and try again.");
       } else {
         setErrorMsg(msg || "Something went wrong. Please try again or contact info@orinlabi.com.");
