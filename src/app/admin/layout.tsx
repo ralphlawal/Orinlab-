@@ -54,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const isAdmin = Boolean(email) && ADMIN_EMAILS.includes(email);
       if (!isAdmin) { router.replace("/admin/login"); }
       else { setAdminEmail(email); setChecking(false); }
-    });
+    }).catch(() => { router.replace("/admin/login"); });
   }, [pathname, router]);
 
   const loadCounts = useCallback(async () => {

@@ -4,10 +4,10 @@ import { createClient } from "@supabase/supabase-js";
 import { PLANS } from "@/lib/stripePlans";
 
 function getStripe() { return new Stripe(process.env.STRIPE_SECRET_KEY!); }
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabase() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
+}
 
 const SITE = "https://orinlabi.com";
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const expiresAt  = new Date(periodEnd * 1000).toISOString();
     const isActive   = sub.status === "active" || sub.status === "trialing";
 
-    await supabase.from("artist_profiles").upsert({
+    await getSupabase().from("artist_profiles").upsert({
       email,
       plan:                   isActive ? plan.key : null,
       plan_status:            sub.status,
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     }, { onConflict: "email" });
 
     if (event.type === "customer.subscription.created") {
-      await supabase.from("notifications").insert({
+      await getSupabase().from("notifications").insert({
         email,
         type:  "plan",
         title: `Welcome to ${plan.name}!`,
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     const email      = customer.email;
     if (!email) return NextResponse.json({ received: true });
 
-    await supabase.from("artist_profiles").upsert({
+    await getSupabase().from("artist_profiles").upsert({
       email,
       plan:                   null,
       plan_status:            "cancelled",
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       plan_expires_at:        null,
     }, { onConflict: "email" });
 
-    await supabase.from("notifications").insert({
+    await getSupabase().from("notifications").insert({
       email,
       type:  "plan",
       title: "Your subscription has ended",
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     const customer   = await getStripe().customers.retrieve(customerId) as Stripe.Customer;
     const email      = customer.email;
     if (email) {
-      await supabase.from("notifications").insert({
+      await getSupabase().from("notifications").insert({
         email,
         type:  "plan",
         title: "Payment failed — action required",
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       const email   = session.customer_email ?? (session.customer_details as { email?: string } | null)?.email ?? null;
 
       if (plan && email) {
-        await supabase.from("artist_profiles").upsert({
+        await getSupabase().from("artist_profiles").upsert({
           email,
           plan:                   plan.key,
           plan_status:            "active",
@@ -151,10 +151,10 @@ export async function POST(req: NextRequest) {
 
     // Priority distribution payment
     if (addonKey === "addon_priority" && releaseId) {
-      await supabase.from("releases").update({ priority_paid: true }).eq("id", releaseId);
+      await getSupabase().from("releases").update({ priority_paid: true }).eq("id", releaseId);
 
       if (artistEmail) {
-        await supabase.from("notifications").insert({
+        await getSupabase().from("notifications").insert({
           email: artistEmail,
           type:  "payment",
           title: "Priority payment confirmed",
@@ -174,9 +174,9 @@ export async function POST(req: NextRequest) {
 
     // Playlist pitch payment
     if (addonKey === "addon_pitch" && releaseId) {
-      await supabase.from("releases").update({ pitch_paid: true }).eq("id", releaseId);
+      await getSupabase().from("releases").update({ pitch_paid: true }).eq("id", releaseId);
       if (artistEmail) {
-        await supabase.from("notifications").insert({
+        await getSupabase().from("notifications").insert({
           email: artistEmail,
           type:  "payment",
           title: "Playlist pitch payment confirmed",

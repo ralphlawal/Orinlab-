@@ -37,10 +37,20 @@ export async function PATCH(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
 
-  const { content } = await req.json();
-  if (!content?.trim()) return NextResponse.json({ error: "content required" }, { status: 400 });
+  let content: string;
+  try {
+    const body = await req.json();
+    content = body?.content ?? "";
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+  if (!content.trim()) return NextResponse.json({ error: "content required" }, { status: 400 });
 
-  const { error } = await serviceClient().from("messages").update({ content: content.trim() }).eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const { error } = await serviceClient().from("messages").update({ content: content.trim() }).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }

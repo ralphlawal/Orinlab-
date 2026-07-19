@@ -573,6 +573,13 @@ export default function NewReleasePage() {
               setTracks([{ title: "", file: null, version: "Original", explicit: false, instrumental: false }]);
               setSamplesUsed(false);
               setCoverSong(false);
+              setFeaturedArtists([]);
+              setNewLyrics("");
+              setNewVideoUrl("");
+              setNewSongStory("");
+              setNewMixingEngineer("");
+              setNewMasteringEngineer("");
+              setReleaseDateValue("");
             }}
             className="border border-white/10 hover:border-white/30 text-white/60 hover:text-white font-medium px-6 py-3 rounded-full text-sm transition-all"
           >
@@ -802,7 +809,7 @@ export default function NewReleasePage() {
                         <p className="text-white/30 text-xs mb-1">Explicit</p>
                         <select
                           value={track.explicit ? "Yes" : "No"}
-                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, explicit: e.target.value === "Explicit" } : tr))}
+                          onChange={(e) => setTracks(t => t.map((tr, idx) => idx === i ? { ...tr, explicit: e.target.value === "Yes" } : tr))}
                           className="w-full bg-[#0a0a0a] border border-white/[0.1] focus:border-[#007bff] outline-none text-white text-xs px-3 py-2 rounded-xl appearance-none"
                         >
                           <option value="No">Clean</option>

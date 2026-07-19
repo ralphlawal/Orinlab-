@@ -119,8 +119,16 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const body = await req.json();
-  const { type, data } = body;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let type: string, data: any;
+  try {
+    const body = await req.json();
+    type = body?.type;
+    data = body?.data;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
   if (!type || !data) {
     return NextResponse.json({ error: "Missing type or data" }, { status: 400 });

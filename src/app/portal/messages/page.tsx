@@ -150,9 +150,10 @@ export default function PortalMessagesPage() {
       )
       .on(
         "postgres_changes",
-        { event: "DELETE", schema: "public", table: "messages" },
+        { event: "DELETE", schema: "public", table: "messages", filter: `artist_email=eq.${email}` },
         (payload) => {
-          const deletedId = (payload.old as { id: string }).id;
+          const deletedId = (payload.old as { id?: string }).id;
+          if (!deletedId) return;
           setMsgs((prev) => prev.filter((m) => m.id !== deletedId));
         }
       )
