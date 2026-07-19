@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 const DATASETS = [
-  { label: "Spotify",     color: "#1DB954", data: [8,14,19,28,37,52,68,84,102,124,148,175] },
-  { label: "TikTok",      color: "#69C9D0", data: [3,6,11,18,29,44,63,87,115,148,185,228]  },
-  { label: "Apple Music", color: "#FC3C44", data: [6,9,14,19,25,34,44,57,71,87,105,127]    },
+  { label: "Spotify",     color: "#1DB954", data: [1, 2, 3, 5, 7, 10, 12, 15, 17, 20, 23, 26] },
+  { label: "TikTok",      color: "#69C9D0", data: [1, 1, 2, 3,  5,  7, 10, 14, 18, 23, 28, 33] },
+  { label: "Apple Music", color: "#FC3C44", data: [1, 2, 2, 3,  4,  5,  6,  8, 10, 12, 14, 16] },
 ];
 
 export function StreamsChart() {

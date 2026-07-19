@@ -527,9 +527,9 @@ function LiveGrowth() {
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { value: "24K", label: "Avg streams / month", sub: "across all platforms in year 1", color: "#1DB954" },
-            { value: "+127%", label: "Avg growth rate",      sub: "month-over-month for distributed artists", color: "#69C9D0" },
-            { value: "$2.1M", label: "Paid to artists",      sub: "in royalties since launch", color: "#FC3C44" },
+            { value: "3.8K",  label: "Avg streams / month", sub: "across all platforms in year 1", color: "#1DB954" },
+            { value: "+24%",  label: "Avg monthly growth",   sub: "month-over-month for distributed artists", color: "#69C9D0" },
+            { value: "$14K",  label: "Paid to artists",      sub: "in royalties since launch", color: "#FC3C44" },
           ].map((s, i) => (
             <AnimateIn key={s.label} delay={i * 70}>
               <div className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 rounded-xl p-5 hover:-translate-y-0.5">
