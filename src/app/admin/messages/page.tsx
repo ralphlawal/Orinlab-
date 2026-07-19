@@ -480,7 +480,7 @@ function ArtistChats() {
               ) : (
                 msgs.map((m) => (
                   <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
-                    <div className={`group max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                    <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                       m.sender === "admin"
                         ? "bg-[#007bff] text-white rounded-br-sm"
                         : "bg-white/[0.07] text-white/85 rounded-bl-sm"
@@ -530,32 +530,32 @@ function ArtistChats() {
                               isAdmin={m.sender === "admin"}
                             />
                           )}
-                          <div className={`flex items-center justify-between gap-3 mt-1.5 ${m.sender === "admin" ? "flex-row-reverse" : ""}`}>
+                          <div className={`flex items-center gap-2 mt-1.5 ${m.sender === "admin" ? "justify-end" : "justify-between"}`}>
                             <p className={`text-[10px] ${m.sender === "admin" ? "text-white/50" : "text-white/30"}`}>
                               {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                               {" · "}
                               {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                             </p>
-                            <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
+                            <div className="flex items-center gap-0.5 flex-shrink-0">
                               {m.sender === "admin" && (
                                 <button
                                   onClick={() => startEdit(m)}
                                   title="Edit"
-                                  className="p-1 rounded text-white/40 hover:text-white transition-colors"
+                                  className="p-1 rounded text-white/30 hover:text-white/90 hover:bg-white/10 transition-all"
                                 >
-                                  <Pencil size={11} />
+                                  <Pencil size={10} />
                                 </button>
                               )}
                               <button
                                 onClick={() => deleteMsg(m.id)}
                                 title="Delete"
-                                className={`p-1 rounded transition-colors ${
+                                className={`p-1 rounded transition-all ${
                                   m.sender === "admin"
-                                    ? "text-white/40 hover:text-red-300"
-                                    : "text-white/25 hover:text-red-400"
+                                    ? "text-white/30 hover:text-red-300 hover:bg-red-500/20"
+                                    : "text-white/20 hover:text-red-400 hover:bg-red-500/10"
                                 }`}
                               >
-                                <Trash2 size={11} />
+                                <Trash2 size={10} />
                               </button>
                             </div>
                           </div>
