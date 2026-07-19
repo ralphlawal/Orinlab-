@@ -75,20 +75,22 @@ const NAV: NavEntry[] = [
       tagline: "into a career.",
       featured: [
         { icon: <Megaphone size={20} />, label: "Music Promotion", desc: "Playlisting, press campaigns & social strategy.", href: "/promotion" },
-        { icon: <PlayCircle size={20} />, label: "Playlist Pitching", desc: "Pitch directly to curators on Spotify & Apple.", href: "/promotion" },
-        { icon: <Users size={20} />, label: "Artist Marketing", desc: "Custom graphics, promo videos & ad campaigns.", href: "/promotion" },
+        { icon: <PlayCircle size={20} />, label: "Pre-Save Links", desc: "Build hype before your release drops.", href: "/presave" },
+        { icon: <Users size={20} />, label: "Playlist Pitching", desc: "Submit your music to editorial playlist curators.", href: "/portal/pitch" },
       ],
       more: {
-        heading: "MORE GROWTH TOOLS",
+        heading: "EXPLORE",
         links: [
-          { label: "Promo Packages", href: "/promotion#packages" },
-          { label: "Submit for Playlists", href: "/portal/pitch" },
-          { label: "Artist Profile", href: "/portal/profile" },
+          { label: "Blog & Insights", href: "/blog" },
+          { label: "FAQ", href: "/faq" },
+          { label: "Contact Us", href: "/contact" },
+          { label: "For Labels", href: "/labels" },
         ],
       },
     },
   },
   { label: "Pricing", href: "/pricing" },
+  { label: "Blog",    href: "/blog" },
   { label: "About",   href: "/about" },
 ];
 

@@ -148,13 +148,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       ],
     },
     {
-      label: "Communications",
+      label: "Inbox",
       items: [
-        { label: "Email",         href: "/admin/email",         icon: <Send size={17} />,            badge: 0,               superOnly: false },
-        { label: "Notify Artists",  href: "/admin/notify",        icon: <Bell size={17} />,            badge: 0,               superOnly: false },
         { label: "Messages",      href: "/admin/messages",      icon: <MessageSquare size={17} />,   badge: counts.messages, superOnly: false },
         { label: "Support",       href: "/admin/support",       icon: <LifeBuoy size={17} />,        badge: counts.support,  superOnly: false },
         { label: "Team Chat",     href: "/admin/chat",          icon: <MessagesSquare size={17} />,  badge: 0,               superOnly: false },
+      ],
+    },
+    {
+      label: "Outreach",
+      items: [
+        { label: "Email",         href: "/admin/email",         icon: <Send size={17} />,            badge: 0,               superOnly: false },
+        { label: "Notify Artists",  href: "/admin/notify",      icon: <Bell size={17} />,            badge: 0,               superOnly: false },
         { label: "Announcements", href: "/admin/announcements", icon: <Megaphone size={17} />,       badge: 0,               superOnly: false },
         { label: "Newsletter",    href: "/admin/newsletter",    icon: <Mail size={17} />,            badge: 0,               superOnly: true  },
       ],
@@ -164,7 +169,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       items: [
         { label: "Subscriptions", href: "/admin/subscriptions", icon: <CreditCard size={17} />,      badge: counts.subscribers, superOnly: false },
         { label: "Payouts",       href: "/admin/payouts",       icon: <DollarSign size={17} />,      badge: counts.payouts,     superOnly: false },
-        { label: "Priority Distro", href: "/admin/releases",   icon: <Zap size={17} />,             badge: 0,                  superOnly: false },
+        { label: "Contracts",     href: "/admin/contracts",     icon: <Zap size={17} />,             badge: 0,                  superOnly: false },
       ],
     },
     {
