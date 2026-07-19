@@ -123,7 +123,6 @@ function ArtistChats() {
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -465,33 +464,8 @@ function ArtistChats() {
                 <div className="text-center py-12 text-white/30 text-sm">No messages yet. Start the conversation.</div>
               ) : (
                 msgs.map((m) => (
-                  <div
-                    key={m.id}
-                    className={`flex items-center gap-1.5 ${m.sender === "admin" ? "justify-end" : "justify-start"}`}
-                    onMouseEnter={() => setHoveredId(m.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                  >
-                    {/* Admin message actions — shown to left of bubble */}
-                    {m.sender === "admin" && hoveredId === m.id && editingId !== m.id && (
-                      <div className="flex items-center gap-0.5 order-first">
-                        <button
-                          onClick={() => startEdit(m)}
-                          title="Edit"
-                          className="p-1.5 rounded-lg text-white/25 hover:text-white/70 hover:bg-white/[0.05] transition-colors"
-                        >
-                          <Pencil size={12} />
-                        </button>
-                        <button
-                          onClick={() => deleteMsg(m.id)}
-                          title="Delete"
-                          className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    )}
-
-                    <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  <div key={m.id} className={`flex ${m.sender === "admin" ? "justify-end" : "justify-start"}`}>
+                    <div className={`group max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                       m.sender === "admin"
                         ? "bg-[#007bff] text-white rounded-br-sm"
                         : "bg-white/[0.07] text-white/85 rounded-bl-sm"
@@ -541,27 +515,38 @@ function ArtistChats() {
                               isAdmin={m.sender === "admin"}
                             />
                           )}
-                          <p className={`text-[10px] mt-1.5 ${m.sender === "admin" ? "text-white/50" : "text-white/30"}`}>
-                            {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
-                            {" · "}
-                            {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                          </p>
+                          <div className={`flex items-center justify-between gap-3 mt-1.5 ${m.sender === "admin" ? "flex-row-reverse" : ""}`}>
+                            <p className={`text-[10px] ${m.sender === "admin" ? "text-white/50" : "text-white/30"}`}>
+                              {new Date(m.created_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                              {" · "}
+                              {new Date(m.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                            </p>
+                            <div className="hidden group-hover:flex items-center gap-0.5 flex-shrink-0">
+                              {m.sender === "admin" && (
+                                <button
+                                  onClick={() => startEdit(m)}
+                                  title="Edit"
+                                  className="p-1 rounded text-white/40 hover:text-white transition-colors"
+                                >
+                                  <Pencil size={11} />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => deleteMsg(m.id)}
+                                title="Delete"
+                                className={`p-1 rounded transition-colors ${
+                                  m.sender === "admin"
+                                    ? "text-white/40 hover:text-red-300"
+                                    : "text-white/25 hover:text-red-400"
+                                }`}
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                            </div>
+                          </div>
                         </>
                       )}
                     </div>
-
-                    {/* Artist message delete — shown to right of bubble */}
-                    {m.sender === "artist" && hoveredId === m.id && (
-                      <div className="order-last">
-                        <button
-                          onClick={() => deleteMsg(m.id)}
-                          title="Delete"
-                          className="p-1.5 rounded-lg text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      </div>
-                    )}
                   </div>
                 ))
               )}
