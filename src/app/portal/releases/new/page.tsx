@@ -64,8 +64,10 @@ export default function NewReleasePage() {
     tracks: (() => { try { const t = draft?._tracks ? JSON.parse(draft._tracks) : null; return t?.length ? t.map((tr: { title: string; version: string; explicit: boolean; instrumental: boolean }) => ({ title: tr.title ?? "", file: null, version: tr.version ?? "Original", explicit: tr.explicit ?? false, instrumental: tr.instrumental ?? false })) : null; } catch { return null; } })() ?? [{ title: "", file: null, version: "Original", explicit: false, instrumental: false }],
   });
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
+  const [hasApprovedRelease, setHasApprovedRelease] = useState(false);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState<string | null>(null);
+  const [planPolling, setPlanPolling] = useState(false);
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -152,6 +154,7 @@ export default function NewReleasePage() {
 
       // Allow resubmission from a rejected release even if no approved releases
       const hasApproved = !!data;
+      setHasApprovedRelease(hasApproved);
       if (!hasApproved && !fromId) {
         router.push("/portal");
         return;
@@ -471,14 +474,54 @@ export default function NewReleasePage() {
     );
   }
 
-  const hasActivePlan = profile?.plan_status === "active" && !!profile?.plan;
+  // Artists with an existing approved release are grandfathered — no subscription required.
+  const hasActivePlan = (profile?.plan_status === "active" && !!profile?.plan) || hasApprovedRelease;
   const justSubscribed = searchParams.get("subscribed") === "1";
+
+  // Paid but webhook hasn't fired yet — poll until plan activates (up to 30s).
+  if (!hasActivePlan && justSubscribed && !planPolling) {
+    setPlanPolling(true);
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts++;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { clearInterval(interval); return; }
+      const { data } = await supabase.from("artist_profiles")
+        .select("plan, plan_status").eq("email", session.user.email!).maybeSingle();
+      if (data?.plan_status === "active" && data?.plan) {
+        clearInterval(interval);
+        setProfile(p => p ? { ...p, plan: data.plan, plan_status: data.plan_status } : p);
+      } else if (attempts >= 10) {
+        clearInterval(interval);
+      }
+    }, 3000);
+  }
+
+  if (!hasActivePlan && justSubscribed) {
+    return (
+      <section className="max-w-xl mx-auto px-4 py-24 text-center">
+        <div className="w-16 h-16 bg-[#007bff]/10 border border-[#007bff]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <Loader2 size={28} className="text-[#007bff] animate-spin" />
+        </div>
+        <h1 className="text-white font-bold text-2xl mb-3">Activating your plan…</h1>
+        <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto mb-6">
+          Your payment was received. We&apos;re activating your account — this usually takes a few seconds.
+        </p>
+        <p className="text-white/20 text-xs">
+          Taking too long?{" "}
+          <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">
+            Contact us
+          </a>{" "}
+          and we&apos;ll sort it out right away.
+        </p>
+      </section>
+    );
+  }
 
   if (!hasActivePlan) {
     const gatePlans = PLANS.filter(p => p.key === "artist" || p.key === "pro");
     return (
       <section className="max-w-2xl mx-auto px-4 py-16 text-center">
-        {/* Icon */}
         <div className="w-16 h-16 bg-[#007bff]/10 border border-[#007bff]/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Lock size={28} className="text-[#007bff]" />
         </div>
@@ -488,7 +531,6 @@ export default function NewReleasePage() {
           Choose a plan to start releasing music to 150+ platforms and keep 100% of your royalties.
         </p>
 
-        {/* Plan cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-8">
           {gatePlans.map((plan) => (
             <div

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
-import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download, Wrench, Zap } from "lucide-react";
+import { CheckCircle2, XCircle, FileAudio, Image as ImageIcon, ExternalLink, Loader2, Link2, Share2, Copy, Download, Wrench, Zap, CreditCard } from "lucide-react";
 import { LISTENING_PLATFORMS } from "@/lib/platforms";
 import { PlatformIcon } from "@/components/PlatformIcon";
+import { PLANS } from "@/lib/stripePlans";
 
 const PLATFORMS = LISTENING_PLATFORMS;
 
@@ -67,6 +68,8 @@ type Release = {
 type Filter = "all" | "pending" | "approved" | "rejected" | "revision_requested";
 
 type ArtistProfile = {
+  plan: string | null;
+  plan_status: string | null;
   artist_type: string | null;
   artist_image_url: string | null;
   spotify_artist_id: string | null;
@@ -124,6 +127,12 @@ export default function ReleasesPage() {
   const [notifyingLive, setNotifyingLive] = useState(false);
   const [liveNotified, setLiveNotified] = useState(false);
 
+  // Plan management
+  const [selectedPlanKey, setSelectedPlanKey] = useState("");
+  const [settingPlan, setSettingPlan] = useState(false);
+  const [planMsg, setPlanMsg] = useState("");
+  const adminEmailRef = useRef<string>("");
+
   // Revision request
   const REVISION_PRESETS = [
     { id: "audio", label: "Audio quality issue", reason: "The audio file does not meet our quality standards." },
@@ -180,6 +189,11 @@ export default function ReleasesPage() {
 
   useEffect(() => { setPage(0); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load(page); }, [page, filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      adminEmailRef.current = data.session?.user?.email ?? "";
+    });
+  }, []);
 
   async function notifyLive() {
     if (!selected) return;
@@ -640,6 +654,31 @@ export default function ReleasesPage() {
     load();
   }
 
+  async function activatePlan(planKey: string | null, status: "active" | "cancelled") {
+    if (!selected) return;
+    requestUnlock(async () => {
+      setSettingPlan(true);
+      setPlanMsg("");
+      const res = await fetch("/api/admin/set-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current },
+        body: JSON.stringify({
+          email: selected.email,
+          plan: planKey,
+          plan_status: status,
+        }),
+      });
+      if (res.ok) {
+        setPlanMsg(status === "active" ? `Plan activated: ${planKey}` : "Plan removed");
+        setArtistProfile(p => p ? { ...p, plan: planKey, plan_status: status } : p);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setPlanMsg(`Error: ${err.error ?? "failed"}`);
+      }
+      setSettingPlan(false);
+    });
+  }
+
   async function batchReject(reason: string) {
     if (!checkedIds.size) return;
     setBatchStatus("running");
@@ -1038,6 +1077,58 @@ export default function ReleasesPage() {
                     <Row label="Website" value={artistProfile.website_url} />
                   </div>
                 )}
+              </Section>
+
+              {/* Plan & Billing */}
+              <Section title="Plan & Billing">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <CreditCard size={14} className="text-white/30 flex-shrink-0" />
+                    {artistProfile?.plan_status === "active" && artistProfile?.plan ? (
+                      <span className="text-xs font-semibold text-green-400 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-full">
+                        Active — {PLANS.find(p => p.key === artistProfile.plan)?.name ?? artistProfile.plan}
+                      </span>
+                    ) : artistProfile?.plan_status ? (
+                      <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full">
+                        {artistProfile.plan_status}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-white/30">No active subscription</span>
+                    )}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <select
+                      value={selectedPlanKey}
+                      onChange={e => setSelectedPlanKey(e.target.value)}
+                      className="bg-[#0a0a0a] border border-white/[0.1] text-white text-xs px-3 py-2 rounded-xl outline-none focus:border-[#007bff]"
+                    >
+                      <option value="">Select plan…</option>
+                      {PLANS.filter(p => !p.key.startsWith("addon")).map(p => (
+                        <option key={p.key} value={p.key}>{p.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={() => activatePlan(selectedPlanKey || null, "active")}
+                      disabled={settingPlan || !selectedPlanKey}
+                      className="flex items-center gap-1.5 text-xs font-semibold bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white px-3 py-2 rounded-xl transition-colors"
+                    >
+                      {settingPlan ? <Loader2 size={11} className="animate-spin" /> : <CheckCircle2 size={11} />}
+                      Activate
+                    </button>
+                    <button
+                      onClick={() => activatePlan(null, "cancelled")}
+                      disabled={settingPlan}
+                      className="text-xs font-semibold text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/40 disabled:opacity-40 px-3 py-2 rounded-xl transition-colors"
+                    >
+                      Remove plan
+                    </button>
+                  </div>
+                  {planMsg && (
+                    <p className={`text-xs font-medium ${planMsg.startsWith("Error") ? "text-red-400" : "text-green-400"}`}>
+                      {planMsg}
+                    </p>
+                  )}
+                </div>
               </Section>
 
               {/* Contract status */}
