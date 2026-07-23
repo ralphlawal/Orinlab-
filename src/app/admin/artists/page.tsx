@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePinGate } from "@/context/AdminPinContext";
 import {
   Loader2, Music2, Globe, CheckCircle2, Clock, XCircle,
   ChevronDown, ChevronUp, Save, User, BarChart3, Send,
   UserCheck, UserX, TrendingUp, CreditCard, Link2,
-  DollarSign, AlertTriangle, Zap, Radio,
+  DollarSign, AlertTriangle, Zap, Radio, ExternalLink,
   FileText, MessageSquare, ShieldOff, ShieldCheck, Power, PowerOff, RotateCcw, Trash2,
+  Plus, X,
 } from "lucide-react";
+import Link from "next/link";
+import { PLANS } from "@/lib/stripePlans";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import { getPlatform } from "@/lib/platforms";
 
@@ -682,9 +685,18 @@ export default function AdminArtistsPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [togglingEmail, setTogglingEmail] = useState<string | null>(null);
 
+  // Grant plan modal
+  const adminEmailRef = useRef<string>("");
+  const [showGrant, setShowGrant] = useState(false);
+  const [grantEmail, setGrantEmail] = useState("");
+  const [grantName, setGrantName] = useState("");
+  const [grantPlanKey, setGrantPlanKey] = useState("artist");
+  const [granting, setGranting] = useState(false);
+  const [grantResult, setGrantResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
   useEffect(() => {
     async function load() {
-      const [{ data: releases }, { data: profiles }] = await Promise.all([
+      const [{ data: releases, error: relErr }, { data: profiles, error: profErr }] = await Promise.all([
         supabase
           .from("releases")
           .select("id, email, artist_name, song_title, genre, country, status, submitted_at, streams, royalties_usd, cover_art_url")
@@ -693,6 +705,8 @@ export default function AdminArtistsPage() {
           .from("artist_profiles")
           .select("email, artist_name, bio, country, artist_image_url, instagram_handle, x_handle, tiktok_username, youtube_channel, facebook_url, website_url, spotify_artist_id, apple_music_artist_id, audiomack_id, boomplay_id, deezer_id, amazon_id, soundcloud_id, record_label, payout_method, paypal_email, bank_name, bank_account_name, bank_account_number, bank_country, mobile_money_provider, mobile_money_number, account_status"),
       ]);
+      if (relErr) console.error("admin artists releases load:", relErr);
+      if (profErr) console.error("admin artists profiles load:", profErr);
 
       const profileMap: Record<string, ProfileRow> = {};
       for (const p of (profiles ?? []) as ProfileRow[]) profileMap[p.email] = p;
@@ -755,8 +769,42 @@ export default function AdminArtistsPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      adminEmailRef.current = data.session?.user?.email ?? "";
+    });
+  }, []);
+
   function handleSaved(email: string, updated: Partial<Artist>) {
     setArtists((prev) => prev.map((a) => (a.email === email ? { ...a, ...updated } : a)));
+  }
+
+  function openGrant() {
+    setGrantEmail(""); setGrantName(""); setGrantPlanKey("artist");
+    setGrantResult(null); setShowGrant(true);
+  }
+
+  async function grantPlan() {
+    const email = grantEmail.trim();
+    if (!email) { setGrantResult({ ok: false, msg: "Email is required." }); return; }
+    requestUnlock(async () => {
+      setGranting(true);
+      setGrantResult(null);
+      const res = await fetch("/api/admin/set-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current },
+        body: JSON.stringify({ email, artist_name: grantName.trim() || null, plan: grantPlanKey, plan_status: "active" }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const plan = PLANS.find(p => p.key === grantPlanKey);
+        setGrantResult({ ok: true, msg: `${plan?.name ?? grantPlanKey} plan granted to ${email}.` });
+        setGrantEmail(""); setGrantName("");
+      } else {
+        setGrantResult({ ok: false, msg: json.error ?? "Something went wrong." });
+      }
+      setGranting(false);
+    });
   }
 
   async function toggleStatus(email: string, current: "active" | "suspended") {
@@ -801,12 +849,99 @@ export default function AdminArtistsPage() {
         ))}
       </div>
 
-      {/* Search */}
-      <input
-        type="search" value={search} onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name or email…"
-        className="w-full bg-white/[0.03] border border-white/[0.06] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors"
-      />
+      {/* Search + Grant Plan */}
+      <div className="flex gap-3">
+        <input
+          type="search" value={search} onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by name or email…"
+          className="flex-1 bg-white/[0.03] border border-white/[0.06] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors"
+        />
+        <button
+          onClick={openGrant}
+          className="flex items-center gap-2 bg-[#007bff]/15 hover:bg-[#007bff]/25 border border-[#007bff]/25 text-[#007bff] text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors whitespace-nowrap"
+        >
+          <Plus size={15} /> Grant Plan
+        </button>
+      </div>
+
+      {/* Grant Plan Modal */}
+      {showGrant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)" }}>
+          <div className="bg-[#111118] border border-white/[0.08] rounded-2xl w-full max-w-md shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#007bff]/15 border border-[#007bff]/20 flex items-center justify-center">
+                  <CreditCard size={16} className="text-[#007bff]" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">Grant Plan Access</p>
+                  <p className="text-white/35 text-xs">Activate a plan without payment</p>
+                </div>
+              </div>
+              <button onClick={() => setShowGrant(false)} className="text-white/30 hover:text-white transition-colors p-1 rounded-lg hover:bg-white/[0.06]">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="block text-white/50 text-xs font-medium mb-1.5">Email Address <span className="text-red-400">*</span></label>
+                <input
+                  type="email" value={grantEmail} onChange={(e) => setGrantEmail(e.target.value)}
+                  placeholder="artist@example.com"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-3 py-2.5 rounded-lg transition-colors"
+                />
+                <p className="text-white/25 text-[11px] mt-1.5">If this artist hasn&apos;t registered yet, their plan will be waiting when they sign up.</p>
+              </div>
+
+              <div>
+                <label className="block text-white/50 text-xs font-medium mb-1.5">Artist / Label Name <span className="text-white/25 font-normal">(optional)</span></label>
+                <input
+                  type="text" value={grantName} onChange={(e) => setGrantName(e.target.value)}
+                  placeholder="e.g. Darkiee or Sound Factory"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-3 py-2.5 rounded-lg transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/50 text-xs font-medium mb-1.5">Plan</label>
+                <select
+                  value={grantPlanKey} onChange={(e) => setGrantPlanKey(e.target.value)}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white text-sm px-3 py-2.5 rounded-lg transition-colors appearance-none"
+                  style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center" }}
+                >
+                  {PLANS.map(p => (
+                    <option key={p.key} value={p.key} style={{ background: "#111118" }}>
+                      {p.name} — ${p.amountUsd}/yr ({p.artistsLimit === 1 ? "1 artist" : `up to ${p.artistsLimit} artists`})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {grantResult && (
+                <div className={`rounded-xl px-4 py-3 text-sm border ${grantResult.ok ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
+                  {grantResult.msg}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-white/[0.06] flex gap-3">
+              <button onClick={() => setShowGrant(false)} className="flex-1 bg-white/[0.05] hover:bg-white/[0.08] text-white/60 text-sm font-medium py-2.5 rounded-xl transition-colors">
+                Cancel
+              </button>
+              <button
+                onClick={grantPlan} disabled={granting || !grantEmail.trim()}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#007bff] hover:bg-[#0070e8] disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+              >
+                {granting ? <><Loader2 size={14} className="animate-spin" /> Granting…</> : <><CreditCard size={14} /> Grant Plan</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Artist list */}
       {filtered.length === 0 ? (
@@ -855,6 +990,10 @@ export default function AdminArtistsPage() {
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border disabled:opacity-50 ${isSuspended ? "bg-green-500/10 text-green-400 hover:bg-green-500/20 border-green-500/20" : "bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"}`}>
                           {isToggling ? <Loader2 size={11} className="animate-spin" /> : isSuspended ? <><UserCheck size={12} /> Activate</> : <><UserX size={12} /> Suspend</>}
                         </button>
+                        <Link href={`/admin/artists/${encodeURIComponent(artist.email)}`}
+                          className="flex items-center gap-1 text-white/40 hover:text-white text-xs font-medium transition-colors px-2 py-1 rounded-lg hover:bg-white/[0.06]">
+                          <ExternalLink size={13} /> Profile
+                        </Link>
                         <button onClick={() => setExpanded(isOpen ? null : artist.email)}
                           className="flex items-center gap-1 text-white/40 hover:text-[#007bff] text-xs font-medium transition-colors px-2 py-1 rounded-lg hover:bg-[#007bff]/10">
                           {isOpen ? <><ChevronUp size={14} /> Close</> : <><ChevronDown size={14} /> Edit</>}

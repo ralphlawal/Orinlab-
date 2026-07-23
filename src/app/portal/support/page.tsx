@@ -44,6 +44,7 @@ export default function SupportPage() {
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
@@ -64,10 +65,16 @@ export default function SupportPage() {
   async function submit() {
     if (!subject.trim() || !description.trim() || !email) return;
     setSubmitting(true);
-    await supabase.from("support_tickets").insert({
+    setSubmitError(null);
+    const { error: ticketErr } = await supabase.from("support_tickets").insert({
       email, artist_name: artistName, subject: subject.trim(),
       category, description: description.trim(), status: "open",
     });
+    if (ticketErr) {
+      setSubmitError("Failed to submit your ticket. Please try again.");
+      setSubmitting(false);
+      return;
+    }
     // Notify admin
     await fetch("/api/notify", {
       method: "POST",
@@ -141,6 +148,9 @@ export default function SupportPage() {
             <label className="text-white/40 text-xs mb-1.5 block">Description</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} placeholder="Describe your issue in detail. Include release names, dates, or any error messages." className={inp} />
           </div>
+          {submitError && (
+            <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">{submitError}</p>
+          )}
           <button
             onClick={submit}
             disabled={submitting || !subject.trim() || !description.trim()}

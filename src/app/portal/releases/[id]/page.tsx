@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft, Clock, CheckCircle2, XCircle, Music2,
   Globe, Calendar, Mic2, FileText, Loader2, ExternalLink, Trash2,
   BarChart2, DollarSign, PenLine, Share2, Copy, Star, Send,
-  ShieldCheck, Radio,
+  ShieldCheck, Radio, AlertTriangle, Upload,
 } from "lucide-react";
 import { LISTENING_PLATFORMS } from "@/lib/platforms";
 import { PlatformIcon } from "@/components/PlatformIcon";
@@ -24,7 +24,7 @@ type Release = {
   language: string | null;
   release_date: string;
   explicit: boolean;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "revision_requested";
   review_notes: string | null;
   cover_art_url: string | null;
   audio_file_url: string | null;
@@ -73,10 +73,17 @@ const statusConfig = {
     heading: "Your application was not selected.",
     body: "We appreciate you applying. Keep creating and reapply — applications are always open.",
   },
+  revision_requested: {
+    icon: AlertTriangle, label: "Action Required", color: "text-amber-400",
+    bg: "bg-amber-400/10 border-amber-400/25",
+    heading: "Your submission needs changes.",
+    body: "We found an issue that must be fixed before your release can go out. See the details below and upload your correction.",
+  },
 };
 
 export default function ReleaseDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const [release, setRelease] = useState<Release | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -115,10 +122,17 @@ export default function ReleaseDetailPage() {
   const [savingContent, setSavingContent] = useState(false);
   const [contentSaved, setContentSaved] = useState(false);
 
+  // Revision / fix workflow
+  const [fixAudio, setFixAudio]     = useState<File | null>(null);
+  const [fixCover, setFixCover]     = useState<File | null>(null);
+  const [uploadingFix, setUploadingFix] = useState(false);
+  const [fixDone, setFixDone]       = useState(false);
+  const [fixError, setFixError]     = useState<string | null>(null);
+
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) { router.push("/portal/login"); return; }
 
       const [{ data }, { data: profileData }, { data: splitsData }] = await Promise.all([
         supabase.from("releases").select("*").eq("id", id).eq("email", session.user.email!).maybeSingle(),
@@ -247,6 +261,69 @@ export default function ReleaseDetailPage() {
     setTimeout(() => setContentSaved(false), 3000);
   }
 
+  async function submitFix() {
+    if (!release) return;
+    if (!fixAudio && !fixCover && !editingMeta) {
+      setFixError("Please upload a replacement audio file or cover art before submitting.");
+      return;
+    }
+    setUploadingFix(true);
+    setFixError(null);
+
+    const updates: Record<string, string | null> = {};
+
+    try {
+      if (fixAudio) {
+        const ext  = fixAudio.name.split(".").pop() ?? "wav";
+        const path = `${release.id}/audio-fix-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("releases").upload(path, fixAudio, { upsert: true });
+        if (upErr) throw new Error("Audio upload failed: " + upErr.message);
+        const { data: { publicUrl } } = supabase.storage.from("releases").getPublicUrl(path);
+        updates.audio_file_url = publicUrl;
+      }
+
+      if (fixCover) {
+        const ext  = fixCover.name.split(".").pop() ?? "jpg";
+        const path = `${release.id}/cover-fix-${Date.now()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("cover-art").upload(path, fixCover, { upsert: true });
+        if (upErr) throw new Error("Cover art upload failed: " + upErr.message);
+        const { data: { publicUrl } } = supabase.storage.from("cover-art").getPublicUrl(path);
+        updates.cover_art_url = publicUrl;
+      }
+
+      const { error: dbErr } = await supabase.from("releases").update({
+        ...updates,
+        status: "pending",
+        review_notes: null,
+      }).eq("id", release.id);
+      if (dbErr) throw new Error("Failed to save: " + dbErr.message);
+
+      // Notify admin
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "revision-resubmitted",
+          data: {
+            artist_name: release.artist_name,
+            song_title:  release.song_title,
+            email:       release.email,
+            release_id:  release.id,
+            fixed_audio: Boolean(fixAudio),
+            fixed_cover: Boolean(fixCover),
+          },
+        }),
+      }).catch(() => {});
+
+      setRelease((r) => r ? { ...r, ...updates, status: "pending", review_notes: null } : r);
+      setFixDone(true);
+    } catch (err) {
+      setFixError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setUploadingFix(false);
+    }
+  }
+
   async function handlePayoutRequest() {
     if (!release) return;
     setPayoutLoading(true);
@@ -277,7 +354,7 @@ export default function ReleaseDetailPage() {
       if (stage === "live") return { icon: CheckCircle2, label: "Live", color: "text-green-400", bg: "bg-green-400/10 border-green-400/20", heading: "Your music is live worldwide!", body: "Your release is now available on streaming platforms globally. Add your links below and share them with your fans." };
       if (stage === "in_distribution") return { icon: Clock, label: "Processing", color: "text-blue-400", bg: "bg-blue-400/10 border-blue-400/20", heading: "Your release is being distributed.", body: "We have submitted your music to streaming platforms. It typically goes live within 24–72 hours." };
     }
-    return statusConfig[release.status] ?? statusConfig.pending;
+    return statusConfig[release.status as keyof typeof statusConfig] ?? statusConfig.pending;
   })();
   const Icon = cfg.icon;
 
@@ -395,7 +472,7 @@ export default function ReleaseDetailPage() {
                 <p className={`font-semibold mb-1.5 ${cfg.color}`}>{cfg.heading}</p>
                 <p className="text-white/60 text-sm leading-relaxed">{cfg.body}</p>
               </div>
-              {release.status === "pending" && (
+              {(release.status === "pending" || release.status === "revision_requested") && (
                 <button
                   onClick={() => { setMetaDraft({ song_title: release.song_title, genre: release.genre, language: release.language ?? "", copyright_owner: release.copyright_owner, copyright_year: release.copyright_year, artist_bio: release.artist_bio ?? "" }); setEditingMeta(true); }}
                   className="flex items-center gap-1.5 text-xs font-semibold text-white/40 hover:text-white border border-white/[0.1] hover:border-white/30 px-3 py-2 rounded-xl transition-colors flex-shrink-0"
@@ -412,8 +489,8 @@ export default function ReleaseDetailPage() {
             )}
           </div>
 
-          {/* Inline metadata editor — pending releases only */}
-          {editingMeta && release.status === "pending" && (() => {
+          {/* Inline metadata editor — pending + revision_requested releases */}
+          {editingMeta && (release.status === "pending" || release.status === "revision_requested") && (() => {
             const inp = "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-2.5 rounded-xl transition-colors";
             return (
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
@@ -472,6 +549,101 @@ export default function ReleaseDetailPage() {
             </div>
           )}
 
+
+          {/* ── Revision fix panel ── */}
+          {release.status === "revision_requested" && !fixDone && (
+            <div className="bg-amber-400/[0.06] border border-amber-400/25 rounded-2xl overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-400/15 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle size={17} className="text-amber-400" />
+                </div>
+                <div>
+                  <p className="text-amber-300 font-bold text-sm">Action Required — Upload Your Fix</p>
+                  <p className="text-white/40 text-xs mt-0.5">Upload a corrected file and click Submit Fix to re-enter the review queue.</p>
+                </div>
+              </div>
+
+              {/* Issue detail */}
+              {release.review_notes && (() => {
+                const raw = release.review_notes.replace(/^\[Revision requested\]\s*/i, "");
+                const [mainReason, ...rest] = raw.split(/\n\n/);
+                const extra = rest.join("\n\n").trim();
+                return (
+                  <div className="mx-5 mb-4 bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+                    <p className="text-white/35 text-[10px] uppercase tracking-widest mb-2">Issue reported by OrinlabÍ Records</p>
+                    <p className="text-white/80 text-sm leading-relaxed">{mainReason}</p>
+                    {extra && <p className="text-white/50 text-xs leading-relaxed mt-2 whitespace-pre-wrap">{extra}</p>}
+                  </div>
+                );
+              })()}
+
+              {/* Upload inputs */}
+              <div className="px-5 pb-5 space-y-3">
+                {/* Audio file */}
+                <div>
+                  <p className="text-white/40 text-xs mb-1.5 font-medium">Replace Audio File <span className="text-white/20 font-normal">(WAV or FLAC, lossless preferred)</span></p>
+                  <label className={`flex items-center gap-3 w-full border-2 border-dashed rounded-xl px-4 py-3 cursor-pointer transition-colors ${fixAudio ? "border-amber-400/40 bg-amber-400/[0.06]" : "border-white/[0.10] hover:border-amber-400/30"}`}>
+                    <Upload size={15} className={fixAudio ? "text-amber-400" : "text-white/25"} />
+                    <span className={`text-sm flex-1 truncate ${fixAudio ? "text-amber-300" : "text-white/30"}`}>
+                      {fixAudio ? fixAudio.name : "Click to choose audio file…"}
+                    </span>
+                    <input
+                      type="file"
+                      accept=".wav,.flac,.mp3,.aif,.aiff"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0] ?? null; setFixAudio(f); setFixError(null); }}
+                    />
+                  </label>
+                </div>
+
+                {/* Cover art */}
+                <div>
+                  <p className="text-white/40 text-xs mb-1.5 font-medium">Replace Cover Art <span className="text-white/20 font-normal">(JPG or PNG, 3000×3000 px min)</span></p>
+                  <label className={`flex items-center gap-3 w-full border-2 border-dashed rounded-xl px-4 py-3 cursor-pointer transition-colors ${fixCover ? "border-amber-400/40 bg-amber-400/[0.06]" : "border-white/[0.10] hover:border-amber-400/30"}`}>
+                    <Upload size={15} className={fixCover ? "text-amber-400" : "text-white/25"} />
+                    <span className={`text-sm flex-1 truncate ${fixCover ? "text-amber-300" : "text-white/30"}`}>
+                      {fixCover ? fixCover.name : "Click to choose cover image…"}
+                    </span>
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png,.webp"
+                      className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0] ?? null; setFixCover(f); setFixError(null); }}
+                    />
+                  </label>
+                </div>
+
+                {fixError && (
+                  <p className="text-rose-400 text-xs">{fixError}</p>
+                )}
+
+                {/* Submit */}
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    onClick={submitFix}
+                    disabled={uploadingFix || (!fixAudio && !fixCover)}
+                    className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-black text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
+                  >
+                    {uploadingFix ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+                    {uploadingFix ? "Uploading…" : "Submit Fix"}
+                  </button>
+                  <p className="text-white/25 text-xs">This puts your release back in the review queue.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Fix submitted success state */}
+          {fixDone && (
+            <div className="flex items-center gap-3 bg-green-400/[0.08] border border-green-400/20 rounded-2xl px-5 py-4">
+              <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
+              <div>
+                <p className="text-green-300 font-semibold text-sm">Fix submitted — back in review</p>
+                <p className="text-white/40 text-xs mt-0.5">Your corrected files have been uploaded. Our team will review your release again within 3–5 business days.</p>
+              </div>
+            </div>
+          )}
 
           {/* Pre-save — artists can self-enable for pending/approved releases */}
           {(release.status === "pending" || release.status === "approved") && (

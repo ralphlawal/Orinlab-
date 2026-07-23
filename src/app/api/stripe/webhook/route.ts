@@ -43,8 +43,8 @@ export async function POST(req: NextRequest) {
     const email      = customer.email;
     if (!email) return NextResponse.json({ received: true });
 
-    const periodEnd  = (sub as unknown as { current_period_end: number }).current_period_end;
-    const expiresAt  = new Date(periodEnd * 1000).toISOString();
+    const periodEnd  = (sub as unknown as { current_period_end?: number }).current_period_end;
+    const expiresAt  = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
     const isActive   = sub.status === "active" || sub.status === "trialing";
 
     await getSupabase().from("artist_profiles").upsert({

@@ -9,9 +9,40 @@ export const revalidate = 60;
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const name = decodeURIComponent(slug).trim();
+
+  // Grab the artist profile to pull in a real bio and image if available
+  const { data: profile } = await supabase
+    .from("artist_profiles")
+    .select("bio, artist_image_url")
+    .ilike("artist_name", name)
+    .maybeSingle();
+
+  const description =
+    profile?.bio?.slice(0, 155) ??
+    `${name} is an independent artist distributed globally by OrinlabÍ Records.`;
+
+  const ogImages = profile?.artist_image_url
+    ? [{ url: profile.artist_image_url, width: 1200, height: 630, alt: name }]
+    : [];
+
   return {
-    title: `${name} – OrinlabÍ Records`,
-    description: `${name} is an independent artist distributed globally by OrinlabÍ Records.`,
+    title: name,
+    description,
+    alternates: { canonical: `https://orinlabi.com/artists/${slug}` },
+    openGraph: {
+      title: `${name} – OrinlabÍ Records`,
+      description,
+      url: `https://orinlabi.com/artists/${slug}`,
+      type: "profile",
+      images: ogImages,
+      siteName: "OrinlabÍ Records",
+    },
+    twitter: {
+      card: ogImages.length ? "summary_large_image" : "summary",
+      title: `${name} – OrinlabÍ Records`,
+      description,
+      images: ogImages.map((i) => i.url),
+    },
   };
 }
 

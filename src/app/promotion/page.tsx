@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Zap, Music2, BarChart3, Megaphone, Film, Palette, Users } from "lucide-react";
 
 export const metadata = {
-  title: "Music Promotion — OrinlabÍ Records",
+  title: "Music Promotion",
   description: "Playlist pitching, press campaigns, social strategy and paid ads. Get your African music heard worldwide.",
 };
 

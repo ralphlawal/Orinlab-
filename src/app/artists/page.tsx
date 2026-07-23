@@ -6,7 +6,7 @@ import { getSetting, DEFAULT_ARTISTS_PAGE, type ArtistsPageSettings } from "@/li
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Artists – OrinlabÍ Records",
+  title: "Artists",
   description:
     "Meet the independent artists distributed and supported worldwide by OrinlabÍ Records.",
 };

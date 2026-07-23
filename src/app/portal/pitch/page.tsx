@@ -45,6 +45,7 @@ export default function PromotePage() {
   const [similarArtists, setSimilarArtists] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone]           = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
@@ -80,8 +81,10 @@ export default function PromotePage() {
     e.preventDefault();
     if (!releaseId || !pitchType || !notes.trim()) return;
     setSubmitting(true);
+    setSubmitError(null);
     const release = releases.find((r) => r.id === releaseId);
-    await supabase.from("playlist_pitches").insert({
+    try {
+    const { error: pitchErr } = await supabase.from("playlist_pitches").insert({
       email,
       artist_name: artistName,
       release_id: releaseId,
@@ -91,6 +94,7 @@ export default function PromotePage() {
       pitch_notes: `[${pitchType.toUpperCase()}] Targets: ${targets.join(", ") || "Open"}\nSimilar Artists: ${similarArtists || "N/A"}\n\n${notes.trim()}`,
       status: "pending",
     });
+    if (pitchErr) { setSubmitError("Failed to submit your pitch. Please try again."); setSubmitting(false); return; }
     fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -117,6 +121,10 @@ export default function PromotePage() {
     }).catch(() => {});
     setSubmitting(false);
     setDone(true);
+    } catch {
+      setSubmitError("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
   }
 
   if (loading) return (
@@ -298,6 +306,9 @@ export default function PromotePage() {
           />
         </div>
 
+        {submitError && (
+          <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-4 py-3">{submitError}</p>
+        )}
         <button
           type="submit"
           disabled={submitting || !notes.trim()}

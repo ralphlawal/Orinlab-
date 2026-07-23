@@ -6,7 +6,7 @@ import { AnimateIn } from "@/components/AnimateIn";
 export const revalidate = 60; // refresh every 60s
 
 export const metadata = {
-  title: "Blog – OrinlabÍ Records",
+  title: "Blog",
   description:
     "Music industry news, artist tips, marketing guides, distribution insights, and success stories for independent artists worldwide.",
 };

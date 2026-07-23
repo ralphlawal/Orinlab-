@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
-  const { email } = await req.json();
+  let email: string;
+  try { ({ email } = await req.json()); } catch { return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
   if (!email) return NextResponse.json({ error: "Missing email" }, { status: 400 });
 
   await supabase

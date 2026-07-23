@@ -96,7 +96,7 @@ export default function EarningsPage() {
         .eq("email", userEmail)
         .maybeSingle();
 
-      await supabase.from("payout_requests").insert({
+      const { error: payoutErr } = await supabase.from("payout_requests").insert({
         email: userEmail,
         artist_name: profile?.artist_name ?? "",
         song_title: r.song_title,
@@ -112,6 +112,7 @@ export default function EarningsPage() {
         mobile_money_number: profile?.mobile_money_number ?? null,
         status: "pending",
       });
+      if (payoutErr) throw payoutErr;
 
       await fetch("/api/notify", {
         method: "POST",

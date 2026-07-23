@@ -41,9 +41,32 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Post Not Found – OrinlabÍ Records" };
+
+  const ogImages = post.cover_image_url
+    ? [{ url: post.cover_image_url, width: 1200, height: 630, alt: post.title }]
+    : [];
+
   return {
-    title: `${post.title} – OrinlabÍ Records Blog`,
+    title: post.title,
     description: post.excerpt,
+    alternates: { canonical: `https://orinlabi.com/blog/${slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: `https://orinlabi.com/blog/${slug}`,
+      type: "article",
+      publishedTime: post.created_at,
+      authors: [post.author ?? "OrinlabÍ Records"],
+      section: post.category,
+      images: ogImages,
+      siteName: "OrinlabÍ Records",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: ogImages.map((i) => i.url),
+    },
   };
 }
 
@@ -54,8 +77,37 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const related = await getRelated(post.category, slug);
 
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    url: `https://orinlabi.com/blog/${slug}`,
+    datePublished: post.created_at,
+    dateModified: post.updated_at ?? post.created_at,
+    author: {
+      "@type": "Organization",
+      name: post.author ?? "OrinlabÍ Records",
+      url: "https://orinlabi.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "OrinlabÍ Records",
+      url: "https://orinlabi.com",
+      logo: { "@type": "ImageObject", url: "https://orinlabi.com/icon.png" },
+    },
+    ...(post.cover_image_url && {
+      image: { "@type": "ImageObject", url: post.cover_image_url },
+    }),
+    mainEntityOfPage: { "@type": "WebPage", "@id": `https://orinlabi.com/blog/${slug}` },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       {/* Header */}
       <section className="relative pt-32 pb-12 px-4 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[400px] bg-[#007bff]/6 rounded-full blur-[100px] pointer-events-none" />

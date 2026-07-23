@@ -8,8 +8,23 @@ function esc(s: unknown): string {
   return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
+  .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+
 export async function POST(req: NextRequest) {
-  const { subject, body } = await req.json();
+  const callerEmail = req.headers.get("x-admin-email")?.toLowerCase() ?? "";
+  if (!callerEmail || !ADMIN_EMAILS.includes(callerEmail)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let subject: string, body: string;
+  try {
+    const parsed = await req.json();
+    subject = parsed.subject;
+    body = parsed.body;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
   if (!subject?.trim() || !body?.trim()) {
     return NextResponse.json({ error: "Subject and body are required." }, { status: 400 });

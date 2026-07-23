@@ -6,7 +6,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/api/"],
+        disallow: ["/admin", "/portal", "/auth", "/api/"],
       },
     ],
     sitemap: "https://orinlabi.com/sitemap.xml",

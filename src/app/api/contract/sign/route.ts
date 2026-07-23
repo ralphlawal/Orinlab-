@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
   const limited = rateLimitResponse(req, 5, 60_000);
   if (limited) return limited;
 
-  const { releaseId, signatureName } = await req.json();
+  let releaseId: string, signatureName: string;
+  try { ({ releaseId, signatureName } = await req.json()); } catch { return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
 
   if (!releaseId || !signatureName?.trim()) {
     return NextResponse.json({ error: "Missing fields." }, { status: 400 });

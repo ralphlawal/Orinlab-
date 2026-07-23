@@ -43,32 +43,40 @@ export default function BillingPage() {
   async function handleSubscribe(planKey: string) {
     if (!profile) return;
     setUpgrading(planKey);
-    const res = await fetch("/api/stripe/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        priceKey:   planKey,
-        email:      profile.email,
-        artistName: profile.artist_name,
-        mode:       "subscription",
-      }),
-    });
-    const { url } = await res.json();
-    if (url) window.location.href = url;
-    else setUpgrading(null);
+    try {
+      const res = await fetch("/api/stripe/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceKey:   planKey,
+          email:      profile.email,
+          artistName: profile.artist_name,
+          mode:       "subscription",
+        }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+      else setUpgrading(null);
+    } catch {
+      setUpgrading(null);
+    }
   }
 
   async function handleBillingPortal() {
     if (!profile) return;
     setOpenPortal(true);
-    const res = await fetch("/api/stripe/billing-portal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: profile.email }),
-    });
-    const { url } = await res.json();
-    if (url) window.location.href = url;
-    else setOpenPortal(false);
+    try {
+      const res = await fetch("/api/stripe/billing-portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: profile.email }),
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+      else setOpenPortal(false);
+    } catch {
+      setOpenPortal(false);
+    }
   }
 
   const activePlan = profile?.plan ? getPlan(profile.plan) : null;

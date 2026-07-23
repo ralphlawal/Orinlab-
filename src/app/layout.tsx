@@ -43,12 +43,32 @@ export const metadata: Metadata = {
   },
 };
 
+const ORG_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "OrinlabÍ Records",
+  url: "https://orinlabi.com",
+  logo: "https://orinlabi.com/icon.png",
+  sameAs: [],
+  description:
+    "OrinlabÍ Records is a global music distribution platform for independent artists. Distribute to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, TikTok, and more.",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: "info@orinlabi.com",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${sora.variable} h-full antialiased`}>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORG_SCHEMA) }}
+        />
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-4ZMQXJ9ESE"
           strategy="afterInteractive"

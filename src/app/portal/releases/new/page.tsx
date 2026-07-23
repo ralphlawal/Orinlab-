@@ -132,7 +132,7 @@ export default function NewReleasePage() {
   useEffect(() => {
     if (!profile) return;
     saveDraft();
-  }, [samplesUsed, coverSong, featuredArtists, tracks, releaseType, genre, language, explicitContent, trackVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [samplesUsed, coverSong, featuredArtists, tracks, releaseType, genre, language, explicitContent, trackVersion, newLyrics, newVideoUrl, newSongStory, newMixingEngineer, newMasteringEngineer]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     async function load() {
@@ -181,6 +181,29 @@ export default function NewReleasePage() {
     }
     load();
   }, [router, fromId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Poll for plan activation after Stripe checkout — runs in effect, never in render
+  useEffect(() => {
+    const justSubscribed = searchParams.get("subscribed") === "1";
+    const hasActivePlan = (profile?.plan_status === "active" && !!profile?.plan) || hasApprovedRelease;
+    if (loading || hasActivePlan || !justSubscribed || planPolling) return;
+    setPlanPolling(true);
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts++;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { clearInterval(interval); return; }
+      const { data } = await supabase.from("artist_profiles")
+        .select("plan, plan_status").eq("email", session.user.email!).maybeSingle();
+      if (data?.plan_status === "active" && data?.plan) {
+        clearInterval(interval);
+        setProfile(p => p ? { ...p, plan: data.plan, plan_status: data.plan_status } : p);
+      } else if (attempts >= 10) {
+        clearInterval(interval);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [loading, profile, hasApprovedRelease, planPolling, searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function validateArtwork(file: File | null) {
     setCoverFile(file);
@@ -430,12 +453,16 @@ export default function NewReleasePage() {
       const msg = err && typeof err === "object" && "message" in err
         ? String((err as { message: unknown }).message)
         : "";
-      if (msg.toLowerCase().includes("exceeded") || msg.toLowerCase().includes("maximum size") || msg.toLowerCase().includes("too large") || msg.toLowerCase().includes("payload too large")) {
+      const lc = msg.toLowerCase();
+      if (lc.includes("exceeded") || lc.includes("maximum size") || lc.includes("too large") || lc.includes("payload too large")) {
         setErrorMsg("Your file is too large to upload. Please compress your audio to a smaller WAV or use a high-quality MP3 (320 kbps), and ensure your cover art is under 50 MB.");
-      } else if (msg.toLowerCase().includes("storage") || msg.toLowerCase().includes("bucket")) {
+      } else if (lc.includes("storage") || lc.includes("bucket")) {
         setErrorMsg("File upload failed. Please check your files and try again.");
+      } else if (lc.includes("network") || lc.includes("fetch") || lc.includes("failed to fetch") || lc.includes("networkerror")) {
+        setErrorMsg("Network error — please check your connection and try again.");
       } else {
-        setErrorMsg(msg || "Something went wrong. Please try again or contact info@orinlabi.com.");
+        // Never expose raw database / schema errors to artists
+        setErrorMsg("Something went wrong submitting your release. Please try again. If the problem persists, contact info@orinlabi.com.");
       }
       setState("error");
       setUploadProgress("");
@@ -477,25 +504,6 @@ export default function NewReleasePage() {
   // Artists with an existing approved release are grandfathered — no subscription required.
   const hasActivePlan = (profile?.plan_status === "active" && !!profile?.plan) || hasApprovedRelease;
   const justSubscribed = searchParams.get("subscribed") === "1";
-
-  // Paid but webhook hasn't fired yet — poll until plan activates (up to 30s).
-  if (!hasActivePlan && justSubscribed && !planPolling) {
-    setPlanPolling(true);
-    let attempts = 0;
-    const interval = setInterval(async () => {
-      attempts++;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { clearInterval(interval); return; }
-      const { data } = await supabase.from("artist_profiles")
-        .select("plan, plan_status").eq("email", session.user.email!).maybeSingle();
-      if (data?.plan_status === "active" && data?.plan) {
-        clearInterval(interval);
-        setProfile(p => p ? { ...p, plan: data.plan, plan_status: data.plan_status } : p);
-      } else if (attempts >= 10) {
-        clearInterval(interval);
-      }
-    }, 3000);
-  }
 
   if (!hasActivePlan && justSubscribed) {
     return (
@@ -689,9 +697,17 @@ export default function NewReleasePage() {
       )}
 
       {state === "error" && (
-        <div className="mb-6 flex items-center gap-3 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-5 py-4 rounded-xl">
-          <AlertCircle size={18} className="flex-shrink-0" />
-          {errorMsg}
+        <div className="mb-6 flex items-start gap-3 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-5 py-4 rounded-xl">
+          <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+          <span className="flex-1">{errorMsg}</span>
+          <button
+            type="button"
+            onClick={() => setState("idle")}
+            className="flex-shrink-0 text-red-400/50 hover:text-red-400 transition-colors"
+            aria-label="Dismiss error"
+          >
+            ✕
+          </button>
         </div>
       )}
 

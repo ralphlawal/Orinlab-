@@ -74,7 +74,7 @@ export const LISTENING_PLATFORMS: Platform[] = ALL_PLATFORMS.filter((p) =>
     "spotify", "apple_music", "itunes", "youtube_music", "amazon_music",
     "deezer", "tidal", "audiomack", "boomplay", "soundcloud",
     "anghami", "pandora", "tiktok", "napster", "iheartradio",
-    "shazam", "beatport", "youtube",
+    "shazam", "beatport",
   ].includes(p.key)
 );
 

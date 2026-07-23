@@ -4,9 +4,9 @@ import { ArrowRight, Heart, Globe, Target, Lightbulb, Users, ShieldCheck, Zap } 
 import { AnimateIn } from "@/components/AnimateIn";
 
 export const metadata = {
-  title: "About – OrinlabÍ Records",
+  title: "About",
   description:
-    "The story, mission, and vision behind OrinlabÍ Records — the home of independent artists worldwide.",
+    "Built by Africans. Built for African creators. Built for the world. OrinlabÍ Records is a music distribution and artist development company helping independent African artists build sustainable careers.",
 };
 
 function Hero() {
@@ -22,12 +22,12 @@ function Hero() {
         </AnimateIn>
         <AnimateIn delay={80}>
           <h1 className="text-[clamp(3rem,8vw,6rem)] font-bold text-white leading-[0.95] tracking-tight mb-6">
-            Built for<br /><span className="text-[#007bff]">independent</span><br />artists.
+            Built by Africans.<br /><span className="text-[#007bff]">Built for the</span><br />world.
           </h1>
         </AnimateIn>
         <AnimateIn delay={160}>
           <p className="text-white/50 text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto">
-            OrinlabÍ Records is a global music distribution platform for independent creators everywhere. We help artists release worldwide, earn fairly, and own their legacy — built by Africans, for the world.
+            OrinlabÍ Records is a music distribution and artist development company committed to helping independent African artists build sustainable careers — not just release music.
           </p>
         </AnimateIn>
       </div>
@@ -87,9 +87,9 @@ function Story() {
           </AnimateIn>
           <div className="space-y-5 text-white/55 leading-relaxed">
             {[
-              "OrinlabÍ Records was founded by Ralph Lawal with a clear vision: to build the infrastructure that independent artists deserve — one that values their art, protects their ownership, and amplifies their voice to the world.",
-              "Independent artists have long faced barriers to global distribution — complex systems, opaque royalty structures, and platforms not built with their needs in mind.",
-              "OrinlabÍ Records changes that. With our global distribution network and a full suite of artist services, we are building the platform that will power the next generation of musical talent worldwide.",
+              "The African music industry has incredible talent. What it often lacks is clear guidance, strategic A&R, long-term career development, access to global opportunities, and education around the music business. Too many artists rely on luck instead of structure.",
+              "Orinlabi was born from our own experiences as independent artists and music professionals in a system that can feel closed off — at least it did. We know firsthand how difficult it is to find trustworthy guidance, understand the business, and make informed decisions.",
+              "Instead of complaining about the system, we decided to build one that serves artists better — in and out of the system — through what we call a next-door service and tailored A&R.",
             ].map((text, i) => (
               <AnimateIn key={i} delay={140 + i * 80}>
                 <p>{text}</p>
@@ -116,13 +116,13 @@ function FounderMessage() {
           <div className="bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 rounded-3xl p-10 sm:p-14">
             <div className="text-white/65 text-lg leading-relaxed space-y-5 italic mb-10">
               <p>
-                &ldquo;I built OrinlabÍ Records because I believe independent music deserves global infrastructure. Too many talented artists are releasing music without the tools, support, or knowledge to build a sustainable career from it.
+                &ldquo;I built OrinlabÍ Records because I lived the problem. As an independent artist and music professional, I experienced what it felt like to navigate an industry without proper guidance, real support, or anyone in your corner who actually understood your journey.
               </p>
               <p>
-                OrinlabÍ Records is my answer to that problem. It is a platform where artists can distribute their music worldwide, receive real marketing support, and grow their careers — while keeping every right to the music they create.
+                African music has changed the world. But the infrastructure serving African artists has not kept up. We are here to close that gap — not with promises, but with the kind of next-door, personal service that actually moves careers forward.
               </p>
               <p>
-                This is just the beginning. We are building something that will define how music reaches the world for generations to come.&rdquo;
+                This is not just a distribution company. It is an artist development home. And we are just getting started.&rdquo;
               </p>
             </div>
             <div className="pt-8 border-t border-white/10">
@@ -147,7 +147,7 @@ function VisionMission() {
             </div>
             <h3 className="text-white font-bold text-2xl mb-4">Our Vision</h3>
             <p className="text-white/55 leading-relaxed">
-              To become the world&apos;s leading independent music distribution and artist services platform — the infrastructure that powers music globally and builds generational wealth for independent creators everywhere.
+              To be the home where independent African artists come to build real careers — and the company that proves African music and African infrastructure can lead the world.
             </p>
           </div>
         </AnimateIn>
@@ -159,7 +159,7 @@ function VisionMission() {
             </div>
             <h3 className="text-white font-bold text-2xl mb-4">Our Mission</h3>
             <p className="text-white/55 leading-relaxed">
-              To help independent artists release music globally while maintaining full ownership of their work — providing distribution, marketing, development, and royalty management under one roof.
+              To give independent African artists the guidance, tools, and global reach they deserve — through honest distribution, tailored A&R, music business education, and the kind of personal service that actually moves careers forward.
             </p>
           </div>
         </AnimateIn>
@@ -172,18 +172,18 @@ function Standards() {
   const criteria = [
     {
       number: "01",
-      title: "Sound Quality",
-      desc: "We care about your sound, not your budget. Every genre and production style is welcome — we review with open ears and look for music that is crafted with intention.",
+      title: "Next-Door Service",
+      desc: "We are not a faceless platform. You get real people, real feedback, and real conversations — the kind of access most artists never get from a label or distributor.",
     },
     {
       number: "02",
-      title: "Artistic Vision",
-      desc: "We love working with artists who have a clear sense of who they are. Whether you are just starting out or already established, a clear direction helps us support you better.",
+      title: "Tailored A&R",
+      desc: "Every artist gets a different kind of support. We do not apply a template — we look at your sound, your story, and your goals, and build a development path around you.",
     },
     {
       number: "03",
-      title: "Originality",
-      desc: "Music is diverse. We celebrate every sub-genre, language, and regional sound — from Afrobeats to indie rock, electronic to classical and everything in between.",
+      title: "Education First",
+      desc: "We believe informed artists make better decisions. Part of what we do is teach the business — contracts, royalties, publishing, brand — so you are never in the dark again.",
     },
   ];
 
@@ -204,7 +204,7 @@ function Standards() {
           </AnimateIn>
           <AnimateIn delay={140}>
             <p className="text-white/45 leading-relaxed">
-              We built OrinlabÍ Records to give African artists the same distribution infrastructure the biggest labels have — without the gatekeeping. Upload, distribute, and earn on your own terms.
+              We are not just looking for music to distribute. We are looking for artists we can genuinely develop. When you come to Orinlabi, you are not a ticket number — you are an artist with a story we want to help tell.
             </p>
           </AnimateIn>
         </div>
@@ -236,12 +236,12 @@ function Standards() {
 
 function Values() {
   const values = [
-    { icon: <Heart size={20} />,       title: "Artist First",    desc: "Every decision we make starts with what is best for the artist. Your success is our success." },
-    { icon: <ShieldCheck size={20} />, title: "Ownership",       desc: "We believe artists should own their masters. We never take your rights." },
-    { icon: <Globe size={20} />,       title: "Global Reach",    desc: "We think globally and build infrastructure that works for creators everywhere." },
-    { icon: <Users size={20} />,       title: "Community",       desc: "We build a community of artists who support and inspire each other." },
-    { icon: <Lightbulb size={20} />,   title: "Innovation",      desc: "We use technology to democratize access to music industry tools." },
-    { icon: <Target size={20} />,      title: "Transparency",    desc: "Clear royalty reporting. No hidden fees. No surprises." },
+    { icon: <Heart size={20} />,       title: "Artist First",       desc: "Every decision starts with what is best for the artist. We are in your corner — not just for the release, but for the career." },
+    { icon: <ShieldCheck size={20} />, title: "Full Ownership",     desc: "You own your masters. Always. We distribute your music — we do not own it." },
+    { icon: <Globe size={20} />,       title: "Global Ambition",    desc: "African music belongs everywhere. We build with a global mindset and a local understanding." },
+    { icon: <Users size={20} />,       title: "Real Relationships", desc: "We are not a ticket system. We are real people who know your name, your sound, and your goals." },
+    { icon: <Lightbulb size={20} />,   title: "Education",          desc: "We teach the business so you understand contracts, royalties, publishing, and brand — not just streams." },
+    { icon: <Target size={20} />,      title: "Transparency",       desc: "Clear royalty reporting. Honest feedback. No hidden fees. No surprises." },
   ];
 
   return (
@@ -356,7 +356,7 @@ function CTA() {
         </AnimateIn>
         <AnimateIn delay={140}>
           <p className="text-white/45 text-lg mb-10">
-            Be part of the platform rewriting the rules for independent artists worldwide.
+            Built by Africans. Built for African creators. Built for the world.
           </p>
         </AnimateIn>
         <AnimateIn delay={200}>

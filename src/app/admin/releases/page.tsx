@@ -181,14 +181,15 @@ export default function ReleasesPage() {
       .order("submitted_at", { ascending: false })
       .range(from, to);
     if (filter !== "all") query = query.eq("status", filter);
-    const { data, count } = await query;
+    const { data, count, error } = await query;
+    if (error) console.error("releases load:", error);
     setReleases(data ?? []);
     setTotalCount(count ?? 0);
     setLoading(false);
   }
 
   useEffect(() => { setPage(0); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { load(page); }, [page, filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { load(page); }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       adminEmailRef.current = data.session?.user?.email ?? "";

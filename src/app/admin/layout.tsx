@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
-  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send, CreditCard, Zap,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send, CreditCard, Zap, Kanban, UserCheck,
 } from "lucide-react";
 
 type Counts = {
@@ -135,6 +135,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "Content Review",
       items: [
         { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases,          superOnly: false },
+        { label: "Pipeline",      href: "/admin/pipeline",      icon: <Kanban size={17} />,          badge: 0,                        superOnly: false },
         { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: counts.pitches,           superOnly: false },
 
       ],
@@ -143,6 +144,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       label: "People",
       items: [
         { label: "Artists",       href: "/admin/artists",       icon: <Users size={17} />,           badge: 0,                        superOnly: false },
+        { label: "Staff",         href: "/admin/staff",         icon: <UserCheck size={17} />,       badge: 0,                        superOnly: false },
         { label: "Labels",        href: "/admin/labels",        icon: <Globe size={17} />,           badge: counts.labels,            superOnly: false },
         { label: "Compliance",    href: "/admin/compliance",    icon: <ShieldAlert size={17} />,     badge: counts.compliance,        superOnly: false },
       ],

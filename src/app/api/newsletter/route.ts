@@ -3,7 +3,8 @@ import { Resend } from "resend";
 import { supabase } from "@/lib/supabase";
 
 export async function POST(req: NextRequest) {
-  const { email } = await req.json();
+  let email: string;
+  try { ({ email } = await req.json()); } catch { return NextResponse.json({ error: "Invalid request" }, { status: 400 }); }
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Invalid email address." }, { status: 400 });

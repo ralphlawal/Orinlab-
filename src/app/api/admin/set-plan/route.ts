@@ -18,21 +18,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let email: string, plan: string | null, plan_status: string;
+  let email: string, plan: string | null, plan_status: string, artist_name: string | null;
   try {
     const body = await req.json();
     email       = body.email?.trim() ?? "";
     plan        = body.plan ?? null;
     plan_status = body.plan_status ?? "active";
+    artist_name = body.artist_name?.trim() || null;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
   if (!email) return NextResponse.json({ error: "email required" }, { status: 400 });
 
+  const upsertData: Record<string, unknown> = { email, plan, plan_status };
+  if (artist_name) upsertData.artist_name = artist_name;
+
   try {
     const { error } = await serviceClient().from("artist_profiles").upsert(
-      { email, plan, plan_status },
+      upsertData,
       { onConflict: "email" }
     );
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
