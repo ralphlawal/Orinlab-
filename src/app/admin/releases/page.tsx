@@ -188,7 +188,7 @@ export default function ReleasesPage() {
     setLoading(false);
   }
 
-  useEffect(() => { setPage(0); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setPage(0); load(0); }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load(page); }, [page]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
