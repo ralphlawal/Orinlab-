@@ -363,6 +363,21 @@ export default function ReleaseDetailPage() {
   const collaboratorTotal = splits.reduce((a, s) => a + Number(s.percentage || 0), 0);
   const myShare = Math.max(0, 100 - collaboratorTotal);
 
+  // Release date countdown
+  const releaseDateCountdown = (() => {
+    if (!release.release_date) return null;
+    const releaseMs = new Date(release.release_date + "T00:00:00").getTime();
+    const nowMs = Date.now();
+    const diff = Math.ceil((releaseMs - nowMs) / 86_400_000);
+    if (diff <= 0 || diff > 365) return null;
+    return diff;
+  })();
+
+  // Total streams
+  const totalStreams = release.streams
+    ? Object.values(release.streams).reduce((a, v) => a + (v ?? 0), 0)
+    : 0;
+
   const TABS = [
     { key: "overview",  label: "Overview",         num: 1 },
     { key: "stores",    label: "Stores",            num: 2 },
@@ -462,6 +477,25 @@ export default function ReleaseDetailPage() {
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Release date countdown */}
+          {releaseDateCountdown !== null && release.status === "approved" && release.distribution_stage !== "live" && (
+            <div className="flex items-center gap-4 bg-[#007bff]/[0.07] border border-[#007bff]/20 rounded-2xl px-5 py-4">
+              <div className="flex flex-col items-center justify-center w-14 h-14 bg-[#007bff]/15 rounded-xl flex-shrink-0">
+                <span className="text-[#007bff] font-black text-2xl leading-none tabular-nums">{releaseDateCountdown}</span>
+                <span className="text-[#007bff]/60 text-[10px] font-semibold uppercase tracking-wide mt-0.5">days</span>
+              </div>
+              <div>
+                <p className="text-white font-semibold text-sm">
+                  {releaseDateCountdown === 1 ? "Drops tomorrow!" : `Drops in ${releaseDateCountdown} days`}
+                </p>
+                <p className="text-white/40 text-xs mt-0.5">
+                  {new Date(release.release_date + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
+              <p className="ml-auto text-white/25 text-xs hidden sm:block">Start building the hype now.</p>
             </div>
           )}
 
@@ -783,19 +817,55 @@ export default function ReleaseDetailPage() {
           })()}
 
           {/* Stream analytics */}
-          {release.status === "approved" && release.streams && Object.values(release.streams).some((v) => v > 0) && (
+          {release.status === "approved" && totalStreams > 0 && (
             <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-              <div className="flex items-center gap-3 mb-4"><BarChart2 size={17} className="text-[#007bff]" /><p className="text-white font-semibold">Stream Analytics</p></div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {Object.entries(release.streams).filter(([, v]) => v > 0).sort(([, a], [, b]) => b - a).map(([key, count]) => (
-                  <div key={key} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
-                    <p className="text-white/40 text-xs mb-1">{key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
-                    <p className="text-white font-bold text-lg">{fmtStreams(count)}</p>
-                    <p className="text-white/25 text-xs">streams</p>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <BarChart2 size={17} className="text-[#007bff]" />
+                  <p className="text-white font-semibold">Stream Analytics</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-white font-black text-xl tabular-nums">{fmtStreams(totalStreams)}</p>
+                  <p className="text-white/30 text-[10px] uppercase tracking-widest">total streams</p>
+                </div>
               </div>
-              <p className="text-white/20 text-xs mt-4">Stream counts updated monthly from DSP reports.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {Object.entries(release.streams!).filter(([, v]) => v > 0).sort(([, a], [, b]) => b - a).map(([key, count]) => {
+                  const pct = totalStreams > 0 ? Math.round((count / totalStreams) * 100) : 0;
+                  return (
+                    <div key={key} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-3.5">
+                      <p className="text-white/40 text-[10px] mb-1 truncate">{key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
+                      <p className="text-white font-bold text-base tabular-nums">{fmtStreams(count)}</p>
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <div className="flex-1 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                          <div className="h-full bg-[#007bff]/50 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="text-white/20 text-[10px] tabular-nums">{pct}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-white/20 text-xs mt-4">Updated quarterly from DSP reports.</p>
+            </div>
+          )}
+
+          {/* Earnings summary (overview) */}
+          {release.status === "approved" && release.royalties_usd != null && release.royalties_usd > 0 && (
+            <div className="flex items-center gap-4 bg-green-400/[0.06] border border-green-400/20 rounded-2xl px-5 py-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-green-300 font-semibold text-sm">Current Earnings Balance</p>
+                <p className="text-white font-black text-2xl tabular-nums mt-0.5">
+                  ${release.royalties_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <span className="text-white/30 text-sm font-normal ml-1">USD</span>
+                </p>
+                {release.royalties_usd >= 50 ? (
+                  <p className="text-green-400 text-xs mt-1">You&apos;re eligible for a payout — go to the Royalty Splits tab.</p>
+                ) : (
+                  <p className="text-white/30 text-xs mt-1">${(50 - release.royalties_usd).toFixed(2)} more to reach the $50 payout threshold.</p>
+                )}
+              </div>
+              <DollarSign size={32} className="text-green-400/30 flex-shrink-0" />
             </div>
           )}
 

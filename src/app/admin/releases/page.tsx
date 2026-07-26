@@ -393,8 +393,41 @@ export default function ReleasesPage() {
     );
     await supabase.from("releases").update({ streams: filtered }).eq("id", selected.id);
     setSelected((s) => s ? { ...s, streams: filtered } : s);
+
+    const total = Object.values(filtered).reduce((a, v) => a + v, 0);
+    if (total > 0) {
+      const fmtNum = (n: number) =>
+        n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
+
+      // In-app notification
+      supabase.from("notifications").insert({
+        email: selected.email,
+        type:  "info",
+        title: `Stream update — ${selected.song_title}`,
+        body:  `Your stream counts have been updated. You now have ${fmtNum(total)} total streams across all platforms.`,
+        link:  `/portal/releases/${selected.id}`,
+      }).then(() => {}).then(undefined, () => {});
+
+      // Email notification
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "streams-updated",
+          data: {
+            email:       selected.email,
+            artist_name: selected.artist_name,
+            song_title:  selected.song_title,
+            release_id:  selected.id,
+            breakdown:   filtered,
+          },
+        }),
+      }).catch(() => {});
+    }
+
     setSavingStreams(false);
     setStreamsSaved(true);
+    setTimeout(() => setStreamsSaved(false), 3000);
     load();
   }
 
@@ -402,10 +435,40 @@ export default function ReleasesPage() {
     if (!selected) return;
     setSavingRoyalties(true);
     const val = parseFloat(royalties) || 0;
+    const prev = selected.royalties_usd ?? 0;
     await supabase.from("releases").update({ royalties_usd: val }).eq("id", selected.id);
     setSelected((s) => s ? { ...s, royalties_usd: val } : s);
+
+    if (val > 0 && val !== prev) {
+      // In-app notification
+      supabase.from("notifications").insert({
+        email: selected.email,
+        type:  "success",
+        title: `Earnings update — ${selected.song_title}`,
+        body:  `Your royalty balance has been updated to $${val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD. Log in to your portal to request a payout.`,
+        link:  `/portal/releases/${selected.id}`,
+      }).then(() => {}).then(undefined, () => {});
+
+      // Email notification
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "royalties-updated",
+          data: {
+            email:        selected.email,
+            artist_name:  selected.artist_name,
+            song_title:   selected.song_title,
+            release_id:   selected.id,
+            royalties_usd: val,
+          },
+        }),
+      }).catch(() => {});
+    }
+
     setSavingRoyalties(false);
     setRoyaltiesSaved(true);
+    setTimeout(() => setRoyaltiesSaved(false), 3000);
     load();
   }
 

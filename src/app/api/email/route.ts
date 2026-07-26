@@ -5,8 +5,8 @@ import {
   takedownConfirmEmail, payoutConfirmEmail, supportConfirmEmail,
   pitchConfirmEmail, stageUpdateEmail, smartlinkReadyEmail,
   releaseDateEmail, artistReminderEmail, revisionRequestEmail,
-  priorityPaymentEmail,
-  planActivatedEmail,
+  priorityPaymentEmail, planActivatedEmail,
+  streamsUpdatedEmail, royaltiesUpdatedEmail,
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
@@ -141,6 +141,23 @@ export async function POST(req: NextRequest) {
         songTitle:  data.song_title,
         reason:     data.reason,
         note:       data.note ?? "",
+      });
+    } else if (type === "streams-updated") {
+      const total: number = Object.values((data.breakdown ?? {}) as Record<string, number>).reduce((a: number, v: number) => a + v, 0);
+      subject = `Your stream count has been updated — ${data.song_title}`;
+      html = streamsUpdatedEmail({
+        artistName:   data.artist_name,
+        songTitle:    data.song_title,
+        totalStreams:  total,
+        breakdown:    data.breakdown ?? {},
+      });
+    } else if (type === "royalties-updated") {
+      subject = `Your earnings have been updated — ${data.song_title}`;
+      html = royaltiesUpdatedEmail({
+        artistName:   data.artist_name,
+        songTitle:    data.song_title,
+        royaltiesUsd: Number(data.royalties_usd ?? 0),
+        releaseId:    data.release_id,
       });
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });

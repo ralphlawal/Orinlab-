@@ -527,7 +527,59 @@ export function priorityPaymentEmail(data: {
   `, "#7c3aed");
 }
 
-/* ── 15. Revision request ── */
+/* ── 16. Streams updated ── */
+export function streamsUpdatedEmail(data: {
+  artistName: string;
+  songTitle: string;
+  totalStreams: number;
+  breakdown: Record<string, number>;
+}) {
+  const fmtNum = (n: number) =>
+    n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
+
+  const rows = Object.entries(data.breakdown)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([key, count]) => [
+      key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      fmtNum(count),
+    ] as [string, string]);
+
+  return base(`
+    ${label("Streams update 📊", "#166534", "#dcfce7")}
+    ${h1(`${fmtNum(data.totalStreams)} total streams on "${data.songTitle}".`)}
+    ${p(`${data.artistName} — we have updated your stream counts. Log in to your portal to see the full breakdown by platform.`)}
+    ${divider()}
+    ${sectionLabel("Platform Breakdown")}
+    ${infoTable(rows.length ? rows : [["—", "No streams yet"]])}
+    ${divider()}
+    ${btn("View My Analytics", "https://orinlabi.com/portal", "#16a34a")}
+    ${muted(`Stream counts are sourced directly from DSP quarterly reports. Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, "#16a34a");
+}
+
+/* ── 17. Royalties updated ── */
+export function royaltiesUpdatedEmail(data: {
+  artistName: string;
+  songTitle: string;
+  royaltiesUsd: number;
+  releaseId: string;
+}) {
+  const formatted = `$${data.royaltiesUsd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+  const portalLink = `https://orinlabi.com/portal/releases/${data.releaseId}`;
+  return base(`
+    ${label("Earnings update 💰", "#14532d", "#dcfce7")}
+    ${h1(`Your balance is now ${formatted}.`)}
+    ${p(`${data.artistName} — we have updated your royalty balance for <strong style="color:#0d0d0d;">"${data.songTitle}"</strong>. Your earnings from streaming platforms have been calculated and are ready for you to review.`)}
+    ${divider()}
+    ${noteBox(`<strong style="color:#0d0d0d;">Current balance: ${formatted}</strong><br/><br/>You can request a payout from your portal once your balance reaches <strong style="color:#0d0d0d;">$50.00 USD</strong>. Payments are processed within 30 days of the close of each calendar quarter.`, "#16a34a")}
+    ${divider()}
+    ${btn("View My Earnings", portalLink, "#16a34a")}
+    ${muted(`Royalties are net of OrinlabÍ Records' 15% service fee. Questions? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, "#16a34a");
+}
+
+/* ── 18. Revision request ── */
 export function revisionRequestEmail(data: {
   artistName: string;
   songTitle: string;
