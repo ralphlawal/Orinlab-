@@ -84,10 +84,21 @@ export default async function ListenPage({
 }) {
   const { id } = await params;
 
-  // Old slug-based links (e.g. /listen/artist-name) redirect to the artist profile
-  // which lists all their releases — slug links can't be release-specific
+  // Old slug-based links (e.g. /listen/artist-name) — resolve to a release UUID
+  // and redirect, so the link works correctly even after the artist drops more songs.
   if (!IS_UUID.test(id)) {
-    redirect(`/artists/${id}`);
+    const nameQuery = id.replace(/-/g, " ");
+    const { data: slugMatches } = await supabase
+      .from("releases")
+      .select("id,status")
+      .ilike("artist_name", `%${nameQuery}%`)
+      .order("submitted_at", { ascending: true });
+
+    const rows = (slugMatches ?? []) as { id: string; status: string }[];
+    // Prefer the oldest approved release; fall back to oldest of any status
+    const target = rows.find((r) => r.status === "approved") ?? rows[0];
+    if (target) redirect(`/listen/${target.id}`);
+    else notFound();
   }
 
   const release = await getRelease(id);
