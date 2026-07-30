@@ -290,19 +290,41 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     };
   }, [email, loadCounts]);
 
-  // Fetch artist profile — also enforces account_status suspension
+  // Profile watcher — enforces suspension and picks up admin profile changes.
+  // Runs on mount, on every real-time UPDATE to the row, and every 30 s as fallback
+  // in case real-time isn't enabled for this table.
   useEffect(() => {
     if (!email) return;
-    supabase.from("artist_profiles").select("artist_name,artist_image_url,account_status").eq("email", email).maybeSingle()
-      .then(({ data }) => {
-        if (data?.account_status === "suspended") {
-          setSuspended(true);
-          supabase.auth.signOut();
-          return;
-        }
-        if (data?.artist_name) setArtistName(data.artist_name);
-        if (data?.artist_image_url) setArtistImage(data.artist_image_url);
-      });
+
+    async function checkProfile() {
+      const { data } = await supabase
+        .from("artist_profiles")
+        .select("artist_name,artist_image_url,account_status")
+        .eq("email", email!)
+        .maybeSingle();
+      if (!data) return;
+      if (data.account_status === "suspended") {
+        setSuspended(true);
+        supabase.auth.signOut();
+        return;
+      }
+      if (data.artist_name) setArtistName(data.artist_name);
+      if (data.artist_image_url) setArtistImage(data.artist_image_url);
+    }
+
+    checkProfile();
+
+    const channel = supabase
+      .channel(`profile_watch_${email}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "artist_profiles", filter: `email=eq.${email}` }, checkProfile)
+      .subscribe();
+
+    const poll = setInterval(checkProfile, 30_000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(poll);
+    };
   }, [email]);
 
   async function signOut() {
