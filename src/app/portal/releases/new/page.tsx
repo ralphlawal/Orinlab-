@@ -8,6 +8,7 @@ import {
   Music2, Plus, Trash2, Save, Zap, Lock, ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { InviteRequestForm } from "@/components/InviteRequestForm";
 import { PLANS } from "@/lib/stripePlans";
 
 const genres = [
@@ -590,6 +591,23 @@ export default function NewReleasePage() {
           Need more artists?{" "}
           <a href="/pricing" className="text-[#007bff] hover:underline">See all Label plans →</a>
         </p>
+
+        {/* Divider */}
+        <div className="flex items-center gap-4 mt-8">
+          <div className="flex-1 h-px bg-white/[0.06]" />
+          <span className="text-white/20 text-xs font-medium">or</span>
+          <div className="flex-1 h-px bg-white/[0.06]" />
+        </div>
+
+        {/* Invite request */}
+        <div className="mt-8 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 text-center">
+          <p className="text-white font-semibold mb-2">Not in a position to subscribe yet?</p>
+          <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs mx-auto">
+            Tell us about your music. We review every application personally and
+            respond within 5 business days.
+          </p>
+          <InviteRequestForm />
+        </div>
       </section>
     );
   }

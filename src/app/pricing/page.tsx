@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { InviteRequestForm } from "@/components/InviteRequestForm";
 import {
   CheckCircle2, Zap, ArrowRight, Music2, Users, Star,
   ShieldCheck, ShieldOff, AlertTriangle,
@@ -310,6 +311,28 @@ export default function PricingPage() {
           Annual billing · Cancel anytime ·{" "}
           <Link href="/terms" className="underline hover:text-white/40">Terms apply</Link>
         </p>
+      </section>
+
+      {/* Artist Access section */}
+      <section className="py-20 px-6 border-t border-white/[0.05]">
+        <div className="max-w-xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-5"
+              style={{ background: "linear-gradient(135deg, #007bff18, #8B5CF618)", border: "1px solid #007bff20" }}>
+              <span className="text-xl">✉️</span>
+            </div>
+            <h2 className="text-white font-bold text-2xl mb-3">Not in a position to subscribe yet?</h2>
+            <p className="text-white/45 text-sm leading-relaxed max-w-sm mx-auto">
+              We believe in African music, not just the artists who can pay first.
+              Tell us about your music — we review every application personally
+              and respond within 5 business days.
+            </p>
+          </div>
+
+          <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 md:p-8">
+            <InviteRequestForm />
+          </div>
+        </div>
       </section>
     </>
   );
