@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { PlatformIcon } from "@/components/PlatformIcon";
@@ -369,6 +369,8 @@ export default function PortalDashboard() {
   const [loading, setLoading]           = useState(true);
   const [profile, setProfile]           = useState<Profile | null>(null);
   const [dismissed, setDismissed]       = useState<string[]>([]);
+  const [reloadKey, setReloadKey] = useState(0);
+  const triggerReload = useCallback(() => setReloadKey(k => k + 1), []);
 
   useEffect(() => { setDismissed(getDismissed()); }, []);
 
@@ -422,7 +424,30 @@ export default function PortalDashboard() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Real-time: pick up admin changes to releases immediately
+  useEffect(() => {
+    let userEmail: string | null = null;
+    supabase.auth.getSession().then(({ data }) => {
+      userEmail = data.session?.user.email ?? null;
+    });
+    const channel = supabase.channel('dashboard_releases')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'releases' }, triggerReload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, triggerReload)
+      .subscribe();
+    return () => {
+      void userEmail;
+      supabase.removeChannel(channel);
+    };
+  }, [triggerReload]);
+
+  // Tab visibility refresh
+  useEffect(() => {
+    function onVisibility() { if (!document.hidden) triggerReload(); }
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [triggerReload]);
 
   if (loading) {
     return (

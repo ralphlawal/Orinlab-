@@ -152,6 +152,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [langFilter, setLangFilter]     = useState("");
   const langPickerRef = React.useRef<HTMLDivElement>(null);
+  const prevPathRef = React.useRef(pathname);
+  const [navProgress, setNavProgress] = React.useState(false);
 
   useEffect(() => {
     const saved = typeof localStorage !== "undefined" ? localStorage.getItem(PORTAL_LANG_KEY) : null;
@@ -264,11 +266,28 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     if (email && !checking) loadCounts(email);
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Refresh counts every 30s
+  useEffect(() => {
+    if (pathname !== prevPathRef.current) {
+      prevPathRef.current = pathname;
+      setNavProgress(true);
+      const t = setTimeout(() => setNavProgress(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [pathname]);
+
+  // Real-time badge updates
   useEffect(() => {
     if (!email) return;
-    const id = setInterval(() => loadCounts(email), 30_000);
-    return () => clearInterval(id);
+    const channel = supabase.channel(`portal_counts_${email}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `email=eq.${email}` }, () => loadCounts(email))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `artist_email=eq.${email}` }, () => loadCounts(email))
+      .subscribe();
+    // 2-min fallback poll in case real-time isn't available
+    const interval = setInterval(() => loadCounts(email), 120_000);
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
   }, [email, loadCounts]);
 
   // Fetch artist profile — also enforces account_status suspension
@@ -333,8 +352,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   return (
     <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-56 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{ background: "linear-gradient(180deg, #050505 0%, #080808 100%)", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-64 md:w-56 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        style={{ background: "linear-gradient(180deg, #050505 0%, #080808 100%)", borderRight: "1px solid rgba(255,255,255,0.05)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
 
         {/* Logo + identity */}
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.05]">
@@ -436,10 +455,19 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {/* Main content */}
       <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
+        {navProgress && (
+          <div className="h-0.5 bg-white/5 overflow-hidden flex-shrink-0">
+            <div
+              className="h-full bg-[#007bff]"
+              style={{ animation: "navBar 0.6s ease-out forwards" }}
+            />
+          </div>
+        )}
+        <style>{`@keyframes navBar { from { width: 0% } to { width: 100% } }`}</style>
         {/* Top bar */}
-        <header className="flex-shrink-0 z-20 px-6 py-3.5 flex items-center gap-4"
-          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-          <button className="lg:hidden relative text-white/50 hover:text-white transition-colors" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <header className="flex-shrink-0 z-20 px-4 md:px-6 flex items-center gap-3 md:gap-4"
+          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingTop: "max(14px, env(safe-area-inset-top))", paddingBottom: 14 }}>
+          <button className="hidden md:flex lg:hidden items-center relative text-white/50 hover:text-white transition-colors" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             {!sidebarOpen && totalUnread > 0 && (
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#007bff] rounded-full" />
@@ -449,9 +477,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-2">
             <div className="w-1 h-4 rounded-full" style={{ background: activeSectionColor }} />
             <h2 className="text-white font-semibold text-sm">
-              {NAV_SECTIONS.flatMap(s => s.items).find(n =>
-                n.exact ? pathname === n.href : (pathname.startsWith(n.href) && n.href !== "/portal")
-              )?.label ?? (pathname === "/portal" ? "My Releases" : "Portal")}
+              {(() => {
+                if (pathname === "/portal") return "My Releases";
+                if (/^\/portal\/releases\/(?!new)[^/]+/.test(pathname)) return "Release Details";
+                if (pathname.startsWith("/portal/guidelines/")) return "Guidelines";
+                return NAV_SECTIONS.flatMap(s => s.items).find(n =>
+                  n.exact ? pathname === n.href : (pathname.startsWith(n.href) && n.href !== "/portal")
+                )?.label ?? "Portal";
+              })()}
             </h2>
           </div>
 
@@ -539,6 +572,52 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
+
+        {/* Mobile bottom navigation — hidden on md+ */}
+        <nav
+          className="md:hidden flex-shrink-0 flex items-stretch border-t border-white/[0.07]"
+          style={{
+            background: "rgba(5,5,5,0.97)",
+            backdropFilter: "blur(20px)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+        >
+          {([
+            { href: "/portal",               label: "Releases",  Icon: LayoutDashboard, exact: true,  badgeKey: "none" },
+            { href: "/portal/releases/new",  label: "Upload",    Icon: Plus,            exact: false, badgeKey: "none" },
+            { href: "/portal/messages",      label: "Messages",  Icon: MessageSquare,   exact: false, badgeKey: "messages" },
+            { href: "/portal/notifications", label: "Alerts",    Icon: Bell,            exact: false, badgeKey: "notifications" },
+          ] as const).map(({ href, label, Icon, exact, badgeKey }) => {
+            const active = exact ? pathname === href : pathname.startsWith(href);
+            const badgeCount = badgeKey === "messages" ? counts.messages
+              : badgeKey === "notifications" ? counts.notifications : 0;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors active:opacity-60 ${active ? "" : "text-white/35"}`}
+                style={active ? { color: activeSectionColor } : undefined}
+              >
+                <span className="relative">
+                  <Icon size={21} />
+                  {badgeCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-2 h-2 bg-[#007bff] rounded-full animate-pulse" />
+                  )}
+                </span>
+                <span className="text-[10px] font-medium">{label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-white/35 active:opacity-60 transition-colors"
+          >
+            {totalUnread > 0
+              ? <span className="relative"><Menu size={21} /><span className="absolute -top-1.5 -right-1.5 w-2 h-2 bg-[#007bff] rounded-full" /></span>
+              : <Menu size={21} />}
+            <span className="text-[10px] font-medium">More</span>
+          </button>
+        </nav>
       </div>
     </div>
   );

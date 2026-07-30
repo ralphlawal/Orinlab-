@@ -1388,11 +1388,11 @@ export default function ReleasesPage() {
                     </p>
                     <div className="flex items-center gap-2 bg-[#007bff]/[0.06] border border-[#007bff]/20 rounded-xl px-3 py-2.5">
                       <span className="text-[#007bff]/80 text-xs font-mono flex-1 truncate">
-                        orinlabi.com/listen/{toSlug(selected.artist_name)}
+                        orinlabi.com/listen/{selected.id}
                       </span>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://orinlabi.com/listen/${toSlug(selected.artist_name)}`);
+                          navigator.clipboard.writeText(`https://orinlabi.com/listen/${selected.id}`);
                           setSmartLinkCopied(true);
                           setTimeout(() => setSmartLinkCopied(false), 2000);
                         }}
@@ -1401,7 +1401,7 @@ export default function ReleasesPage() {
                         {smartLinkCopied ? "Copied ✓" : "Copy"}
                       </button>
                       <a
-                        href={`https://orinlabi.com/listen/${toSlug(selected.artist_name)}`}
+                        href={`https://orinlabi.com/listen/${selected.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-white/30 hover:text-white transition-colors flex-shrink-0"
@@ -1409,7 +1409,7 @@ export default function ReleasesPage() {
                         <ExternalLink size={12} />
                       </a>
                     </div>
-                    <p className="text-white/20 text-[10px] mt-1.5">Fan link stays on orinlabi.com. Shows listen page or pre-save depending on release date.</p>
+                    <p className="text-white/20 text-[10px] mt-1.5">Release-specific link — works permanently even after the artist drops new songs.</p>
                   </div>
 
                 </Section>

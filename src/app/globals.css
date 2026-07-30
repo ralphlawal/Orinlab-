@@ -272,6 +272,14 @@ a:focus-visible,
 }
 ::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
 
+/* ─── Scrollbar utilities ───────────────────────────────────────────────────── */
+
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Mobile bottom nav safe-area support */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+
 /* ─── Text selection ────────────────────────────────────────────────────────── */
 
 ::selection {

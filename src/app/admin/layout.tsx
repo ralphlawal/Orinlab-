@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -45,6 +45,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [checking, setChecking]     = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [navProgress, setNavProgress] = useState(false);
+  const prevPathRef = useRef(pathname);
   const [counts, setCounts] = useState<Counts>({ releases: 0, labels: 0, support: 0, payouts: 0, messages: 0, pitches: 0, compliance: 0, subscribers: 0 });
 
   useEffect(() => {
@@ -121,6 +123,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!checking && pathname !== "/admin/login") loadCounts();
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Navigation progress bar
+  useEffect(() => {
+    if (pathname !== prevPathRef.current) {
+      prevPathRef.current = pathname;
+      setNavProgress(true);
+      const t = setTimeout(() => setNavProgress(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [pathname]);
 
   const isSuperAdmin = adminEmail === SUPER_ADMIN;
 
@@ -215,7 +227,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-56 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-72 md:w-56 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
         {/* Logo */}
         <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
           <Link href="/">
@@ -282,8 +295,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main content */}
       <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
+        {navProgress && (
+          <div className="h-0.5 bg-white/5 overflow-hidden flex-shrink-0">
+            <div className="h-full bg-[#007bff]" style={{ animation: "navBar 0.6s ease-out forwards" }} />
+          </div>
+        )}
+        <style>{`@keyframes navBar { from { width: 0% } to { width: 100% } }`}</style>
         {/* Top bar */}
-        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-6 py-3.5 flex items-center gap-4">
+        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-4 md:px-6 flex items-center gap-4"
+          style={{ paddingTop: "max(14px, env(safe-area-inset-top))", paddingBottom: 14 }}>
           <button className="lg:hidden relative text-white/60 hover:text-white" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             {!sidebarOpen && totalPending > 0 && (
@@ -301,7 +321,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           )}
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <AdminPinProvider>{children}</AdminPinProvider>
         </main>
       </div>

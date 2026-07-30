@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -29,29 +29,17 @@ const SELECT =
 const PRESAVE_PLATFORMS = ["spotify", "apple_music", "amazon_music", "deezer", "tidal", "audiomack", "boomplay"];
 const FALLBACK_PLATFORMS = ["spotify", "apple_music", "youtube_music", "amazon_music", "deezer", "tidal", "audiomack", "boomplay", "tiktok", "soundcloud", "anghami"];
 
+const IS_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}/i;
+
 async function getRelease(id: string): Promise<Release | null> {
-  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}/i.test(id);
-
-  if (isUUID) {
-    const { data, error } = await supabase
-      .from("releases")
-      .select(SELECT)
-      .eq("id", id)
-      .maybeSingle();
-    if (error) return null;
-    return (data as Release) ?? null;
-  }
-
-  // Slug: 'staeci-moore' → search '%staeci moore%' in artist_name
-  const nameQuery = id.replace(/-/g, " ");
+  if (!IS_UUID.test(id)) return null; // slug-based — handled separately
   const { data, error } = await supabase
     .from("releases")
     .select(SELECT)
-    .ilike("artist_name", `%${nameQuery}%`)
-    .order("submitted_at", { ascending: false })
-    .limit(1);
+    .eq("id", id)
+    .maybeSingle();
   if (error) return null;
-  return ((data as Release[])?.[0]) ?? null;
+  return (data as Release) ?? null;
 }
 
 export async function generateMetadata({
@@ -60,6 +48,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
+  if (!IS_UUID.test(id)) return { title: "Artist" };
   const release = await getRelease(id);
   if (!release) return { title: "Not Found" };
 
@@ -94,6 +83,13 @@ export default async function ListenPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  // Old slug-based links (e.g. /listen/artist-name) redirect to the artist profile
+  // which lists all their releases — slug links can't be release-specific
+  if (!IS_UUID.test(id)) {
+    redirect(`/artists/${id}`);
+  }
+
   const release = await getRelease(id);
   if (!release) notFound();
 

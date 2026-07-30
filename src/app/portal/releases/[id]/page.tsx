@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -129,6 +129,9 @@ export default function ReleaseDetailPage() {
   const [fixDone, setFixDone]       = useState(false);
   const [fixError, setFixError]     = useState<string | null>(null);
 
+  const [reloadKey, setReloadKey] = useState(0);
+  const triggerReload = useCallback(() => setReloadKey(k => k + 1), []);
+
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
@@ -168,7 +171,23 @@ export default function ReleaseDetailPage() {
       setLoading(false);
     }
     load();
-  }, [id]);
+  }, [id, reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Real-time: auto-update when admin changes this release
+  useEffect(() => {
+    const channel = supabase
+      .channel(`release_watch_${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'releases', filter: `id=eq.${id}` }, triggerReload)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, triggerReload]);
+
+  // Tab visibility: refresh when user returns to tab
+  useEffect(() => {
+    function onVisibility() { if (!document.hidden) triggerReload(); }
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [triggerReload]);
 
   if (loading) return (
     <section className="max-w-3xl mx-auto px-4 py-10 space-y-6">
@@ -393,25 +412,31 @@ export default function ReleaseDetailPage() {
         <ArrowLeft size={15} /> My Releases
       </Link>
 
-      {/* Tab navigation — Ditto style */}
-      <div className="flex border-b border-white/[0.08] mb-8">
+      {/* Tab navigation */}
+      <div className="no-scrollbar flex overflow-x-auto border-b border-white/[0.08] mb-6 md:mb-8 items-center">
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`flex items-center gap-2.5 px-5 py-4 text-sm font-medium border-b-2 transition-all -mb-px ${
+              className={`flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 px-3 sm:px-5 py-3.5 sm:py-4 text-xs sm:text-sm font-medium border-b-2 transition-all -mb-px active:opacity-60 ${
                 active
                   ? "border-[#007bff] text-white"
                   : "border-transparent text-white/35 hover:text-white/70"
               }`}
             >
-              <span className={`text-[11px] font-bold tabular-nums ${active ? "text-[#007bff]" : "text-white/25"}`}>{t.num}</span>
+              <span className={`text-[10px] sm:text-[11px] font-bold tabular-nums ${active ? "text-[#007bff]" : "text-white/25"}`}>{t.num}</span>
               {t.label}
             </button>
           );
         })}
+        <div className="ml-auto pb-4 pr-1 flex-shrink-0">
+          <span className="flex items-center gap-1.5 text-[10px] text-white/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            live
+          </span>
+        </div>
       </div>
 
       {/* ── Tab 1: Overview ── */}
