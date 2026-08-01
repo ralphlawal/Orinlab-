@@ -91,6 +91,7 @@ export default function ReleaseDetailPage() {
 
   const [takedownState, setTakedownState] = useState<"idle" | "confirm" | "sent">("idle");
   const [sendingTakedown, setSendingTakedown] = useState(false);
+  const [sessionToken, setSessionToken] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [presaveCopied, setPresaveCopied] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState<string | null>(null);
@@ -136,6 +137,7 @@ export default function ReleaseDetailPage() {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/portal/login"); return; }
+      setSessionToken(session.access_token);
 
       const [{ data }, { data: profileData }, { data: splitsData }] = await Promise.all([
         supabase.from("releases").select("*").eq("id", id).eq("email", session.user.email!).maybeSingle(),
@@ -404,6 +406,36 @@ export default function ReleaseDetailPage() {
     { key: "services",  label: "Services & Extras", num: 4 },
     { key: "splits",    label: "Royalty Splits",    num: 5 },
   ] as const;
+
+  async function handleTakedown() {
+    if (!release) return;
+    setSendingTakedown(true);
+    // Save to DB as a support ticket so it's tracked
+    fetch("/api/support-ticket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${sessionToken}` },
+      body: JSON.stringify({
+        artist_name: release.artist_name,
+        subject: `Takedown Request — ${release.song_title}`,
+        category: "Takedown Request",
+        description: `Artist has requested a takedown for release "${release.song_title}" (${release.release_type}). Release ID: ${release.id}`,
+      }),
+    }).catch(() => {});
+    // Notify admin
+    await fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "takedown-request", data: { artist_name: release.artist_name, song_title: release.song_title, release_type: release.release_type, release_id: release.id } }),
+    }).catch(() => {});
+    // Confirm to artist
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "takedown-confirmation", data: { email: release.email, artist_name: release.artist_name, song_title: release.song_title } }),
+    }).catch(() => {});
+    setSendingTakedown(false);
+    setTakedownState("sent");
+  }
 
   return (
     <section className="max-w-4xl mx-auto px-4 py-10">
@@ -710,7 +742,7 @@ export default function ReleaseDetailPage() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <Star size={17} className={release.presave_enabled ? "text-[#1db954]" : "text-white/30"} />
-                  <p className="text-white font-semibold">Pre-save Campaign</p>
+                  <p className="text-white font-semibold">Fan Notification Page</p>
                   {release.presave_enabled && <span className="text-[10px] font-bold bg-[#1db954]/20 text-[#1db954] px-2 py-0.5 rounded-full uppercase tracking-widest">Active</span>}
                 </div>
                 <button
@@ -721,13 +753,13 @@ export default function ReleaseDetailPage() {
                   }}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition-colors ${release.presave_enabled ? "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20" : "bg-[#1db954]/10 border-[#1db954]/20 text-[#1db954] hover:bg-[#1db954]/20"}`}
                 >
-                  {release.presave_enabled ? "Turn Off" : "Enable Pre-save"}
+                  {release.presave_enabled ? "Turn Off" : "Enable"}
                 </button>
               </div>
               <p className="text-white/40 text-sm mb-4">
                 {release.presave_enabled
-                  ? "Fans can follow this link to pre-save your release before it drops."
-                  : "Enable this to get a shareable pre-save link for your release."}
+                  ? "Share this link — fans can sign up to be notified the moment your release goes live."
+                  : "Create a shareable page where fans can register to be notified on release day."}
               </p>
               {release.presave_enabled && (
                 <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
@@ -1333,7 +1365,7 @@ export default function ReleaseDetailPage() {
                   <div className="space-y-3">
                     <p className="text-white/60 text-xs font-medium">Are you sure? This will remove your release from all platforms worldwide.</p>
                     <div className="flex gap-3">
-                      <button onClick={async () => { setSendingTakedown(true); await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "takedown-request", data: { artist_name: release.artist_name, song_title: release.song_title, release_type: release.release_type, release_id: release.id } }) }).catch(() => {}); fetch("/api/email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "takedown-confirmation", data: { email: release.email, artist_name: release.artist_name, song_title: release.song_title } }) }).catch(() => {}); setSendingTakedown(false); setTakedownState("sent"); }} disabled={sendingTakedown} className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-semibold px-4 py-2 rounded-xl transition-colors">
+                      <button onClick={handleTakedown} disabled={sendingTakedown} className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-semibold px-4 py-2 rounded-xl transition-colors">
                         {sendingTakedown ? <Loader2 size={13} className="animate-spin" /> : null} Yes, request takedown
                       </button>
                       <button onClick={() => setTakedownState("idle")} className="text-white/30 hover:text-white text-xs transition-colors">Cancel</button>

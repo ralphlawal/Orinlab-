@@ -28,6 +28,7 @@ type Release = {
   streams: Record<string, number> | null;
   royalties_usd: number | null;
   store_links: Record<string, string> | null;
+  contract_signed_at: string | null;
 };
 
 type Pitch = {
@@ -388,7 +389,7 @@ export default function PortalDashboard() {
       const [releasesRes, profileRes, announcementsRes, pitchesRes, notifsRes] = await Promise.all([
         supabase
           .from("releases")
-          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links")
+          .select("id,song_title,release_type,genre,release_date,status,review_notes,cover_art_url,submitted_at,artist_name,streams,royalties_usd,store_links,contract_signed_at")
           .eq("email", session.user.email!)
           .order("submitted_at", { ascending: false }),
         supabase
@@ -557,6 +558,12 @@ export default function PortalDashboard() {
 
   const visibleReminders = allReminders.filter((r) => !dismissed.includes(r.id));
 
+  // ── Onboarding checklist ────────────────────────────────────────────────────
+  const profileComplete = !!(profile?.artist_name && profile?.artist_image_url);
+  const contractSigned  = releases.some((r) => !!r.contract_signed_at);
+  const hasRelease      = releases.length > 0;
+  const checklistDone   = profileComplete && contractSigned && hasRelease;
+
   return (
     <section className="max-w-3xl mx-auto px-4 py-10">
 
@@ -639,6 +646,89 @@ export default function PortalDashboard() {
           {visibleReminders.slice(0, 3).map((r) => (
             <ReminderBanner key={r.id} reminder={r} onDismiss={dismissReminder} />
           ))}
+        </FadeIn>
+      )}
+
+      {/* ── Onboarding checklist ─────────────────────────────────────────────── */}
+      {!checklistDone && !dismissed.includes("onboarding_checklist") && (
+        <FadeIn delay={120} className="mb-6">
+          <div className="rounded-2xl border border-[#007bff]/20 overflow-hidden">
+            <div
+              className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.05]"
+              style={{ background: "#007bff0d" }}
+            >
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-[#007bff]" />
+                <p className="text-white font-semibold text-sm">Get started</p>
+                <span className="ml-1 text-[11px] text-white/30">
+                  {[profileComplete, hasRelease, contractSigned].filter(Boolean).length}/3 complete
+                </span>
+              </div>
+              <button
+                onClick={() => dismissReminder("onboarding_checklist")}
+                className="text-white/30 hover:text-white/60 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <div className="divide-y divide-white/[0.04]">
+              {[
+                {
+                  done: profileComplete,
+                  label: "Complete your artist profile",
+                  sub: "Add your artist name and a profile photo",
+                  href: "/portal/profile",
+                  cta: "Edit Profile",
+                },
+                {
+                  done: hasRelease,
+                  label: "Submit your first release",
+                  sub: "Upload your track, cover art, and metadata",
+                  href: "/portal/releases/new",
+                  cta: "Submit Now",
+                },
+                {
+                  done: contractSigned,
+                  label: "Sign your distribution agreement",
+                  sub: hasRelease
+                    ? "Check your email — we send the agreement after approving your release"
+                    : "Complete after submitting a release",
+                  href: "/portal/support",
+                  cta: "Need help?",
+                },
+              ].map(({ done, label, sub, href, cta }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3.5 px-5 py-3.5"
+                >
+                  <div
+                    className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 border"
+                    style={
+                      done
+                        ? { background: "#10B98120", borderColor: "#10B98140" }
+                        : { borderColor: "rgba(255,255,255,0.15)" }
+                    }
+                  >
+                    {done && <CheckCircle2 size={11} className="text-green-400" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${done ? "text-white/30 line-through decoration-white/20" : "text-white"}`}>
+                      {label}
+                    </p>
+                    {!done && <p className="text-white/30 text-xs mt-0.5">{sub}</p>}
+                  </div>
+                  {!done && (
+                    <Link
+                      href={href}
+                      className="text-xs font-semibold text-[#007bff] hover:text-[#60a5fa] flex-shrink-0 transition-colors"
+                    >
+                      {cta} →
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </FadeIn>
       )}
 

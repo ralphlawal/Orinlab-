@@ -31,6 +31,7 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
   const [checking, setChecking]   = useState(true);
   const [email, setEmail]         = useState<string | null>(null);
   const [labelName, setLabelName] = useState<string>("");
+  const [labelStatus, setLabelStatus] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -74,12 +75,20 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
     return () => subscription.unsubscribe();
   }, [pathname, router]);
 
-  // Fetch label name
+  // Verify the logged-in user has an approved label profile
   useEffect(() => {
     if (!email) return;
-    supabase.from("label_profiles").select("name").eq("email", email).maybeSingle()
-      .then(({ data }) => { if (data?.name) setLabelName(data.name); });
-  }, [email]);
+    supabase.from("label_profiles").select("name,status").eq("email", email).maybeSingle()
+      .then(({ data }) => {
+        if (!data) {
+          // Not a label account — boot back to login
+          router.replace("/labels/portal/login");
+          return;
+        }
+        if (data.name) setLabelName(data.name);
+        setLabelStatus(data.status ?? "pending");
+      });
+  }, [email, router]);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -90,10 +99,36 @@ export default function LabelPortalLayout({ children }: { children: React.ReactN
     return <div className="fixed inset-0 z-[60] bg-black">{children}</div>;
   }
 
-  if (checking) {
+  if (checking || (email && labelStatus === null)) {
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#050505]">
         <Loader2 size={28} className="text-[#007bff] animate-spin" />
+      </div>
+    );
+  }
+
+  if (labelStatus && labelStatus !== "approved") {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#050505] px-4">
+        <div className="max-w-md w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-amber-400/10 flex items-center justify-center mx-auto mb-4">
+            <Loader2 size={22} className="text-amber-400" />
+          </div>
+          <h2 className="text-white font-bold text-lg mb-2">
+            {labelStatus === "rejected" ? "Application Not Approved" : "Application Under Review"}
+          </h2>
+          <p className="text-white/40 text-sm leading-relaxed mb-6">
+            {labelStatus === "rejected"
+              ? "Your label application was not approved. Please contact us at info@orinlabi.com for more information."
+              : "Your label application is being reviewed. We'll be in touch within 3–5 business days."}
+          </p>
+          <button
+            onClick={signOut}
+            className="text-white/40 hover:text-white text-sm transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
     );
   }

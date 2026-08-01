@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { AdminPinProvider } from "@/context/AdminPinContext";
 import {
   LayoutDashboard, Music, MessageSquare, BookOpen, Mail, LogOut, Loader2, Menu, X,
-  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send, CreditCard, Zap, Kanban, UserCheck,
+  Palette, Users, Settings, BarChart2, Megaphone, Radio, DollarSign, LifeBuoy, Globe, MessagesSquare, Bell, ShieldAlert, Send, CreditCard, Zap, Kanban, UserCheck, Link2,
 } from "lucide-react";
 
 type Counts = {
@@ -149,6 +149,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { label: "Releases",      href: "/admin/releases",      icon: <Music size={17} />,           badge: counts.releases,          superOnly: false },
         { label: "Pipeline",      href: "/admin/pipeline",      icon: <Kanban size={17} />,          badge: 0,                        superOnly: false },
         { label: "Pitches",       href: "/admin/pitches",       icon: <Radio size={17} />,           badge: counts.pitches,           superOnly: false },
+        { label: "Smart Links",   href: "/admin/smart-links",   icon: <Link2 size={17} />,           badge: 0,                        superOnly: false },
 
       ],
     },

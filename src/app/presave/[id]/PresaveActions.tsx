@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy, Bell, Loader2 } from "lucide-react";
+import { Check, Copy, Bell, Loader2, ExternalLink } from "lucide-react";
 
 const PLATFORMS = [
   { label: "Spotify",      color: "#1db954", bg: "#1db95420" },
@@ -28,6 +28,14 @@ export default function PresaveActions({
   const [notifyEmail, setNotifyEmail] = useState("");
   const [notifyState, setNotifyState] = useState<"idle" | "loading" | "done" | "error">("idle");
 
+  // If presaveUrl points back to our own presave page, platform buttons would loop.
+  // In that case, only show the notification form.
+  const isExternalPresave =
+    presaveUrl &&
+    !presaveUrl.includes("orinlabi.com/presave/") &&
+    !presaveUrl.includes("localhost") &&
+    presaveUrl.startsWith("http");
+
   function copyLink() {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
@@ -44,12 +52,7 @@ export default function PresaveActions({
       const res = await fetch("/api/presave", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          releaseId,
-          email: notifyEmail.trim(),
-          artistName,
-          songTitle,
-        }),
+        body: JSON.stringify({ releaseId, email: notifyEmail.trim(), artistName, songTitle }),
       });
       setNotifyState(res.ok ? "done" : "error");
     } catch {
@@ -59,40 +62,46 @@ export default function PresaveActions({
 
   return (
     <div className="space-y-3">
-      {/* Per-platform pre-save buttons */}
-      <div className="space-y-2.5">
-        {PLATFORMS.map((p) => (
-          <a
-            key={p.label}
-            href={presaveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between w-full rounded-2xl px-4 py-3.5 transition-all hover:brightness-110 active:scale-[0.98]"
-            style={{ background: p.bg, border: `1px solid ${p.color}30` }}
-          >
-            <span className="font-semibold text-sm" style={{ color: p.color }}>
-              {p.label}
-            </span>
-            <span
-              className="text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{ background: p.color, color: p.color === "#e0e0e0" ? "#000" : "#000" }}
+      {/* External pre-save links (admin-set URL — links to real Spotify/Apple presave) */}
+      {isExternalPresave && (
+        <div className="space-y-2.5">
+          {PLATFORMS.map((p) => (
+            <a
+              key={p.label}
+              href={presaveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between w-full rounded-2xl px-4 py-3.5 transition-all hover:brightness-110 active:scale-[0.98]"
+              style={{ background: p.bg, border: `1px solid ${p.color}30` }}
             >
-              Pre-save
-            </span>
-          </a>
-        ))}
-      </div>
+              <span className="font-semibold text-sm" style={{ color: p.color }}>
+                {p.label}
+              </span>
+              <span
+                className="text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1"
+                style={{ background: p.color, color: "#000" }}
+              >
+                Pre-save <ExternalLink size={10} />
+              </span>
+            </a>
+          ))}
+        </div>
+      )}
 
-      {/* Notify me on drop */}
-      <div className="border border-white/[0.08] rounded-2xl p-4 mt-2">
+      {/* Notify me when it drops */}
+      <div className="border border-white/[0.08] rounded-2xl p-4">
         {notifyState === "done" ? (
           <div className="flex items-center justify-center gap-2 text-green-400 text-sm py-1">
             <Check size={15} /> You&apos;re on the list — we&apos;ll notify you when it drops!
           </div>
         ) : (
           <form onSubmit={handleNotify} className="space-y-2.5">
-            <p className="text-white/40 text-xs flex items-center gap-1.5">
-              <Bell size={12} /> Get notified when this drops
+            <p className="text-white/50 text-sm font-semibold flex items-center gap-1.5">
+              <Bell size={13} className="text-white/30" />
+              Get notified when this drops
+            </p>
+            <p className="text-white/30 text-xs leading-relaxed">
+              Drop your email and we&apos;ll hit you the moment it&apos;s live on streaming.
             </p>
             <div className="flex gap-2">
               <input
