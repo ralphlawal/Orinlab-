@@ -46,16 +46,18 @@ export default function PromotePage() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone]           = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [token, setToken] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
       setEmail(data.session.user.email!);
+      setToken(data.session.access_token);
       const { data: rls } = await supabase
         .from("releases")
         .select("id, song_title, genre, status, artist_name")
         .eq("email", data.session.user.email!)
-        .in("status", ["approved", "pending"])
+        .neq("status", "rejected")
         .order("submitted_at", { ascending: false });
       const list = (rls ?? []) as Release[];
       setReleases(list);
@@ -84,17 +86,20 @@ export default function PromotePage() {
     setSubmitError(null);
     const release = releases.find((r) => r.id === releaseId);
     try {
-    const { error: pitchErr } = await supabase.from("playlist_pitches").insert({
-      email,
-      artist_name: artistName,
-      release_id: releaseId,
-      song_title:  release?.song_title ?? "",
-      genre:       release?.genre ?? null,
-      mood:        mood || null,
-      pitch_notes: `[${pitchType.toUpperCase()}] Targets: ${targets.join(", ") || "Open"}\nSimilar Artists: ${similarArtists || "N/A"}\n\n${notes.trim()}`,
-      status: "pending",
+    const pitchNotes = `[${pitchType.toUpperCase()}] Targets: ${targets.join(", ") || "Open"}\nSimilar Artists: ${similarArtists || "N/A"}\n\n${notes.trim()}`;
+    const res = await fetch("/api/pitch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({
+        release_id: releaseId,
+        artist_name: artistName,
+        song_title: release?.song_title ?? "",
+        genre: release?.genre ?? null,
+        mood: mood || null,
+        pitch_notes: pitchNotes,
+      }),
     });
-    if (pitchErr) { setSubmitError("Failed to submit your pitch. Please try again."); setSubmitting(false); return; }
+    if (!res.ok) { setSubmitError("Failed to submit your pitch. Please try again."); setSubmitting(false); return; }
     fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

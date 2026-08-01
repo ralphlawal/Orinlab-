@@ -37,13 +37,15 @@ export default function EarningsPage() {
   const [payoutStates, setPayoutStates] = useState<Record<string, PayoutState>>({});
   const [hasPayoutDetails, setHasPayoutDetails] = useState(false);
   const [userEmail, setUserEmail]     = useState<string>("");
+  const [token, setToken]             = useState<string>("");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
       const email = data.session.user.email!;
 
-        setUserEmail(email);
+      setUserEmail(email);
+      setToken(data.session.access_token);
 
       const [relRes, payRes, profileRes] = await Promise.all([
         supabase
@@ -96,32 +98,34 @@ export default function EarningsPage() {
         .eq("email", userEmail)
         .maybeSingle();
 
-      const { error: payoutErr } = await supabase.from("payout_requests").insert({
-        email: userEmail,
-        artist_name: profile?.artist_name ?? "",
-        song_title: r.song_title,
-        release_id: r.id,
-        amount_usd: r.royalties_usd ?? 0,
-        payout_method: profile?.payout_method ?? null,
-        bank_name: profile?.bank_name ?? null,
-        bank_account_name: profile?.bank_account_name ?? null,
-        bank_account_number: profile?.bank_account_number ?? null,
-        bank_country: profile?.bank_country ?? null,
-        paypal_email: profile?.paypal_email ?? null,
-        mobile_money_provider: profile?.mobile_money_provider ?? null,
-        mobile_money_number: profile?.mobile_money_number ?? null,
-        status: "pending",
+      const res = await fetch("/api/payout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({
+          artist_name: profile?.artist_name ?? "",
+          song_title: r.song_title,
+          release_id: r.id,
+          amount_usd: r.royalties_usd ?? 0,
+          payout_method: profile?.payout_method ?? null,
+          bank_name: profile?.bank_name ?? null,
+          bank_account_name: profile?.bank_account_name ?? null,
+          bank_account_number: profile?.bank_account_number ?? null,
+          bank_country: profile?.bank_country ?? null,
+          paypal_email: profile?.paypal_email ?? null,
+          mobile_money_provider: profile?.mobile_money_provider ?? null,
+          mobile_money_number: profile?.mobile_money_number ?? null,
+        }),
       });
-      if (payoutErr) throw payoutErr;
+      if (!res.ok) throw new Error("payout api error");
 
-      await fetch("/api/notify", {
+      fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: "payout-request",
           data: { email: userEmail, artist_name: profile?.artist_name ?? "", song_title: r.song_title, royalties_usd: r.royalties_usd, release_id: r.id, payout_method: profile?.payout_method ?? null },
         }),
-      });
+      }).catch(() => {});
 
       fetch("/api/email", {
         method: "POST",

@@ -52,6 +52,7 @@ const SERVICES = [
 export default function ServicesPage() {
   const [email, setEmail]             = useState("");
   const [artistName, setArtistName]   = useState("");
+  const [token, setToken]             = useState("");
   const [inquiry, setInquiry]         = useState<InquiryService | null>(null);
   const [inquiryMsg, setInquiryMsg]   = useState("");
   const [sending, setSending]         = useState(false);
@@ -61,6 +62,7 @@ export default function ServicesPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         setEmail(data.session.user.email!);
+        setToken(data.session.access_token);
         setArtistName(data.session.user.user_metadata?.artist_name ?? "");
       }
     });
@@ -70,7 +72,17 @@ export default function ServicesPage() {
     e.preventDefault();
     if (!inquiry || !inquiryMsg.trim()) return;
     setSending(true);
-    await fetch("/api/notify", {
+    fetch("/api/support-ticket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({
+        artist_name: artistName,
+        subject: `Service Inquiry: ${inquiry.label}`,
+        category: "Service Inquiry",
+        description: inquiryMsg.trim(),
+      }),
+    }).catch(() => {});
+    fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -78,14 +90,6 @@ export default function ServicesPage() {
         data: { email, artist_name: artistName, service: inquiry.label, message: inquiryMsg.trim() },
       }),
     }).catch(() => {});
-    supabase.from("support_tickets").insert({
-      email,
-      artist_name: artistName,
-      subject: `Service Inquiry: ${inquiry.label}`,
-      category: "Service Inquiry",
-      description: inquiryMsg.trim(),
-      status: "open",
-    }).then(() => {});
     setSending(false);
     setSent(true);
   }

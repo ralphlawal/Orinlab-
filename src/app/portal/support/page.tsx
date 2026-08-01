@@ -45,12 +45,14 @@ export default function SupportPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [token, setToken] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
       const e = data.session.user.email!;
       setEmail(e);
+      setToken(data.session.access_token);
 
       const [{ data: t }, { data: p }] = await Promise.all([
         supabase.from("support_tickets").select("*").eq("email", e).order("created_at", { ascending: false }),
@@ -66,17 +68,18 @@ export default function SupportPage() {
     if (!subject.trim() || !description.trim() || !email) return;
     setSubmitting(true);
     setSubmitError(null);
-    const { error: ticketErr } = await supabase.from("support_tickets").insert({
-      email, artist_name: artistName, subject: subject.trim(),
-      category, description: description.trim(), status: "open",
+    const res = await fetch("/api/support-ticket", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ artist_name: artistName, subject: subject.trim(), category, description: description.trim() }),
     });
-    if (ticketErr) {
+    if (!res.ok) {
       setSubmitError("Failed to submit your ticket. Please try again.");
       setSubmitting(false);
       return;
     }
     // Notify admin
-    await fetch("/api/notify", {
+    fetch("/api/notify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
