@@ -56,7 +56,7 @@ type Profile = {
   paypal_email: string | null;
   mobile_money_provider: string | null;
   mobile_money_number: string | null;
-  account_status: "active" | "suspended" | "inactive" | "takedown" | null;
+  account_status: "active" | "suspended" | "inactive" | "takedown" | "access_revoked" | null;
   plan: string | null;
   plan_status: string | null;
   created_at: string | null;
@@ -82,10 +82,11 @@ const STATUS_CFG = {
 };
 
 const ACCOUNT_CFG = {
-  active:    { label: "Active",    color: "text-emerald-400", bg: "bg-emerald-400/10 border-emerald-400/20", Icon: ShieldCheck },
-  inactive:  { label: "Inactive",  color: "text-yellow-400",  bg: "bg-yellow-400/10 border-yellow-400/20",  Icon: Clock       },
-  suspended: { label: "Suspended", color: "text-rose-400",    bg: "bg-rose-400/10 border-rose-400/20",      Icon: ShieldOff   },
-  takedown:  { label: "Takedown",  color: "text-rose-600",    bg: "bg-rose-600/10 border-rose-600/20",      Icon: ShieldOff   },
+  active:         { label: "Active",          color: "text-emerald-400", bg: "bg-emerald-400/10 border-emerald-400/20", Icon: ShieldCheck },
+  inactive:       { label: "Inactive",        color: "text-yellow-400",  bg: "bg-yellow-400/10 border-yellow-400/20",  Icon: Clock       },
+  access_revoked: { label: "Access Revoked",  color: "text-orange-400",  bg: "bg-orange-400/10 border-orange-400/20",  Icon: CreditCard  },
+  suspended:      { label: "Suspended",       color: "text-rose-400",    bg: "bg-rose-400/10 border-rose-400/20",      Icon: ShieldOff   },
+  takedown:       { label: "Takedown",        color: "text-rose-600",    bg: "bg-rose-600/10 border-rose-600/20",      Icon: ShieldOff   },
 };
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
@@ -159,15 +160,17 @@ export default function ArtistProfilePage() {
     if (!profile) return;
     setChangingStatus(true);
     await supabase.from("artist_profiles").update({ account_status: status }).eq("email", artistEmail);
-    const notifMap: Record<string, { title: string; body: string; type: "info" | "warning" | "error" }> = {
-      suspended: { title: "Account suspended",  body: "Your account has been suspended. Contact info@orinlabi.com if you believe this is a mistake.", type: "error" },
-      inactive:  { title: "Account inactive",   body: "Your account has been marked inactive. Contact us for more information.", type: "warning" },
-      takedown:  { title: "Releases under review", body: "Your releases have been flagged for review. Contact info@orinlabi.com for details.", type: "error" },
-      active:    { title: "Account reactivated", body: "Your account is now active again. Welcome back!", type: "info" },
+    const notifMap: Record<string, { title: string; body: string; type: "info" | "warning" | "error"; link: string }> = {
+      suspended:      { title: "Account suspended",        body: "Your account has been suspended. Contact info@orinlabi.com if you believe this is a mistake.", type: "error",   link: "/portal" },
+      inactive:       { title: "Account inactive",         body: "Your account has been marked inactive. Contact us for more information.",                       type: "warning", link: "/portal" },
+      takedown:       { title: "Releases under review",    body: "Your releases have been flagged for review. Contact info@orinlabi.com for details.",            type: "error",   link: "/portal" },
+      active:         { title: "Account reactivated",      body: "Your account is now active again. Welcome back!",                                               type: "info",    link: "/portal" },
+      access_revoked: { title: "Portal access restricted", body: "Your access to the artist portal has been temporarily restricted. Visit your billing page to restore access.", type: "warning", link: "/portal/billing?reason=access_revoked" },
     };
     const notif = notifMap[status];
     if (notif) {
-      await supabase.from("notifications").insert({ email: artistEmail, ...notif, link: "/portal" });
+      const { link, ...notifData } = notif;
+      await supabase.from("notifications").insert({ email: artistEmail, ...notifData, link });
     }
     setProfile((p) => p ? { ...p, account_status: status as Profile["account_status"] } : p);
     setChangingStatus(false);
@@ -437,7 +440,7 @@ export default function ArtistProfilePage() {
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
             <p className="text-white/35 text-[10px] uppercase tracking-widest font-bold mb-3">Account Control</p>
             <div className="space-y-2">
-              {(["active", "inactive", "suspended", "takedown"] as const).map((s) => {
+              {(["active", "inactive", "access_revoked", "suspended", "takedown"] as const).map((s) => {
                 const cfg = ACCOUNT_CFG[s];
                 const current = (profile?.account_status ?? "active") === s;
                 return (

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { PLANS, ADDONS, getPlan } from "@/lib/stripePlans";
-import { CheckCircle2, Zap, ExternalLink, Loader2, ArrowRight, Crown } from "lucide-react";
+import { CheckCircle2, Zap, ExternalLink, Loader2, ArrowRight, Crown, Lock } from "lucide-react";
 
 interface Profile {
   email: string;
@@ -23,8 +23,9 @@ export default function BillingPage() {
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [openPortal, setOpenPortal] = useState(false);
 
-  const justSubscribed = params.get("subscribed") === "1";
-  const newPlan        = params.get("plan");
+  const justSubscribed  = params.get("subscribed") === "1";
+  const newPlan         = params.get("plan");
+  const accessRevoked   = params.get("reason") === "access_revoked";
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
@@ -98,6 +99,21 @@ export default function BillingPage() {
         <h1 className="text-white font-bold text-2xl mb-1">Billing & Plan</h1>
         <p className="text-white/40 text-sm">Manage your subscription and add-ons.</p>
       </div>
+
+      {/* Access revoked notice */}
+      {accessRevoked && (
+        <div className="bg-orange-500/10 border border-orange-400/25 rounded-2xl p-5 flex items-start gap-3">
+          <Lock size={18} className="text-orange-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-orange-300 font-semibold text-sm mb-1">Portal access restricted</p>
+            <p className="text-white/50 text-xs leading-relaxed">
+              Your admin has temporarily restricted your access. Subscribe or contact{" "}
+              <a href="mailto:info@orinlabi.com" className="text-[#007bff] hover:underline">info@orinlabi.com</a>{" "}
+              to restore full access. You can still use messages, support, and your profile.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Success banner */}
       {justSubscribed && newPlan && (

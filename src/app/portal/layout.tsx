@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard, DollarSign, Megaphone, Wrench, FolderOpen,
   MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus, ShieldOff, Globe,
-  ImageIcon, Music2, CreditCard, BarChart3, Radio, CalendarDays, FileText,
+  ImageIcon, Music2, CreditCard, BarChart3, Radio, CalendarDays, FileText, Lock,
 } from "lucide-react";
 
 export const PORTAL_LANG_KEY = "orinlabi_portal_lang";
@@ -138,6 +138,17 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+// Pages accessible even when admin has revoked portal access.
+// Everything NOT in this list redirects to /portal/billing.
+const REVOKED_FREE_PATHS = [
+  "/portal/messages",
+  "/portal/support",
+  "/portal/notifications",
+  "/portal/profile",
+  "/portal/billing",
+  "/portal/login",
+];
+
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
@@ -148,6 +159,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const [counts, setCounts]             = useState<Counts>({ messages: 0, notifications: 0 });
   const [sidebarOpen, setSidebarOpen]   = useState(false);
   const [suspended, setSuspended]       = useState(false);
+  const [accessRevoked, setAccessRevoked] = useState(false);
   const [portalLang, setPortalLang]     = useState("en");
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [langFilter, setLangFilter]     = useState("");
@@ -308,6 +320,11 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         supabase.auth.signOut();
         return;
       }
+      if (data.account_status === "access_revoked") {
+        setAccessRevoked(true);
+      } else {
+        setAccessRevoked(false);
+      }
       if (data.artist_name) setArtistName(data.artist_name);
       if (data.artist_image_url) setArtistImage(data.artist_image_url);
     }
@@ -326,6 +343,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       clearInterval(poll);
     };
   }, [email]);
+
+  // Gate: when access is revoked, redirect blocked pages to billing.
+  // Free pages (messages, support, notifications, profile, billing) still work.
+  useEffect(() => {
+    if (!accessRevoked || pathname.startsWith("/portal/login")) return;
+    const isFree = REVOKED_FREE_PATHS.some((p) => pathname.startsWith(p));
+    if (!isFree) router.replace("/portal/billing?reason=access_revoked");
+  }, [accessRevoked, pathname, router]);
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -433,23 +458,27 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     : pathname.startsWith(item.href);
                   const badgeCount = item.badge === "messages" ? counts.messages
                     : item.badge === "notifications" ? counts.notifications : 0;
+                  const isLocked = accessRevoked && !REVOKED_FREE_PATHS.some((p) => item.href.startsWith(p));
                   return (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      href={isLocked ? "/portal/billing?reason=access_revoked" : item.href}
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
-                        active ? "text-white" : "text-white/40 hover:text-white/80 hover:bg-white/[0.04]"
+                        isLocked
+                          ? "text-white/20 cursor-not-allowed"
+                          : active ? "text-white" : "text-white/40 hover:text-white/80 hover:bg-white/[0.04]"
                       }`}
-                      style={active ? {
+                      style={active && !isLocked ? {
                         background: `${section.color}18`,
                         boxShadow: `inset 0 0 0 1px ${section.color}20`,
                         color: section.color,
                       } : undefined}
                     >
-                      <span className="flex-shrink-0">{item.icon}</span>
+                      <span className="flex-shrink-0">{isLocked ? <Lock size={14} className="text-white/15" /> : item.icon}</span>
                       <span className="flex-1 truncate">{item.label}</span>
-                      {badgeCount > 0 && <Badge n={badgeCount} />}
+                      {!isLocked && badgeCount > 0 && <Badge n={badgeCount} />}
+                      {isLocked && <Lock size={10} className="text-white/15 flex-shrink-0" />}
                     </Link>
                   );
                 })}
@@ -592,6 +621,20 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </header>
 
         <main className="flex-1 overflow-y-auto">
+          {accessRevoked && (
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-orange-400/20 bg-orange-400/[0.07]">
+              <Lock size={14} className="text-orange-400 flex-shrink-0" />
+              <p className="text-orange-300 text-xs flex-1 leading-snug">
+                Your portal access has been restricted — messages, support and profile still work.
+              </p>
+              <Link
+                href="/portal/billing?reason=access_revoked"
+                className="text-xs font-semibold text-orange-300 hover:text-white border border-orange-400/30 hover:border-orange-400/60 px-3 py-1 rounded-lg transition-colors flex-shrink-0 whitespace-nowrap"
+              >
+                Restore Access →
+              </Link>
+            </div>
+          )}
           {children}
         </main>
 
