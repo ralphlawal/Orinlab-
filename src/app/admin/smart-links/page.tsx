@@ -63,7 +63,6 @@ export default function AdminSmartLinksPage() {
   const { requestUnlock } = usePinGate();
   const [releases, setReleases] = useState<SmartLink[]>([]);
   const [loading, setLoading]   = useState(true);
-  const [token, setToken]       = useState("");
   const [panel, setPanel]       = useState<"none" | "create" | "edit">("none");
   const [editing, setEditing]   = useState<SmartLink | null>(null);
   const [form, setForm]         = useState<FormState>(blankForm());
@@ -75,9 +74,6 @@ export default function AdminSmartLinksPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setToken(data.session.access_token);
-    });
     loadReleases();
   }, []);
 
@@ -151,7 +147,7 @@ export default function AdminSmartLinksPage() {
           Object.entries(form.storeLinks).filter(([, v]) => v.trim())
         );
 
-        const body = {
+        const payload = {
           song_title:       form.songTitle.trim(),
           artist_name:      form.artistName.trim(),
           genre:            form.genre.trim(),
@@ -160,19 +156,24 @@ export default function AdminSmartLinksPage() {
           cover_art_url:    coverUrl || null,
           store_links:      Object.keys(filteredLinks).length ? filteredLinks : null,
           ditto_smart_link: form.dittoLink.trim() || null,
-          ...(panel === "edit" && editing ? { id: editing.id } : {}),
         };
 
-        const res = await fetch("/api/admin/smart-link", {
-          method: panel === "create" ? "POST" : "PATCH",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify(body),
-        });
+        let dbError: { message: string } | null = null;
 
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({ error: "Unknown error" }));
-          throw new Error(err.error ?? "Request failed");
+        if (panel === "create") {
+          const { error } = await supabase.from("releases").insert({
+            ...payload,
+            email:        "ralph@orinlabi.com",
+            status:       "approved",
+            submitted_at: new Date().toISOString(),
+          });
+          dbError = error;
+        } else if (panel === "edit" && editing) {
+          const { error } = await supabase.from("releases").update(payload).eq("id", editing.id).eq("email", "ralph@orinlabi.com");
+          dbError = error;
         }
+
+        if (dbError) throw new Error(dbError.message);
 
         await loadReleases();
         closePanel();
@@ -188,11 +189,7 @@ export default function AdminSmartLinksPage() {
     requestUnlock(async () => {
       setDeletingId(id);
       try {
-        await fetch("/api/admin/smart-link", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ id }),
-        });
+        await supabase.from("releases").delete().eq("id", id).eq("email", "ralph@orinlabi.com");
         await loadReleases();
       } finally {
         setDeletingId(null);
