@@ -163,21 +163,25 @@ export default async function ListenPage({
         <BlurredBg src={release.cover_art_url} />
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pb-12">
           <div className="w-full max-w-sm px-5 pt-10">
-            {/* Cover art */}
-            <div className="w-full aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-black/70 mb-7">
-              {release.cover_art_url ? (
-                <Image
-                  src={release.cover_art_url}
-                  alt={release.song_title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-[#007bff]/30 to-black flex items-center justify-center">
-                  <Music2 size={72} className="text-[#007bff]/40" />
-                </div>
-              )}
+            {/* Cover art with pulse rings */}
+            <div className="w-full aspect-square relative mb-7" style={{ padding: "12px" }}>
+              <div className="absolute inset-0 rounded-3xl border border-emerald-400/15 music-ring" />
+              <div className="absolute inset-0 rounded-3xl border border-emerald-400/8 music-ring-2" />
+              <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/70 relative">
+                {release.cover_art_url ? (
+                  <Image
+                    src={release.cover_art_url}
+                    alt={release.song_title}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-[#007bff]/30 to-black flex items-center justify-center">
+                    <Music2 size={72} className="text-[#007bff]/40" />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Track info */}
@@ -289,21 +293,27 @@ export default async function ListenPage({
 
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-start pb-12">
         <div className="w-full max-w-sm px-5 pt-10">
-          {/* Cover art */}
-          <div className="w-full aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-black/70 mb-7 relative">
-            {release.cover_art_url ? (
-              <Image
-                src={release.cover_art_url}
-                alt={release.song_title}
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-[#007bff]/30 to-black flex items-center justify-center">
-                <Music2 size={72} className="text-[#007bff]/40" />
-              </div>
-            )}
+          {/* Cover art with music pulse rings */}
+          <div className="w-full aspect-square relative mb-7" style={{ padding: "12px" }}>
+            {/* Pulse rings — outside the image */}
+            <div className="absolute inset-0 rounded-3xl border border-white/10 music-ring" />
+            <div className="absolute inset-0 rounded-3xl border border-white/6 music-ring-2" />
+            {/* Image */}
+            <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl shadow-black/70 relative">
+              {release.cover_art_url ? (
+                <Image
+                  src={release.cover_art_url}
+                  alt={release.song_title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#007bff]/30 to-black flex items-center justify-center">
+                  <Music2 size={72} className="text-[#007bff]/40" />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Track info */}
@@ -312,9 +322,22 @@ export default async function ListenPage({
               {release.song_title}
             </h1>
             <p className="text-white/55 text-sm mb-2">{artistLine}</p>
-            <p className="text-white/25 text-[10px] uppercase tracking-[0.18em]">
-              {release.release_type}{release.genre ? ` · ${release.genre}` : ""}
-            </p>
+            {/* Mini equalizer */}
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <div className="flex items-end gap-[2.5px] h-3" aria-hidden>
+                {["eq-a","eq-b","eq-c","eq-d","eq-e"].map((cls) => (
+                  <span key={cls} className={`eq-bar ${cls}`} style={{ background: "#D4A245", height: "50%", width: "2.5px" }} />
+                ))}
+              </div>
+              <p className="text-white/25 text-[10px] uppercase tracking-[0.18em]">
+                {release.release_type}{release.genre ? ` · ${release.genre}` : ""}
+              </p>
+              <div className="flex items-end gap-[2.5px] h-3" aria-hidden>
+                {["eq-e","eq-d","eq-c","eq-b","eq-a"].map((cls) => (
+                  <span key={cls} className={`eq-bar ${cls}`} style={{ background: "#D4A245", height: "50%", width: "2.5px" }} />
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Platform links */}

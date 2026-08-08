@@ -21,6 +21,23 @@ import {
   type FeatureCard, type WhyCard, type FaqItem,
 } from "@/lib/siteSettings";
 
+/* ── Shared decorative helpers ────────────────────────────────────────────── */
+
+function EqBars({ color = "#D4A245", bars = 7, heightPx = 32 }: { color?: string; bars?: number; heightPx?: number }) {
+  const cls = ["eq-a","eq-b","eq-c","eq-d","eq-e","eq-f","eq-g"];
+  return (
+    <div className="flex items-end gap-[3.5px]" style={{ height: heightPx }} aria-hidden>
+      {Array.from({ length: bars }, (_, i) => (
+        <span key={i} className={`eq-bar ${cls[i % cls.length]}`} style={{ background: color, height: "50%" }} />
+      ))}
+    </div>
+  );
+}
+
+function KenteStripe() {
+  return <div className="kente-stripe w-full" aria-hidden />;
+}
+
 type RealArtist = {
   artist_name: string;
   genre: string | null;
@@ -83,11 +100,14 @@ const getRealSpotlightArtists = unstable_cache(
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
   return (
-    <section className="relative min-h-screen flex overflow-hidden bg-[#050505] noise-overlay">
-      {/* Ambient blobs */}
-      <div className="absolute top-1/4 left-1/4 w-[700px] h-[700px] bg-[#007bff]/7 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/3 w-[450px] h-[450px] bg-violet-600/6 rounded-full blur-[110px] pointer-events-none" />
-      <div className="absolute top-2/3 left-1/2 w-[300px] h-[300px] bg-pink-600/5 rounded-full blur-[80px] pointer-events-none" />
+    <section className="relative min-h-screen flex overflow-hidden african-hero-bg noise-overlay">
+      {/* African geometric pattern overlay */}
+      <div className="absolute inset-0 afro-geo-bg opacity-[0.022] pointer-events-none" />
+      {/* Ambient blobs — warm gold + blue balance */}
+      <div className="absolute top-1/4 left-[15%] w-[600px] h-[600px] bg-[#D4A245]/5 rounded-full blur-[120px] pointer-events-none animate-blob" />
+      <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] bg-[#007bff]/6 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-0 right-1/3 w-[400px] h-[400px] bg-violet-600/5 rounded-full blur-[110px] pointer-events-none" />
+      <div className="absolute top-[60%] right-[20%] w-[280px] h-[280px] bg-[#C85A3A]/4 rounded-full blur-[80px] pointer-events-none" />
 
       {/* Subtle grid */}
       <div
@@ -102,10 +122,10 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
       <div className="relative z-10 flex-1 flex flex-col justify-center px-8 sm:px-12 lg:pl-16 xl:pl-24 pt-28 pb-24 lg:py-0 min-w-0">
         {/* Badge */}
         <div
-          className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-8 self-start"
+          className="inline-flex items-center gap-2.5 bg-[#D4A245]/10 border border-[#D4A245]/25 text-[#D4A245] text-[11px] font-bold px-4 py-2 rounded-full mb-8 self-start"
           style={{ animation: "fadeSlideUp 0.6s ease-out both" }}
         >
-          <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
+          <span className="w-1.5 h-1.5 bg-[#D4A245] rounded-full animate-pulse" />
           {s.badge || "African music, distributed globally"}
         </div>
 
@@ -115,7 +135,7 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.1s both" }}
         >
           <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">Release</span>
-          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-[#007bff]">unlimited</span>
+          <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-gold-gradient">unlimited</span>
           <span className="block text-[clamp(3.5rem,7.5vw,8rem)] text-white">music.</span>
         </h1>
 
@@ -163,6 +183,16 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
           >
             Artist Login
           </Link>
+        </div>
+
+        {/* Equalizer bars — music indicator */}
+        <div
+          className="flex items-center gap-3 mb-10"
+          style={{ animation: "fadeSlideUp 0.7s ease-out 0.4s both" }}
+        >
+          <EqBars color="#D4A245" bars={7} heightPx={28} />
+          <span className="text-white/20 text-[10px] uppercase tracking-[0.22em] font-semibold">Live</span>
+          <EqBars color="#007bff" bars={5} heightPx={22} />
         </div>
 
         {/* Social proof */}
@@ -233,7 +263,14 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
 
       {/* ── Right column — plan card (desktop only) ── */}
       <div className="hidden lg:flex flex-col justify-center pr-10 xl:pr-16 py-28 w-[440px] xl:w-[480px] flex-shrink-0 relative z-10">
-        <div className="relative bg-white/[0.04] backdrop-blur-md border border-white/[0.08] rounded-2xl p-7 overflow-hidden">
+        {/* Vinyl disc — decorative, behind card */}
+        <div className="absolute -top-16 -right-20 w-72 h-72 opacity-[0.07] pointer-events-none">
+          <div className="w-full h-full rounded-full animate-vinyl-slow"
+            style={{ background: "repeating-radial-gradient(circle at 50%, #1a1a1a 0px, #1a1a1a 10px, #242424 10px, #242424 13px, #1a1a1a 13px, #1a1a1a 23px, #242424 23px, #242424 26px, #1a1a1a 26px, #1a1a1a 36px)" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full" style={{ background: "linear-gradient(135deg, #D4A245, #C85A3A)" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#050504]" />
+        </div>
+        <div className="relative bg-white/[0.04] backdrop-blur-md border border-white/[0.08] rounded-2xl p-7 overflow-hidden card-3d">
           {/* Card glows */}
           <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#007bff]/10 rounded-full blur-[60px] pointer-events-none" />
           <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-violet-600/8 rounded-full blur-[50px] pointer-events-none" />
@@ -245,8 +282,8 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
           <div className="space-y-2.5 mb-6 relative z-10">
             {[
               { name: "Starter",  price: "$19",  period: "/yr", desc: "Unlimited releases · 1 artist",     color: "#007bff", popular: false },
-              { name: "Pro",      price: "$59",  period: "/yr", desc: "Release Protection · Publishing",   color: "#7c3aed", popular: true  },
-              { name: "Label 5",  price: "$109", period: "/yr", desc: "Up to 5 artists · Full suite",      color: "#f59e0b", popular: false },
+              { name: "Pro",      price: "$59",  period: "/yr", desc: "Release Protection · Publishing",   color: "#D4A245", popular: true  },
+              { name: "Label 5",  price: "$109", period: "/yr", desc: "Up to 5 artists · Full suite",      color: "#1E6B3F", popular: false },
             ].map((plan) => (
               <Link
                 key={plan.name}
@@ -308,12 +345,17 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
         </div>
       </div>
 
+      {/* Kente stripe at bottom of hero */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <KenteStripe />
+      </div>
+
       {/* Scroll chevron — desktop */}
-      <div className="absolute bottom-8 left-16 xl:left-24 text-white/20 animate-bounce-chevron hidden lg:block">
+      <div className="absolute bottom-10 left-16 xl:left-24 text-white/20 animate-bounce-chevron hidden lg:block">
         <ChevronDown size={22} />
       </div>
       {/* Scroll chevron — mobile */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/20 animate-bounce-chevron lg:hidden">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/20 animate-bounce-chevron lg:hidden">
         <ChevronDown size={20} />
       </div>
 
@@ -414,9 +456,9 @@ function Distribute() {
         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-px bg-white/[0.05] rounded-2xl overflow-hidden border border-white/[0.05]">
           {PLATFORM_GRID.map((p, i) => (
             <AnimateIn key={p.key} delay={i * 40} direction="fade">
-              <div className="flex flex-col items-center justify-center gap-3 py-7 px-3 bg-[#050505] hover:bg-white/[0.04] transition-all duration-300 group h-full">
+              <div className="flex flex-col items-center justify-center gap-3 py-7 px-3 bg-[#060504] hover:bg-white/[0.05] transition-all duration-300 group h-full card-3d cursor-default">
                 <PlatformIconCell platformKey={p.key} color={p.color} size={22} />
-                <span className="text-white/25 group-hover:text-white/60 text-[10px] font-medium transition-colors text-center leading-tight">{p.label}</span>
+                <span className="text-white/25 group-hover:text-white/65 text-[10px] font-semibold transition-colors text-center leading-tight">{p.label}</span>
               </div>
             </AnimateIn>
           ))}
@@ -652,7 +694,7 @@ function Grow({ items }: { items: FeatureCard[] }) {
             return (
               <AnimateIn key={i} delay={i * 60}>
                 <div
-                  className="group bg-[#050505] hover:bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 transition-all duration-300 hover:border-white/[0.12] hover:-translate-y-1 h-full relative overflow-hidden"
+                  className="group bg-[#060504] hover:bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 transition-all duration-300 hover:border-white/[0.14] h-full relative overflow-hidden card-3d"
                 >
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                     style={{ background: `radial-gradient(circle at top left, ${color}08, transparent 60%)` }} />
@@ -787,7 +829,7 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
                 <AnimateIn key={a.artist_name} delay={i * 70}>
                   <Link
                     href={`/artists/${encodeURIComponent(a.artist_name.trim())}`}
-                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 block"
+                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#D4A245]/30 rounded-2xl overflow-hidden block card-lift"
                   >
                     <div className="aspect-[3/4] relative bg-gradient-to-br from-[#007bff]/20 to-black overflow-hidden">
                       {img ? (
@@ -799,9 +841,9 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                       <div className="absolute inset-0 bg-[#007bff]/0 group-hover:bg-[#007bff]/8 transition-colors duration-300" />
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2 py-1">
-                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                        <span className="text-white/60 text-[9px] font-bold uppercase tracking-widest">Live</span>
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-[#D4A245]/20 rounded-full px-2.5 py-1">
+                        <EqBars color="#D4A245" bars={3} heightPx={10} />
+                        <span className="text-[#D4A245]/80 text-[9px] font-bold uppercase tracking-widest">Live</span>
                       </div>
                       <div className="absolute bottom-3 left-3 right-3">
                         <p className="text-white font-bold text-sm leading-tight truncate">{a.artist_name}</p>
@@ -842,16 +884,16 @@ function Testimonials({ items }: { items: Testimonial[] }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {items.map((t, i) => (
             <AnimateIn key={i} delay={i * 80}>
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 flex flex-col hover:border-white/[0.1] transition-all duration-300 hover:-translate-y-1 h-full group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#007bff]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 flex flex-col h-full group relative overflow-hidden card-3d">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#D4A245]/4 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 <div className="flex gap-0.5 mb-5 relative z-10">
                   {Array.from({ length: 5 }).map((_, j) => (
-                    <Star key={j} size={14} className="fill-[#007bff] text-[#007bff]" />
+                    <Star key={j} size={14} className="fill-[#D4A245] text-[#D4A245]" />
                   ))}
                 </div>
                 <p className="text-white/60 text-sm leading-relaxed flex-1 mb-6 relative z-10">&ldquo;{t.quote}&rdquo;</p>
                 <div className="flex items-center gap-3 relative z-10">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#007bff] to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4A245] to-[#C85A3A] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                     {t.name.charAt(0)}
                   </div>
                   <div>
@@ -894,28 +936,35 @@ function FAQ({ items }: { items: FaqItem[] }) {
 function CTA() {
   return (
     <section className="py-24 px-6 relative overflow-hidden">
+      {/* Kente stripe at top */}
+      <div className="absolute top-0 left-0 right-0"><KenteStripe /></div>
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[200px] bg-[#007bff]/10 rounded-full blur-[70px]" />
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[320px] h-[200px] bg-[#D4A245]/8 rounded-full blur-[70px]" />
+        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[280px] h-[160px] bg-[#007bff]/8 rounded-full blur-[60px]" />
       </div>
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <AnimateIn className="py-16 sm:py-24">
-          <p className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em] mb-5">Ready to release?</p>
+        <AnimateIn className="pt-6 pb-6">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <EqBars color="#D4A245" bars={5} heightPx={20} />
+            <p className="text-[#D4A245] text-[11px] font-bold uppercase tracking-[0.25em]">Ready to release?</p>
+            <EqBars color="#C85A3A" bars={5} heightPx={20} />
+          </div>
           <h2 className="text-[clamp(3rem,8vw,6rem)] font-bold text-white leading-[0.95] tracking-tight mb-4">
             Go live in<br />
             <span
               className="text-transparent bg-clip-text"
-              style={{ backgroundImage: "linear-gradient(90deg, #007bff, #7c3aed, #ec4899, #007bff)", backgroundSize: "300% auto", animation: "shimmer 5s linear infinite" }}
+              style={{ backgroundImage: "linear-gradient(90deg, #D4A245, #C85A3A, #007bff, #D4A245)", backgroundSize: "300% auto", animation: "shimmer 5s linear infinite" }}
             >
               under 48 hours.
             </span>
           </h2>
-          <p className="text-white/35 text-base max-w-sm mx-auto mb-10">
+          <p className="text-white/35 text-base max-w-sm mx-auto mb-10 leading-relaxed">
             Professional distribution for African artists going global. Plans from $19/year. Keep 100% of your royalties.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/pricing"
-              className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group animate-cta-glow"
-              style={{ background: "linear-gradient(135deg, #007bff, #7c3aed)" }}>
+              className="inline-flex items-center gap-2 text-white font-bold px-10 py-4 rounded-full text-base transition-all hover:gap-3 group animate-glow-gold"
+              style={{ background: "linear-gradient(135deg, #D4A245, #C85A3A)" }}>
               Get Started <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link href="/about" className="text-white/40 hover:text-white font-medium px-7 py-4 rounded-full border border-white/10 hover:border-white/30 transition-all duration-200 text-sm">
@@ -944,10 +993,15 @@ export default async function HomePage() {
       <Hero s={hero} artists={spotlightArtists} />
       <PlatformTicker />
       <Distribute />
+      <KenteStripe />
       <Stats />
+      <KenteStripe />
       <LiveGrowth />
+      <KenteStripe />
       <Monetize />
+      <KenteStripe />
       <Grow items={features} />
+      <KenteStripe />
       <Why items={why} />
       <ArtistSpotlight artists={spotlightArtists} />
       <Testimonials items={testimonials} />
