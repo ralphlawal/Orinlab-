@@ -20,6 +20,7 @@ import {
   type HeroSettings, type Testimonial,
   type FeatureCard, type WhyCard, type FaqItem,
 } from "@/lib/siteSettings";
+import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph } from "@/components/AfricanDecor";
 
 type RealArtist = {
   artist_name: string;
@@ -97,6 +98,11 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
           backgroundSize: "60px 60px",
         }}
       />
+
+      {/* African sun mandala — desktop only, behind plan card */}
+      <div className="hidden lg:block absolute right-[-80px] top-1/2 -translate-y-1/2 pointer-events-none z-0">
+        <AfricanSun size={600} opacity={0.07} className="animate-african-spin" />
+      </div>
 
       {/* ── Left column ── */}
       <div className="relative z-10 flex-1 flex flex-col justify-center px-8 sm:px-12 lg:pl-16 xl:pl-24 pt-28 pb-24 lg:py-0 min-w-0">
@@ -319,6 +325,9 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
         <ChevronDown size={20} />
       </div>
 
+      {/* Kente strip — hero bottom edge */}
+      <KenteStrip height={5} className="absolute bottom-0 left-0 right-0 z-20" />
+
       <style>{`
         @keyframes platformFloat {
           0%, 100% { transform: translateY(0px) }
@@ -394,11 +403,11 @@ const PLATFORM_GRID = [
 
 function Distribute() {
   return (
-    <section className="py-24 px-6 border-t border-white/[0.05]">
+    <section className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <AnimateIn>
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
+            <AdinkraGlyph size={18} />
             <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">01  Distribute</span>
           </div>
         </AnimateIn>
@@ -451,7 +460,9 @@ function Stats() {
     { to: 48,   suffix: "h",     label: "Average Go-Live Time", sub: "Most releases are live on all platforms within two business days." },
   ];
   return (
-    <section className="py-20 px-6 border-y border-white/[0.05] relative overflow-hidden">
+    <section className="relative overflow-hidden">
+      <KenteStrip height={5} />
+      <div className="py-20 px-6 relative">
       {/* Color pop */}
       <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-violet-600/8 rounded-full blur-[60px] pointer-events-none" />
 
@@ -466,6 +477,8 @@ function Stats() {
           </AnimateIn>
         ))}
       </div>
+      </div>
+      <KenteStrip height={5} />
     </section>
   );
 }
@@ -631,7 +644,7 @@ function Grow({ items }: { items: FeatureCard[] }) {
       <div className="max-w-6xl mx-auto relative z-10">
         <AnimateIn>
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
+            <AdinkraGlyph size={18} />
             <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">03  Grow</span>
           </div>
         </AnimateIn>
@@ -739,15 +752,27 @@ function Why({ items }: { items: WhyCard[] }) {
 /* ── Artist Spotlight ─────────────────────────────────────────────────────── */
 function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
   return (
-    <section className="py-24 px-6 border-t border-white/[0.05] bg-white/[0.01] relative overflow-hidden">
+    <section className="bg-white/[0.01] relative overflow-hidden">
+      <KenteStrip height={5} />
+      <div className="py-24 px-6 relative">
+      {/* Ambient glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[350px] h-[180px] bg-[#007bff]/8 rounded-full blur-[60px] pointer-events-none" />
+      {/* African sun mandala — centred in section background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-60">
+        <AfricanSun size={700} opacity={0.055} className="animate-african-spin" />
+      </div>
+      {/* Djembe illustration — right side, desktop only */}
+      <div className="hidden xl:block absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+        <DjembeArt size={110} opacity={0.18} />
+      </div>
+
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="flex items-center justify-between flex-wrap gap-4 mb-14">
           <div>
             <AnimateIn>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
-                <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">05  Our Artists</span>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#D4A017" }} />
+                <span className="text-[11px] font-bold uppercase tracking-[0.25em]" style={{ color: "#D4A017" }}>05  Our Artists</span>
               </div>
             </AnimateIn>
             <AnimateIn delay={80}>
@@ -821,6 +846,7 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
           </div>
         )}
       </div>
+      </div>
     </section>
   );
 }
@@ -829,13 +855,15 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
 function Testimonials({ items }: { items: Testimonial[] }) {
   if (items.length === 0) return null;
   return (
-    <section className="py-24 px-6 relative overflow-hidden">
+    <section className="relative overflow-hidden">
+      <KenteStrip height={5} />
+      <div className="py-24 px-6 relative">
       <div className="absolute top-0 right-0 w-[250px] h-[250px] bg-pink-500/8 rounded-full blur-[60px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-14">
           <AnimateIn>
             <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse" />
+              <AdinkraGlyph size={18} />
               <span className="text-[#007bff] text-[11px] font-bold uppercase tracking-[0.25em]">06  Trusted</span>
             </div>
           </AnimateIn>
@@ -869,6 +897,7 @@ function Testimonials({ items }: { items: Testimonial[] }) {
             </AnimateIn>
           ))}
         </div>
+      </div>
       </div>
     </section>
   );

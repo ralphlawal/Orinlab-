@@ -8,6 +8,10 @@
   --accent-emerald: #10B981;
   --accent-amber: #F59E0B;
   --accent-rose: #F43F5E;
+  /* African palette — decorative use only, never interactive */
+  --kente-gold: #D4A017;
+  --kente-green: #2A5C3F;
+  --kente-red: #8B1A1A;
 }
 
 @theme inline {
@@ -338,3 +342,11 @@ a:focus-visible,
 /* ─── Ticker pause on hover ──────────────────────────────────────────────────── */
 
 .ticker-wrap:hover .ticker-inner { animation-play-state: paused; }
+
+/* ─── African sun slow rotation ─────────────────────────────────────────────── */
+
+@keyframes african-sun-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-african-spin { animation: african-sun-spin 120s linear infinite; }

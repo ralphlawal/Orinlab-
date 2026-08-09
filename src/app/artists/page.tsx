@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Music, Globe, ArrowRight, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSetting, DEFAULT_ARTISTS_PAGE, type ArtistsPageSettings } from "@/lib/siteSettings";
+import { AfricanSun, KenteStrip, DjembeArt } from "@/components/AfricanDecor";
 
 export const revalidate = 60;
 
@@ -87,8 +88,12 @@ export default async function ArtistsPage() {
       {/* Hero */}
       <section className="relative pt-32 pb-20 px-4 text-center overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
+        {/* African sun mandala — background */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <AfricanSun size={650} opacity={0.06} className="animate-african-spin" />
+        </div>
         <div className="relative z-10 max-w-3xl mx-auto">
-          <p className="text-[#007bff] text-sm font-semibold uppercase tracking-widest mb-4">
+          <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: "#D4A017" }}>
             Our Artists
           </p>
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold text-white mb-6">
@@ -102,7 +107,9 @@ export default async function ArtistsPage() {
 
       {/* Stats */}
       {artists.length > 0 && (
-        <section className="py-16 px-4 border-y border-white/10">
+        <section className="relative">
+          <KenteStrip height={5} />
+          <div className="py-16 px-4">
           <div className="max-w-3xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold text-white mb-2">{artists.length}</div>
@@ -119,6 +126,8 @@ export default async function ArtistsPage() {
               <div className="text-white/40 text-sm uppercase tracking-wider">Countries</div>
             </div>
           </div>
+          </div>
+          <KenteStrip height={5} />
         </section>
       )}
 
@@ -261,8 +270,8 @@ export default async function ArtistsPage() {
 function EmptyState() {
   return (
     <div className="text-center py-24">
-      <div className="w-20 h-20 bg-[#007bff]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-        <Music size={36} className="text-[#007bff]/50" />
+      <div className="flex justify-center mb-6">
+        <DjembeArt size={72} opacity={0.55} />
       </div>
       <h3 className="text-white font-bold text-2xl mb-3">Roster Coming Soon</h3>
       <p className="text-white/40 max-w-sm mx-auto leading-relaxed">
