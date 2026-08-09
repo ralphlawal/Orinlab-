@@ -31,8 +31,6 @@ export default function GlobalTilt() {
     const cleanups: Array<() => void> = [];
 
     for (const el of els) {
-      el.style.willChange = "transform";
-
       const maxDeg = parseFloat(el.dataset.tiltStrength ?? "7");
 
       const onEnter = () => {
@@ -72,7 +70,6 @@ export default function GlobalTilt() {
         el.removeEventListener("mouseleave", onLeave);
         el.style.transform  = "";
         el.style.transition = "";
-        el.style.willChange = "";
       });
     }
 

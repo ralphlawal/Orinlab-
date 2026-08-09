@@ -132,11 +132,9 @@ export default async function ArtistsPage() {
               {artists.map((a) => {
                 const heroImg = a.profile_image_url ?? a.cover_art_url;
                 return (
+                <div key={a.artist_name} data-tilt data-tilt-strength="6" className="rounded-3xl">
                 <Link
-                  key={a.artist_name}
                   href={`/artists/${slugify(a.artist_name)}`}
-                  data-tilt
-                  data-tilt-strength="6"
                   className="group bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-[#007bff]/30 rounded-3xl overflow-hidden transition-all duration-300 block"
                 >
                   {/* Cover / avatar area */}
@@ -223,6 +221,7 @@ export default async function ArtistsPage() {
                     )}
                   </div>
                 </Link>
+                </div>
                 );
               })}
             </div>

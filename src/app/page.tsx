@@ -789,10 +789,9 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
               const img = a.profile_image_url ?? a.cover_art_url;
               return (
                 <AnimateIn key={a.artist_name} delay={i * 70}>
+                  <div data-tilt data-tilt-strength="6" className="rounded-2xl">
                   <Link
                     href={`/artists/${encodeURIComponent(a.artist_name.trim())}`}
-                    data-tilt
-                    data-tilt-strength="6"
                     className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 block"
                   >
                     <div className="aspect-[3/4] relative bg-gradient-to-br from-[#007bff]/20 to-black overflow-hidden">
@@ -815,6 +814,7 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
                       </div>
                     </div>
                   </Link>
+                  </div>
                 </AnimateIn>
               );
             })}
