@@ -20,7 +20,7 @@ import {
   type HeroSettings, type Testimonial,
   type FeatureCard, type WhyCard, type FaqItem,
 } from "@/lib/siteSettings";
-import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph } from "@/components/AfricanDecor";
+import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph, WovenBg, MudclothBg, KoraArt } from "@/components/AfricanDecor";
 
 type RealArtist = {
   artist_name: string;
@@ -98,6 +98,8 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
           backgroundSize: "60px 60px",
         }}
       />
+      {/* Woven-cloth texture layer */}
+      <WovenBg opacity={0.042} />
 
       {/* African sun mandala — desktop only, behind plan card */}
       <div className="hidden lg:block absolute right-[-80px] top-1/2 -translate-y-1/2 pointer-events-none z-0">
@@ -461,8 +463,9 @@ function Stats() {
   ];
   return (
     <section className="relative overflow-hidden">
-      <KenteStrip height={5} />
+      <KenteStrip height={8} className="animate-kente" />
       <div className="py-20 px-6 relative">
+      <MudclothBg opacity={0.055} />
       {/* Color pop */}
       <div className="absolute left-1/4 top-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-violet-600/8 rounded-full blur-[60px] pointer-events-none" />
 
@@ -478,7 +481,7 @@ function Stats() {
         ))}
       </div>
       </div>
-      <KenteStrip height={5} />
+      <KenteStrip height={8} className="animate-kente" />
     </section>
   );
 }
@@ -639,6 +642,7 @@ const FEATURE_META = [
 function Grow({ items }: { items: FeatureCard[] }) {
   return (
     <section className="py-24 px-6 border-t border-white/[0.05] bg-white/[0.01] relative overflow-hidden">
+      <MudclothBg opacity={0.05} />
       {/* Color pop */}
       <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-amber-500/8 rounded-full blur-[70px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
@@ -668,7 +672,7 @@ function Grow({ items }: { items: FeatureCard[] }) {
               <AnimateIn key={i} delay={i * 60}>
                 <div
                   data-tilt
-                  data-tilt-strength="7"
+                  data-tilt-strength="10"
                   className="group bg-[#050505] hover:bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 transition-all duration-300 hover:border-white/[0.12] h-full relative overflow-hidden"
                 >
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
@@ -700,6 +704,7 @@ const WHY_ICONS = [
 function Why({ items }: { items: WhyCard[] }) {
   return (
     <section className="py-24 px-6 relative overflow-hidden">
+      <WovenBg opacity={0.038} />
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
         <div>
           <AnimateIn>
@@ -761,8 +766,12 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-60">
         <AfricanSun size={700} opacity={0.055} className="animate-african-spin" />
       </div>
+      {/* Kora illustration — left side, desktop only */}
+      <div className="hidden xl:block absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none">
+        <KoraArt size={95} opacity={0.17} className="animate-african-float-3d" />
+      </div>
       {/* Djembe illustration — right side, desktop only */}
-      <div className="hidden xl:block absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+      <div className="hidden xl:block absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none animate-african-float-3d" style={{ animationDelay: "3.5s" }}>
         <DjembeArt size={110} opacity={0.18} />
       </div>
 
@@ -856,7 +865,7 @@ function Testimonials({ items }: { items: Testimonial[] }) {
   if (items.length === 0) return null;
   return (
     <section className="relative overflow-hidden">
-      <KenteStrip height={5} />
+      <KenteStrip height={8} className="animate-kente" />
       <div className="py-24 px-6 relative">
       <div className="absolute top-0 right-0 w-[250px] h-[250px] bg-pink-500/8 rounded-full blur-[60px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
@@ -929,6 +938,8 @@ function FAQ({ items }: { items: FaqItem[] }) {
 function CTA() {
   return (
     <section className="py-24 px-6 relative overflow-hidden">
+      <KenteStrip height={8} className="animate-kente absolute top-0 left-0 right-0 z-10" />
+      <WovenBg opacity={0.05} />
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[200px] bg-[#007bff]/10 rounded-full blur-[70px]" />
       </div>

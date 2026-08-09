@@ -343,10 +343,29 @@ a:focus-visible,
 
 .ticker-wrap:hover .ticker-inner { animation-play-state: paused; }
 
-/* ─── African sun slow rotation ─────────────────────────────────────────────── */
+/* ─── African decorative animations ─────────────────────────────────────────── */
 
+/* Sun mandala: slow spin with a gentle 3D perspective wobble */
 @keyframes african-sun-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  0%   { transform: perspective(900px) rotate(0deg)   rotateX(0deg); }
+  25%  { transform: perspective(900px) rotate(90deg)  rotateX(14deg); }
+  50%  { transform: perspective(900px) rotate(180deg) rotateX(0deg); }
+  75%  { transform: perspective(900px) rotate(270deg) rotateX(-11deg); }
+  100% { transform: perspective(900px) rotate(360deg) rotateX(0deg); }
 }
 .animate-african-spin { animation: african-sun-spin 120s linear infinite; }
+
+/* Kente strip: slides pattern horizontally like weaving-in-motion */
+@keyframes kente-shift {
+  from { background-position-x: 0; }
+  to   { background-position-x: 100px; }
+}
+.animate-kente { animation: kente-shift 6s linear infinite; }
+
+/* Decorative instrument illustrations: gentle 3D float */
+@keyframes african-float-3d {
+  0%, 100% { transform: perspective(600px) translateY(0px)   rotateX(0deg)  rotateY(0deg); }
+  33%       { transform: perspective(600px) translateY(-16px) rotateX(7deg)  rotateY(5deg); }
+  66%       { transform: perspective(600px) translateY(-8px)  rotateX(-5deg) rotateY(-7deg); }
+}
+.animate-african-float-3d { animation: african-float-3d 7s ease-in-out infinite; }

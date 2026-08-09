@@ -7,6 +7,22 @@ const V = "#2A5C3F"; // Forest Green
 const R = "#8B1A1A"; // Deep Red
 const K = "#0A0A08"; // Near-black
 
+// Pre-encoded SVG data URI for MudclothBg — computed once at module load
+const MUDCLOTH_URI = (() => {
+  const svg =
+    '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">' +
+    '<polygon points="30,3 57,30 30,57 3,30" fill="none" stroke="#D4A017" stroke-width="1.5"/>' +
+    '<line x1="3" y1="30" x2="57" y2="30" stroke="#D4A017" stroke-width="0.8"/>' +
+    '<line x1="30" y1="3" x2="30" y2="57" stroke="#D4A017" stroke-width="0.8"/>' +
+    '<polygon points="0,0 14,0 0,14" fill="#D4A017" fill-opacity="0.55"/>' +
+    '<polygon points="60,0 46,0 60,14" fill="#D4A017" fill-opacity="0.55"/>' +
+    '<polygon points="0,60 14,60 0,46" fill="#D4A017" fill-opacity="0.55"/>' +
+    '<polygon points="60,60 46,60 60,46" fill="#D4A017" fill-opacity="0.55"/>' +
+    '<circle cx="30" cy="30" r="3.5" fill="#D4A017" fill-opacity="0.65"/>' +
+    '</svg>';
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+})();
+
 // Computes a pie-slice SVG path from center (cx,cy) to radius r,
 // spanning from angle a0 to a1 (degrees, clockwise from 3 o'clock).
 function arcSeg(
@@ -235,5 +251,117 @@ export function AfricanGeoBg({
         opacity,
       }}
     />
+  );
+}
+
+/**
+ * Woven-fabric CSS texture — overlapping gold horizontal lines and green
+ * vertical lines create a crosshatch that evokes hand-woven Kente cloth.
+ * Use as `absolute inset-0` at 0.04–0.08 opacity.
+ */
+export function WovenBg({
+  opacity = 0.06,
+  className = "",
+}: {
+  opacity?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`absolute inset-0 pointer-events-none ${className}`}
+      style={{
+        backgroundImage: [
+          "repeating-linear-gradient(0deg, transparent 0px, transparent 14px, rgba(212,160,23,0.6) 14px, rgba(212,160,23,0.6) 15px)",
+          "repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(42,92,63,0.5) 14px, rgba(42,92,63,0.5) 15px)",
+        ].join(", "),
+        opacity,
+      }}
+    />
+  );
+}
+
+/**
+ * Malian mud-cloth (bogolan) geometric pattern — diamond + cross + corner
+ * triangles tiling at 60 px. Use as `absolute inset-0` at 0.04–0.07 opacity.
+ */
+export function MudclothBg({
+  opacity = 0.05,
+  className = "",
+}: {
+  opacity?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`absolute inset-0 pointer-events-none ${className}`}
+      style={{
+        backgroundImage: MUDCLOTH_URI,
+        backgroundSize: "60px 60px",
+        opacity,
+      }}
+    />
+  );
+}
+
+/**
+ * West African kora (bridge harp) silhouette — 21-string calabash harp
+ * native to the Mande people. Use as a floating decorative illustration.
+ */
+export function KoraArt({
+  size = 120,
+  opacity = 1,
+  className = "",
+}: {
+  size?: number;
+  opacity?: number;
+  className?: string;
+}) {
+  // viewBox 0 0 100 180 — aspect 1:1.8
+  return (
+    <svg
+      width={size}
+      height={size * 1.8}
+      viewBox="0 0 100 180"
+      aria-hidden="true"
+      className={className}
+      style={{ opacity, pointerEvents: "none" }}
+    >
+      {/* Gourd body */}
+      <ellipse cx="50" cy="142" rx="46" ry="36" fill={V} />
+      {/* Gourd soundboard (skin) */}
+      <ellipse cx="50" cy="136" rx="35" ry="25" fill={K} fillOpacity="0.75" />
+      {/* Decorative ring on gourd */}
+      <ellipse cx="50" cy="142" rx="31" ry="19" fill="none" stroke={G} strokeWidth="1.2" opacity="0.45" />
+
+      {/* Neck — runs through centre from top to gourd */}
+      <rect x="46" y="4" width="8" height="150" rx="3" fill={R} />
+
+      {/* Bridge stick — horizontal bar resting on gourd */}
+      <rect x="16" y="105" width="68" height="5" rx="2" fill={G} />
+
+      {/* Left set of strings — fan from neck to bridge */}
+      <line x1="46" y1="18" x2="20" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      <line x1="46" y1="33" x2="26" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      <line x1="46" y1="48" x2="32" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      <line x1="46" y1="63" x2="38" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      {/* Centre string */}
+      <line x1="50" y1="12" x2="50" y2="105" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      {/* Right set of strings */}
+      <line x1="54" y1="18" x2="80" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      <line x1="54" y1="33" x2="74" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      <line x1="54" y1="48" x2="68" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+      <line x1="54" y1="63" x2="62" y2="107" stroke={G} strokeWidth="1.1" opacity="0.7" />
+
+      {/* Tuning rings on neck */}
+      <rect x="44" y="22" width="12" height="4" rx="2" fill={G} />
+      <rect x="44" y="42" width="12" height="4" rx="2" fill={G} />
+      <rect x="44" y="62" width="12" height="4" rx="2" fill={G} />
+      <rect x="44" y="82" width="12" height="4" rx="2" fill={G} />
+
+      {/* Bottom rim */}
+      <ellipse cx="50" cy="178" rx="18" ry="5" fill={G} opacity="0.5" />
+    </svg>
   );
 }
