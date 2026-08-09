@@ -211,7 +211,9 @@ export default async function ListenPage({
                       href={release.presave_url!}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3.5 w-full rounded-2xl px-4 py-3.5 transition-all duration-150 hover:scale-[1.015] active:scale-[0.985]"
+                      data-tilt
+                      data-tilt-strength="8"
+                      className="flex items-center gap-3.5 w-full rounded-2xl px-4 py-3.5 transition-all duration-150 active:scale-[0.98]"
                       style={{
                         background: `${platform.color}12`,
                         border: `1px solid ${platform.color}28`,
@@ -332,7 +334,9 @@ export default async function ListenPage({
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3.5 w-full rounded-2xl px-4 py-3.5 transition-all duration-150 hover:scale-[1.015] active:scale-[0.985]"
+                      data-tilt
+                      data-tilt-strength="8"
+                      className="flex items-center gap-3.5 w-full rounded-2xl px-4 py-3.5 transition-all duration-150 active:scale-[0.98]"
                       style={{
                         background: `${platform.color}12`,
                         border: `1px solid ${platform.color}28`,

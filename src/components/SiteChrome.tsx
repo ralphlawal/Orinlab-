@@ -5,6 +5,7 @@ import Navbar from "./Navbar";
 import Footer from "./Footer";
 import CookieBanner from "./CookieBanner";
 import ScrollToTop from "./ScrollToTop";
+import GlobalTilt from "./GlobalTilt";
 
 // Routes that should render with no navbar, footer, or banners
 const STANDALONE_PREFIXES = ["/presave/", "/listen/"];
@@ -19,6 +20,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
 
   return (
     <>
+      <GlobalTilt />
       <ScrollToTop />
       <Navbar />
       <main id="main-content" className="flex-1">{children}</main>

@@ -251,7 +251,9 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
               <Link
                 key={plan.name}
                 href="/pricing"
-                className="flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 hover:-translate-y-px"
+                data-tilt
+                data-tilt-strength="5"
+                className="flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200"
                 style={{
                   borderColor: plan.popular ? `${plan.color}35` : "rgba(255,255,255,0.06)",
                   background: plan.popular ? `${plan.color}0c` : "rgba(255,255,255,0.01)",
@@ -535,7 +537,7 @@ function LiveGrowth() {
             { value: "$14K",  label: "Paid to artists",      sub: "in royalties since launch", color: "#FC3C44" },
           ].map((s, i) => (
             <AnimateIn key={s.label} delay={i * 70}>
-              <div className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 rounded-xl p-5 hover:-translate-y-0.5">
+              <div data-tilt data-tilt-strength="5" className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 rounded-xl p-5">
                 <p
                   className="text-[clamp(1.6rem,4vw,2.2rem)] font-bold leading-none mb-1"
                   style={{ color: s.color, textShadow: `0 0 20px ${s.color}50` }}
@@ -652,7 +654,9 @@ function Grow({ items }: { items: FeatureCard[] }) {
             return (
               <AnimateIn key={i} delay={i * 60}>
                 <div
-                  className="group bg-[#050505] hover:bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 transition-all duration-300 hover:border-white/[0.12] hover:-translate-y-1 h-full relative overflow-hidden"
+                  data-tilt
+                  data-tilt-strength="7"
+                  className="group bg-[#050505] hover:bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 transition-all duration-300 hover:border-white/[0.12] h-full relative overflow-hidden"
                 >
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                     style={{ background: `radial-gradient(circle at top left, ${color}08, transparent 60%)` }} />
@@ -716,7 +720,7 @@ function Why({ items }: { items: WhyCard[] }) {
         <div className="grid sm:grid-cols-2 gap-4">
           {items.map((r, i) => (
             <AnimateIn key={i} delay={i * 80} direction={i % 2 === 0 ? "left" : "right"}>
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-[#007bff]/25 transition-all duration-300 h-full group relative overflow-hidden">
+              <div data-tilt data-tilt-strength="7" className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 hover:border-[#007bff]/25 transition-all duration-300 h-full group relative overflow-hidden">
                 <div className="absolute inset-0 bg-[#007bff]/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 <div className="w-9 h-9 bg-[#007bff]/10 rounded-lg flex items-center justify-center text-[#007bff] mb-4 group-hover:scale-110 transition-transform duration-300 relative z-10">
                   {WHY_ICONS[i % WHY_ICONS.length]}
@@ -787,7 +791,9 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
                 <AnimateIn key={a.artist_name} delay={i * 70}>
                   <Link
                     href={`/artists/${encodeURIComponent(a.artist_name.trim())}`}
-                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 block"
+                    data-tilt
+                    data-tilt-strength="6"
+                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 block"
                   >
                     <div className="aspect-[3/4] relative bg-gradient-to-br from-[#007bff]/20 to-black overflow-hidden">
                       {img ? (
@@ -842,7 +848,7 @@ function Testimonials({ items }: { items: Testimonial[] }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {items.map((t, i) => (
             <AnimateIn key={i} delay={i * 80}>
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 flex flex-col hover:border-white/[0.1] transition-all duration-300 hover:-translate-y-1 h-full group relative overflow-hidden">
+              <div data-tilt data-tilt-strength="6" className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-7 flex flex-col hover:border-white/[0.1] transition-all duration-300 h-full group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#007bff]/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 <div className="flex gap-0.5 mb-5 relative z-10">
                   {Array.from({ length: 5 }).map((_, j) => (
