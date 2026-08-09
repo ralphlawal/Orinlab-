@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Music, Globe, ArrowRight, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSetting, DEFAULT_ARTISTS_PAGE, type ArtistsPageSettings } from "@/lib/siteSettings";
-import { AfricanSun, KenteStrip, DjembeArt, WovenBg, KoraArt } from "@/components/AfricanDecor";
+import { AfricanVinyl, KenteStrip, DjembeArt, WovenBg, KoraArt, FloatingNotes } from "@/components/AfricanDecor";
 import { PlayButton } from "@/components/PlayButton";
 
 export const revalidate = 60;
@@ -104,10 +104,12 @@ export default async function ArtistsPage() {
       <section className="relative pt-32 pb-20 px-4 text-center overflow-hidden">
         <WovenBg opacity={0.04} />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[#007bff]/8 rounded-full blur-[100px] pointer-events-none" />
-        {/* African sun mandala — background */}
+        {/* African vinyl medallion — hero background */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <AfricanSun size={650} opacity={0.06} className="animate-african-spin" />
+          <AfricanVinyl size={580} opacity={0.12} className="animate-african-spin" />
         </div>
+        {/* Floating notes */}
+        <FloatingNotes color="#D4A017" />
         {/* Kora illustration — left side, desktop */}
         <div className="hidden xl:block absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none">
           <KoraArt size={88} opacity={0.16} className="animate-african-float-3d" />

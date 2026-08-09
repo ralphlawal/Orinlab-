@@ -20,7 +20,7 @@ import {
   type HeroSettings, type Testimonial,
   type FeatureCard, type WhyCard, type FaqItem,
 } from "@/lib/siteSettings";
-import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph, WovenBg, MudclothBg, KoraArt, WaveformDecor } from "@/components/AfricanDecor";
+import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph, WovenBg, MudclothBg, KoraArt, WaveformDecor, AfricanVinyl, FloatingNotes } from "@/components/AfricanDecor";
 import { PlayButton } from "@/components/PlayButton";
 
 type RealArtist = {
@@ -126,15 +126,18 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
         }}
       />
       {/* Woven-cloth texture layer */}
-      <WovenBg opacity={0.042} />
+      <WovenBg opacity={0.07} />
 
-      {/* African sun mandala — desktop only, behind plan card */}
-      <div className="hidden lg:block absolute right-[-80px] top-1/2 -translate-y-1/2 pointer-events-none z-0">
-        <AfricanSun size={600} opacity={0.07} className="animate-african-spin" />
+      {/* AfricanVinyl medallion — fully visible, behind plan card */}
+      <div className="hidden lg:block absolute right-[20px] top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-20 animate-african-spin" style={{ filter: "blur(0.5px)" }}>
+        <AfricanVinyl size={540} opacity={1} />
       </div>
 
+      {/* Floating music notes — hero atmosphere */}
+      <FloatingNotes color="#D4A017" className="z-0" />
+
       {/* ── Left column ── */}
-      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 sm:px-12 lg:pl-16 xl:pl-24 pt-28 pb-24 lg:py-0 min-w-0">
+      <div className="relative z-10 flex-1 flex flex-col justify-center px-8 sm:px-12 lg:pl-16 xl:pl-24 pt-28 pb-24 lg:pt-20 lg:pb-0 min-w-0">
         {/* Badge */}
         <div
           className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] text-white/60 text-[11px] font-semibold px-4 py-2 rounded-full mb-8 self-start"
@@ -794,10 +797,12 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
       <div className="py-24 px-6 relative">
       {/* Ambient glow */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[350px] h-[180px] bg-[#007bff]/8 rounded-full blur-[60px] pointer-events-none" />
-      {/* African sun mandala — centred in section background */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-60">
-        <AfricanSun size={700} opacity={0.055} className="animate-african-spin" />
+      {/* African vinyl medallion — centre background art */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <AfricanVinyl size={680} opacity={0.09} className="animate-african-spin" />
       </div>
+      {/* Floating notes */}
+      <FloatingNotes color="#D4A017" className="z-0" />
       {/* Kora illustration — left side, desktop only */}
       <div className="hidden xl:block absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none">
         <KoraArt size={95} opacity={0.17} className="animate-african-float-3d" />

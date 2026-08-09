@@ -306,6 +306,161 @@ export function MudclothBg({
 }
 
 /**
+ * Large African shield / vinyl medallion — five concentric rings of
+ * alternating Kente colour segments, growing denser toward the outer edge.
+ * Designed to sit behind the hero plan card as dominant background art.
+ */
+export function AfricanVinyl({
+  size = 700,
+  opacity = 0.14,
+  className = "",
+}: {
+  size?: number;
+  opacity?: number;
+  className?: string;
+}) {
+  const cx = size / 2, cy = size / 2;
+
+  // Ring boundary radii (as fraction of half-size)
+  const r1 = size * 0.48;  // outermost ring outer edge
+  const m1 = size * 0.40;  // ring 1 inner (mask)
+  const m2 = size * 0.30;  // ring 2 inner
+  const m3 = size * 0.195; // ring 3 inner
+  const m4 = size * 0.105; // ring 4 inner / center outer
+  const rc = size * 0.07;  // center dot
+  const ri = size * 0.036; // center hole
+
+  const BG = "#050505";
+  const b  = -90; // start angle
+
+  // Ring 1 — 12 wide slices, step=30°
+  const C12 = [G, K, R, V, G, K, R, V, G, K, R, V];
+  // Ring 2 — 18 slices, step=20°, offset 10°
+  const C18 = [G, K, G, R, G, K, G, V, G, K, G, R, G, K, G, V, G, K];
+  // Ring 3 — 24 slices, step=15°, offset
+  const C24 = [G, V, K, R, G, K, G, R, V, K, G, R, G, V, K, G, R, K, G, V, G, K, R, G];
+  // Ring 4 — 36 slices, step=10°, densest
+  const C36 = [G, K, G, K, R, K, G, K, G, V, G, K, G, K, R, K, G, K, V, K, G, K, G, K, R, K, G, V, G, K, G, K, G, V, R, K];
+
+  // Stroke rings for extra detail
+  const strokes = [m1 * 0.995, m2 * 0.995, m3 * 0.995, m4 * 0.995];
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-hidden="true"
+      className={className}
+      style={{ opacity, pointerEvents: "none" }}
+    >
+      {/* Outer accent ring stroke */}
+      <circle cx={cx} cy={cy} r={r1 * 1.01} fill="none" stroke={G} strokeWidth={size * 0.006} opacity="0.35" />
+
+      {/* Ring 1 — 12 segments */}
+      {C12.map((c, i) => (
+        <path key={`v1-${i}`} d={arcSeg(cx, cy, r1, b + i * 30, b + (i + 1) * 30)} fill={c} />
+      ))}
+      <circle cx={cx} cy={cy} r={m1} fill={BG} />
+
+      {/* Ring 2 — 18 segments, 10° offset */}
+      {C18.map((c, i) => (
+        <path key={`v2-${i}`} d={arcSeg(cx, cy, m1, b + 10 + i * 20, b + 10 + (i + 1) * 20)} fill={c} />
+      ))}
+      <circle cx={cx} cy={cy} r={m2} fill={BG} />
+
+      {/* Ring 3 — 24 segments */}
+      {C24.map((c, i) => (
+        <path key={`v3-${i}`} d={arcSeg(cx, cy, m2, b + i * 15, b + (i + 1) * 15)} fill={c} />
+      ))}
+      <circle cx={cx} cy={cy} r={m3} fill={BG} />
+
+      {/* Ring 4 — 36 segments, densest */}
+      {C36.map((c, i) => (
+        <path key={`v4-${i}`} d={arcSeg(cx, cy, m3, b + i * 10, b + (i + 1) * 10)} fill={c} />
+      ))}
+      <circle cx={cx} cy={cy} r={m4} fill={BG} />
+
+      {/* Divider strokes for crisp ring edges */}
+      {strokes.map((r, i) => (
+        <circle key={`sv-${i}`} cx={cx} cy={cy} r={r} fill="none" stroke={BG} strokeWidth={size * 0.004} />
+      ))}
+
+      {/* Centre gold dot with hole */}
+      <circle cx={cx} cy={cy} r={rc} fill={G} />
+      <circle cx={cx} cy={cy} r={ri} fill={BG} />
+
+      {/* Cardinal accent points (12/3/6/9 o'clock) */}
+      {[0, 90, 180, 270].map((deg) => {
+        const rad = (deg - 90) * Math.PI / 180;
+        return (
+          <circle
+            key={deg}
+            cx={cx + r1 * 1.005 * Math.cos(rad)}
+            cy={cy + r1 * 1.005 * Math.sin(rad)}
+            r={size * 0.018}
+            fill={G}
+            opacity="0.7"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+/**
+ * Floating music note symbols — static positions with CSS animations so they
+ * drift upward and fade without any client-side JS (SSR-safe).
+ */
+const NOTES_DATA = [
+  { s: "♪", x:  8, b: 12, sz: 20, dur: 4.5, del: 0   },
+  { s: "♫", x: 22, b: 28, sz: 13, dur: 5.8, del: 1.3 },
+  { s: "♩", x: 42, b:  8, sz: 22, dur: 3.9, del: 2.1 },
+  { s: "♪", x: 63, b: 22, sz: 15, dur: 6.2, del: 0.7 },
+  { s: "♫", x: 80, b: 14, sz: 19, dur: 4.8, del: 3.5 },
+  { s: "♩", x: 14, b: 38, sz: 16, dur: 5.4, del: 1.9 },
+  { s: "♪", x: 52, b: 18, sz: 12, dur: 3.7, del: 4.2 },
+  { s: "♫", x: 72, b: 32, sz: 24, dur: 6.8, del: 2.8 },
+  { s: "♩", x: 32, b:  6, sz: 14, dur: 4.1, del: 5.0 },
+  { s: "♪", x: 90, b: 20, sz: 17, dur: 5.6, del: 1.5 },
+  { s: "♫", x: 28, b: 45, sz: 20, dur: 3.5, del: 3.8 },
+  { s: "♩", x: 60, b: 10, sz: 11, dur: 7.0, del: 0.4 },
+];
+
+export function FloatingNotes({
+  color = G,
+  className = "",
+}: {
+  color?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}
+    >
+      {NOTES_DATA.map((n, i) => (
+        <span
+          key={i}
+          style={{
+            position: "absolute",
+            left: `${n.x}%`,
+            bottom: `${n.b}%`,
+            fontSize: `${n.sz}px`,
+            color,
+            animation: `float-note ${n.dur}s ${n.del}s ease-in-out infinite`,
+            opacity: 0,
+            userSelect: "none",
+          }}
+        >
+          {n.s}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Animated equaliser / waveform bars — evokes a live audio visualisation.
  * Each bar has its own rhythm, giving an organic polyrhythmic feel.
  */

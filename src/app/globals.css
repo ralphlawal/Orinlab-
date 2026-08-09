@@ -368,6 +368,14 @@ a:focus-visible,
   50%       { height: 100%; }
 }
 
+/* Floating music notes — drift upward and fade */
+@keyframes float-note {
+  0%   { transform: translateY(0) rotate(-8deg); opacity: 0; }
+  12%  { opacity: 0.7; }
+  80%  { opacity: 0.45; }
+  100% { transform: translateY(-100px) rotate(14deg); opacity: 0; }
+}
+
 /* Decorative instrument illustrations: gentle 3D float */
 @keyframes african-float-3d {
   0%, 100% { transform: perspective(600px) translateY(0px)   rotateX(0deg)  rotateY(0deg); }
