@@ -20,7 +20,8 @@ import {
   type HeroSettings, type Testimonial,
   type FeatureCard, type WhyCard, type FaqItem,
 } from "@/lib/siteSettings";
-import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph, WovenBg, MudclothBg, KoraArt } from "@/components/AfricanDecor";
+import { AfricanSun, KenteStrip, DjembeArt, AdinkraGlyph, WovenBg, MudclothBg, KoraArt, WaveformDecor } from "@/components/AfricanDecor";
+import { PlayButton } from "@/components/PlayButton";
 
 type RealArtist = {
   artist_name: string;
@@ -29,14 +30,31 @@ type RealArtist = {
   song_title: string | null;
   cover_art_url: string | null;
   profile_image_url: string | null;
+  release_id: string;
+  store_links: Record<string, string> | null;
+  spotify_artist_id: string | null;
 };
+
+function getSpotifyEmbed(
+  storeLinks: Record<string, string> | null,
+  spotifyArtistId: string | null
+): string | null {
+  const trackUrl = storeLinks?.spotify;
+  if (trackUrl) {
+    const trackId = trackUrl.match(/\/track\/([a-zA-Z0-9]+)/)?.[1];
+    if (trackId) return `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`;
+  }
+  if (spotifyArtistId)
+    return `https://open.spotify.com/embed/artist/${spotifyArtistId}?utm_source=generator&theme=0`;
+  return null;
+}
 
 const getRealSpotlightArtists = unstable_cache(
   async (): Promise<RealArtist[]> => {
     try {
       const { data } = await supabase
         .from("releases")
-        .select("artist_name,genre,country,song_title,cover_art_url,email")
+        .select("id,artist_name,genre,country,song_title,cover_art_url,store_links,email")
         .eq("status", "approved")
         .order("submitted_at", { ascending: false });
 
@@ -51,14 +69,20 @@ const getRealSpotlightArtists = unstable_cache(
       });
 
       const emails = unique.map((a) => a.email).filter(Boolean);
-      let photoMap: Record<string, string | null> = {};
+      type PEntry = { img: string | null; spotify_artist_id: string | null };
+      let photoMap: Record<string, PEntry> = {};
       if (emails.length) {
         const { data: profiles } = await supabase
           .from("artist_profiles")
-          .select("email,artist_image_url")
+          .select("email,artist_image_url,spotify_artist_id")
           .in("email", emails);
         if (profiles) {
-          for (const p of profiles) photoMap[p.email] = p.artist_image_url ?? null;
+          for (const p of profiles) {
+            photoMap[p.email] = {
+              img: p.artist_image_url ?? null,
+              spotify_artist_id: p.spotify_artist_id ?? null,
+            };
+          }
         }
       }
 
@@ -69,7 +93,10 @@ const getRealSpotlightArtists = unstable_cache(
           country: a.country ?? null,
           song_title: a.song_title ?? null,
           cover_art_url: a.cover_art_url ?? null,
-          profile_image_url: photoMap[a.email] ?? null,
+          profile_image_url: photoMap[a.email]?.img ?? null,
+          release_id: a.id,
+          store_links: (a.store_links as Record<string, string> | null) ?? null,
+          spotify_artist_id: photoMap[a.email]?.spotify_artist_id ?? null,
         }))
         .filter((a) => a.profile_image_url !== null)
         .slice(0, 5);
@@ -129,11 +156,16 @@ function Hero({ s, artists }: { s: HeroSettings; artists: RealArtist[] }) {
 
         {/* Subheadline */}
         <p
-          className="text-white/50 text-base sm:text-lg leading-relaxed mb-8 max-w-lg"
+          className="text-white/50 text-base sm:text-lg leading-relaxed mb-5 max-w-lg"
           style={{ animation: "fadeSlideUp 0.7s ease-out 0.2s both" }}
         >
           {s.subheadline || "Upload to every platform, access industry tools & keep 100% of your royalties. Stay independent."}
         </p>
+
+        {/* Waveform decoration — music pulse */}
+        <div className="mb-8" style={{ animation: "fadeSlideUp 0.7s ease-out 0.25s both" }}>
+          <WaveformDecor bars={28} height={36} opacity={0.35} />
+        </div>
 
         {/* Feature bullets — 2×2 grid */}
         <div
@@ -826,7 +858,7 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
                   <div data-tilt data-tilt-strength="6" className="rounded-2xl">
                   <Link
                     href={`/artists/${encodeURIComponent(a.artist_name.trim())}`}
-                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#007bff]/35 rounded-2xl overflow-hidden transition-all duration-300 block"
+                    className="group relative bg-white/[0.03] border border-white/[0.06] hover:border-[#D4A017]/40 rounded-2xl overflow-hidden transition-all duration-300 block"
                   >
                     <div className="aspect-[3/4] relative bg-gradient-to-br from-[#007bff]/20 to-black overflow-hidden">
                       {img ? (
@@ -844,8 +876,20 @@ function ArtistSpotlight({ artists }: { artists: RealArtist[] }) {
                       </div>
                       <div className="absolute bottom-3 left-3 right-3">
                         <p className="text-white font-bold text-sm leading-tight truncate">{a.artist_name}</p>
-                        {a.genre && <p className="text-[#007bff]/80 text-xs">{a.genre}</p>}
+                        {a.genre && <p className="text-[#D4A017]/90 text-xs">{a.genre}</p>}
                       </div>
+                      {/* Spotify preview button — only when embed available */}
+                      {(() => {
+                        const embedUrl = getSpotifyEmbed(a.store_links, a.spotify_artist_id);
+                        return embedUrl ? (
+                          <PlayButton
+                            embedUrl={embedUrl}
+                            title={a.song_title ?? a.artist_name}
+                            artist={a.artist_name}
+                            coverUrl={img}
+                          />
+                        ) : null;
+                      })()}
                     </div>
                   </Link>
                   </div>

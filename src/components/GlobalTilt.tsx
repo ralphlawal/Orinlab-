@@ -45,11 +45,6 @@ export default function GlobalTilt() {
         const ry =  nx * 2 * maxDeg;   // positive = right edge comes forward
         const rx = -ny * 2 * maxDeg;   // positive = top edge comes forward
         el.style.transform = `perspective(900px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
-        // Warm gold shadow shifts opposite to the tilt, deepening the 3D illusion
-        const sX = (-ry * 2).toFixed(1);
-        const sY = (rx * 2).toFixed(1);
-        const sB = (Math.hypot(rx, ry) * 2.5 + 10).toFixed(0);
-        el.style.boxShadow = `${sX}px ${sY}px ${sB}px rgba(212,160,23,0.16), 0 6px 20px rgba(0,0,0,0.28)`;
       };
 
       let resetTimer: ReturnType<typeof setTimeout> | null = null;
@@ -58,7 +53,6 @@ export default function GlobalTilt() {
         if (resetTimer) clearTimeout(resetTimer);
         el.style.transition = T_LEAVE;
         el.style.transform  = "";
-        el.style.boxShadow  = "";
         // Restore native CSS transitions after the ease-back animation completes
         resetTimer = setTimeout(() => {
           el.style.transition = "";
@@ -76,7 +70,6 @@ export default function GlobalTilt() {
         el.removeEventListener("mouseleave", onLeave);
         el.style.transform  = "";
         el.style.transition = "";
-        el.style.boxShadow  = "";
       });
     }
 

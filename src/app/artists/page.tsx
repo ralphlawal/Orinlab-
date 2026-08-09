@@ -3,8 +3,23 @@ import { Music, Globe, ArrowRight, Play } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSetting, DEFAULT_ARTISTS_PAGE, type ArtistsPageSettings } from "@/lib/siteSettings";
 import { AfricanSun, KenteStrip, DjembeArt, WovenBg, KoraArt } from "@/components/AfricanDecor";
+import { PlayButton } from "@/components/PlayButton";
 
 export const revalidate = 60;
+
+function getSpotifyEmbed(
+  storeLinks: Record<string, string> | null | undefined,
+  spotifyArtistId: string | null | undefined
+): string | null {
+  const trackUrl = (storeLinks as Record<string, string> | null)?.spotify;
+  if (trackUrl) {
+    const trackId = trackUrl.match(/\/track\/([a-zA-Z0-9]+)/)?.[1];
+    if (trackId) return `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0`;
+  }
+  if (spotifyArtistId)
+    return `https://open.spotify.com/embed/artist/${spotifyArtistId}?utm_source=generator&theme=0`;
+  return null;
+}
 
 export const metadata = {
   title: "Artists",
@@ -19,7 +34,7 @@ function slugify(name: string) {
 async function getApprovedArtists() {
   const { data } = await supabase
     .from("releases")
-    .select("artist_name,genre,country,artist_bio,song_title,cover_art_url,submitted_at,email")
+    .select("id,artist_name,genre,country,artist_bio,song_title,cover_art_url,store_links,submitted_at,email")
     .eq("status", "approved")
     .order("submitted_at", { ascending: false });
 
@@ -169,7 +184,7 @@ export default async function ArtistsPage() {
 
                     <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                       {a.genre && (
-                        <span className="text-[#007bff] text-xs font-semibold bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-[#007bff]/20">
+                        <span className="text-[#D4A017] text-xs font-semibold bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-[#D4A017]/20">
                           {a.genre}
                         </span>
                       )}
@@ -180,6 +195,19 @@ export default async function ArtistsPage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Spotify preview button */}
+                    {(() => {
+                      const embedUrl = getSpotifyEmbed(a.store_links, a.spotify_artist_id);
+                      return embedUrl ? (
+                        <PlayButton
+                          embedUrl={embedUrl}
+                          title={a.song_title ?? a.artist_name}
+                          artist={a.artist_name}
+                          coverUrl={heroImg}
+                        />
+                      ) : null;
+                    })()}
                   </div>
 
                   <div className="p-6">

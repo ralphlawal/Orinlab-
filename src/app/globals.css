@@ -362,6 +362,12 @@ a:focus-visible,
 }
 .animate-kente { animation: kente-shift 6s linear infinite; }
 
+/* Equaliser bars: each bar is given its own duration/delay via inline style */
+@keyframes wave-bar {
+  0%, 100% { height: 15%; }
+  50%       { height: 100%; }
+}
+
 /* Decorative instrument illustrations: gentle 3D float */
 @keyframes african-float-3d {
   0%, 100% { transform: perspective(600px) translateY(0px)   rotateX(0deg)  rotateY(0deg); }

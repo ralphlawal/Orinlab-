@@ -306,6 +306,50 @@ export function MudclothBg({
 }
 
 /**
+ * Animated equaliser / waveform bars — evokes a live audio visualisation.
+ * Each bar has its own rhythm, giving an organic polyrhythmic feel.
+ */
+const BAR_DURS = [0.75, 1.1, 0.65, 1.25, 0.9, 0.6, 1.15, 0.8, 1.0, 0.7, 1.3, 0.85];
+const BAR_DELS = [0, 0.3, 0.6, 0.1, 0.5, 0.85, 0.2, 0.7, 0.4, 0.9, 0.15, 0.55];
+
+export function WaveformDecor({
+  bars = 20,
+  color = G,
+  opacity = 0.55,
+  height = 40,
+  className = "",
+}: {
+  bars?: number;
+  color?: string;
+  opacity?: number;
+  height?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`flex items-end pointer-events-none ${className}`}
+      style={{ height: `${height}px`, opacity, gap: "3px" }}
+    >
+      {Array.from({ length: bars }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            flex: 1,
+            minWidth: "2px",
+            maxWidth: "7px",
+            borderRadius: "3px",
+            height: "100%",
+            background: color,
+            animation: `wave-bar ${BAR_DURS[i % BAR_DURS.length]}s ${BAR_DELS[i % BAR_DELS.length]}s ease-in-out infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
  * West African kora (bridge harp) silhouette — 21-string calabash harp
  * native to the Mande people. Use as a floating decorative illustration.
  */
