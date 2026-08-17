@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
       supabase
         .from("releases")
         .select("id, song_title, cover_art_url, streams, royalties_usd, release_date, created_at, status")
-        .eq("artist_email", user.email)
+        .eq("email", user.email)
         .order("release_date", { ascending: true, nullsFirst: false })
         .then(({ data }) => {
           setReleases(data ?? []);

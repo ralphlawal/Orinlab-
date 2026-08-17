@@ -22,10 +22,11 @@ export async function POST(req: NextRequest) {
   const { release_id, artist_name, song_title, genre, mood, pitch_notes } = body;
   if (!release_id || !pitch_notes) return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 
-  const db = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const db = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY)
+    : createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      });
 
   const { error } = await db.from("playlist_pitches").insert({
     email: user.email,
