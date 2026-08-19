@@ -7,6 +7,7 @@ import {
   releaseDateEmail, artistReminderEmail, revisionRequestEmail,
   priorityPaymentEmail, planActivatedEmail,
   streamsUpdatedEmail, royaltiesUpdatedEmail,
+  pitchPlacedEmail, pitchSubmittedEmail, pitchDeclinedEmail, accountStatusEmail,
 } from "@/lib/emails";
 import { rateLimitResponse } from "@/lib/rateLimit";
 
@@ -158,6 +159,41 @@ export async function POST(req: NextRequest) {
         songTitle:    data.song_title,
         royaltiesUsd: Number(data.royalties_usd ?? 0),
         releaseId:    data.release_id,
+      });
+    } else if (type === "pitch-placed") {
+      subject = `Your song was placed on a playlist — "${data.song_title}" 🎉`;
+      html = pitchPlacedEmail({
+        artistName:   data.artist_name,
+        songTitle:    data.song_title,
+        placementUrl: data.placement_url,
+        adminNote:    data.admin_note,
+      });
+    } else if (type === "pitch-submitted") {
+      subject = `Your pitch has been submitted — "${data.song_title}"`;
+      html = pitchSubmittedEmail({
+        artistName: data.artist_name,
+        songTitle:  data.song_title,
+        adminNote:  data.admin_note,
+      });
+    } else if (type === "pitch-declined") {
+      subject = `Pitch update for "${data.song_title}"`;
+      html = pitchDeclinedEmail({
+        artistName: data.artist_name,
+        songTitle:  data.song_title,
+        adminNote:  data.admin_note,
+      });
+    } else if (type === "account-status") {
+      const statusLabels: Record<string, string> = {
+        active: "Your account has been reactivated",
+        suspended: "Your account has been suspended",
+        inactive: "Your account is now inactive",
+        takedown: "Important update about your releases",
+        access_revoked: "Your portal access has been restricted",
+      };
+      subject = `${statusLabels[data.status] ?? "Account update"} — OrinlabÍ Records`;
+      html = accountStatusEmail({
+        artistName: data.artist_name,
+        status:     data.status,
       });
     } else {
       return NextResponse.json({ error: "Unknown type" }, { status: 400 });

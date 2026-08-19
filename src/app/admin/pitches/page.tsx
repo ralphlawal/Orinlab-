@@ -141,7 +141,7 @@ export default function PitchesPage() {
         ...(placementNotes.trim() ? { admin_notes: placementNotes.trim() } : {}),
       }),
     });
-    // Notify the artist in-app with outcome-appropriate message
+    // In-app notification + email for the artist
     if (pitch) {
       const notifMap = {
         submitted: {
@@ -166,6 +166,22 @@ export default function PitchesPage() {
         link: "/portal/pitch",
         ...notif,
       });
+
+      const emailTypeMap = { submitted: "pitch-submitted", placed: "pitch-placed", declined: "pitch-declined" };
+      fetch("/api/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: emailTypeMap[placementOutcome],
+          data: {
+            email:        pitch.email,
+            artist_name:  pitch.artist_name,
+            song_title:   pitch.song_title,
+            placement_url: placementOutcome !== "declined" ? placementUrl.trim() : undefined,
+            admin_note:   placementNotes.trim() || undefined,
+          },
+        }),
+      }).catch(() => {});
     }
     setRecording(false);
     setRecordDone(true);

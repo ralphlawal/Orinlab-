@@ -579,6 +579,83 @@ export function royaltiesUpdatedEmail(data: {
   `, "#16a34a");
 }
 
+/* ── 18. Pitch placed on a playlist ── */
+export function pitchPlacedEmail(data: {
+  artistName: string;
+  songTitle: string;
+  placementUrl: string;
+  adminNote?: string;
+}) {
+  return base(`
+    ${label("You've been playlisted! 🎉", "#14532d", "#dcfce7")}
+    ${h1(`"${data.songTitle}" is on a playlist, ${data.artistName}!`)}
+    ${p(`Great news — your song <strong style="color:#0d0d0d;">"${data.songTitle}"</strong> has been placed on a playlist. This is a direct result of the pitch submitted through OrinlabÍ Records.`)}
+    ${divider()}
+    ${data.adminNote ? noteBox(data.adminNote, "#16a34a") + divider() : ""}
+    ${btn("Listen to the Playlist", data.placementUrl, "#16a34a")}
+    ${muted(`You can view all your pitch placements in your artist portal under <a href="https://orinlabi.com/portal/pitch" style="color:#007bff;">Promotion Hub → Pitch History</a>.`)}
+  `, "#16a34a");
+}
+
+/* ── 19. Pitch submitted to curator (pending decision) ── */
+export function pitchSubmittedEmail(data: {
+  artistName: string;
+  songTitle: string;
+  adminNote?: string;
+}) {
+  return base(`
+    ${label("Pitch submitted to curator", "#1e3a5f", "#dbeafe")}
+    ${h1(`Your pitch is being reviewed, ${data.artistName}.`)}
+    ${p(`We have submitted your song <strong style="color:#0d0d0d;">"${data.songTitle}"</strong> to a playlist curator for consideration. Curator decisions typically take 3–10 days — we will update you as soon as we hear back.`)}
+    ${divider()}
+    ${data.adminNote ? noteBox(data.adminNote, "#2563eb") + divider() : ""}
+    ${p(`In the meantime, you can track the status of all your pitches from your artist portal.`)}
+    ${btn("View Pitch History", "https://orinlabi.com/portal/pitch", "#2563eb")}
+    ${muted(`Questions about your pitch? Contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>.`)}
+  `, "#2563eb");
+}
+
+/* ── 20. Pitch declined by curator ── */
+export function pitchDeclinedEmail(data: {
+  artistName: string;
+  songTitle: string;
+  adminNote?: string;
+}) {
+  return base(`
+    ${label("Pitch update", "#92400e", "#fef3c7")}
+    ${h1(`An update on your pitch, ${data.artistName}.`)}
+    ${p(`A curator has passed on <strong style="color:#0d0d0d;">"${data.songTitle}"</strong> this time. This is a normal part of the pitching process — even the biggest artists face rejections before landing major placements.`)}
+    ${divider()}
+    ${data.adminNote ? noteBox(data.adminNote, "#d97706") + divider() : ""}
+    ${p(`We will continue pitching your music to other curators. Check your portal for the latest updates on all your active pitches.`)}
+    ${btn("View Pitch History", "https://orinlabi.com/portal/pitch", "#d97706")}
+    ${muted(`Want to submit a new pitch? Visit <a href="https://orinlabi.com/portal/pitch" style="color:#007bff;">Promotion Hub</a> in your portal.`)}
+  `, "#d97706");
+}
+
+/* ── 21. Account status change ── */
+export function accountStatusEmail(data: {
+  artistName: string;
+  status: "active" | "suspended" | "inactive" | "takedown" | "access_revoked";
+}) {
+  const cfgMap = {
+    active:         { accent: "#16a34a", labelText: "Account reactivated ✓",        labelFg: "#14532d",   labelBg: "#dcfce7", headline: `Welcome back, ${data.artistName}.`,             body: "Your OrinlabÍ Records account has been reactivated. You now have full access to your artist portal, releases, and all distribution tools.",         cta: "Go to My Portal", ctaUrl: "https://orinlabi.com/portal" },
+    suspended:      { accent: "#dc2626", labelText: "Account suspended",             labelFg: "#7f1d1d",   labelBg: "#fee2e2", headline: `Your account has been suspended, ${data.artistName}.`, body: "Your OrinlabÍ Records account has been suspended. You cannot submit or manage releases during this period. If you believe this is a mistake, contact us immediately.", cta: "Contact Support", ctaUrl: "mailto:info@orinlabi.com" },
+    inactive:       { accent: "#d97706", labelText: "Account inactive",             labelFg: "#78350f",   labelBg: "#fef3c7", headline: `Your account is currently inactive, ${data.artistName}.`, body: "Your OrinlabÍ Records account has been marked inactive. Some features may be limited. Please contact us if you have any questions.",                cta: "Contact Us",      ctaUrl: "mailto:info@orinlabi.com" },
+    takedown:       { accent: "#dc2626", labelText: "Releases under review",        labelFg: "#7f1d1d",   labelBg: "#fee2e2", headline: `Important update about your releases, ${data.artistName}.`, body: "Your releases have been flagged for review by our compliance team. This may be due to a rights dispute, content issue, or third-party claim. We will be in touch with more details shortly.", cta: "Contact Support", ctaUrl: "mailto:info@orinlabi.com" },
+    access_revoked: { accent: "#ea580c", labelText: "Portal access restricted",     labelFg: "#7c2d12",   labelBg: "#ffedd5", headline: `Your portal access has been restricted, ${data.artistName}.`, body: "Access to your OrinlabÍ Records artist portal has been temporarily restricted. This is typically related to an outstanding billing issue. Please visit your billing page to restore access.", cta: "Restore Access",  ctaUrl: "https://orinlabi.com/portal/billing" },
+  };
+  const cfg = cfgMap[data.status] ?? cfgMap.inactive;
+  return base(`
+    ${label(cfg.labelText, cfg.labelFg, cfg.labelBg)}
+    ${h1(cfg.headline)}
+    ${p(cfg.body)}
+    ${divider()}
+    ${btn(cfg.cta, cfg.ctaUrl, cfg.accent)}
+    ${muted(`Questions? Contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a> or reply to this email.`)}
+  `, cfg.accent);
+}
+
 /* ── 18. Revision request ── */
 export function revisionRequestEmail(data: {
   artistName: string;

@@ -233,6 +233,19 @@ export default function ArtistProfilePage() {
       const { link, ...notifData } = notif;
       await supabase.from("notifications").insert({ email: artistEmail, ...notifData, link });
     }
+    // Email the artist about the status change
+    fetch("/api/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "account-status",
+        data: {
+          email:       artistEmail,
+          artist_name: profile?.artist_name ?? artistEmail,
+          status,
+        },
+      }),
+    }).catch(() => {});
     setProfile((p) => p ? { ...p, account_status: status as Profile["account_status"] } : p);
     setChangingStatus(false);
   }
@@ -240,11 +253,43 @@ export default function ArtistProfilePage() {
   async function savePitchPlacement(pitchId: string) {
     setSavingPitch(pitchId);
     const edit = pitchEdits[pitchId];
+    const pitch = pitches.find((p) => p.id === pitchId);
     await fetch(`/api/admin/pitches?id=${pitchId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current },
       body: JSON.stringify({ status: edit.status, placement_url: edit.url || null }),
     });
+
+    // In-app notification
+    const notifMap = {
+      placed:    { type: "success" as const, title: "Your song was placed! 🎉",       body: `"${pitch?.song_title}" has been placed on a playlist. Check your pitch history to see the link.` },
+      submitted: { type: "info" as const,    title: "Your pitch is being reviewed",    body: `"${pitch?.song_title}" has been submitted to a curator and is currently pending their decision.` },
+      declined:  { type: "warning" as const, title: "Pitch update for your song",      body: `A curator has passed on "${pitch?.song_title}" this time. We'll keep pitching.` },
+    };
+    const notif = notifMap[edit.status as keyof typeof notifMap];
+    if (pitch && notif) {
+      await supabase.from("notifications").insert({ email: artistEmail, link: "/portal/pitch", ...notif });
+
+      // Email
+      const emailTypeMap: Record<string, string> = { placed: "pitch-placed", submitted: "pitch-submitted", declined: "pitch-declined" };
+      const emailType = emailTypeMap[edit.status];
+      if (emailType) {
+        fetch("/api/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: emailType,
+            data: {
+              email:         artistEmail,
+              artist_name:   profile?.artist_name ?? artistEmail,
+              song_title:    pitch.song_title,
+              placement_url: edit.url || undefined,
+            },
+          }),
+        }).catch(() => {});
+      }
+    }
+
     setPitches((ps) => ps.map((p) => p.id === pitchId
       ? { ...p, status: edit.status, placement_url: edit.url || null }
       : p
