@@ -28,10 +28,13 @@ export default function NewsletterPage() {
   const [showCompose, setShowCompose] = useState(false);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [campaignType, setCampaignType] = useState<"general" | "promotional" | "interesting">("general");
+  const [audience, setAudience] = useState<"subscribers" | "artists" | "both">("subscribers");
   const [sending, setSending] = useState(false);
-  const [sendResult, setSendResult] = useState<{ sent: number; failed: number } | null>(null);
+  const [sendResult, setSendResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
   const [sendError, setSendError] = useState("");
   const [totalActive, setTotalActive] = useState(0);
+  const [artistCount, setArtistCount] = useState(0);
 
   async function load() {
     setLoading(true);
@@ -41,12 +44,14 @@ export default function NewsletterPage() {
       .order("subscribed_at", { ascending: false });
     if (filter === "active") query = query.eq("active", true);
     if (filter === "inactive") query = query.eq("active", false);
-    const [{ data }, { count }] = await Promise.all([
+    const [{ data }, { count }, { count: aCount }] = await Promise.all([
       query,
       supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("active", true),
+      supabase.from("artist_profiles").select("*", { count: "exact", head: true }),
     ]);
     setSubscribers(data ?? []);
     setTotalActive(count ?? 0);
+    setArtistCount(aCount ?? 0);
     setLoading(false);
   }
 
@@ -99,7 +104,7 @@ export default function NewsletterPage() {
       const res = await fetch("/api/newsletter/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, body }),
+        body: JSON.stringify({ subject, body, campaign_type: campaignType, audience }),
       });
       const json = await res.json();
       if (!res.ok) { setSendError(json.error ?? "Send failed."); setSending(false); return; }
@@ -112,6 +117,11 @@ export default function NewsletterPage() {
     }
     setSending(false);
   }
+
+  const recipientCount =
+    audience === "subscribers" ? totalActive :
+    audience === "artists"     ? artistCount :
+    totalActive + artistCount; // "both" — rough estimate (some may overlap)
 
   const inp = "w-full bg-[#0e0e0e] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors";
 
@@ -179,11 +189,55 @@ export default function NewsletterPage() {
 
       {/* Compose panel */}
       {showCompose && (
-        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 space-y-4">
-          <h3 className="text-white font-semibold text-sm">Compose Campaign</h3>
-          <p className="text-white/30 text-xs">
-            Will be sent to <strong className="text-white/60">{activeCount}</strong> active subscriber{activeCount !== 1 ? "s" : ""}. Write in plain text — use double line breaks for paragraphs.
-          </p>
+        <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 space-y-5">
+          <div>
+            <h3 className="text-white font-semibold text-sm mb-1">Compose Campaign</h3>
+            <p className="text-white/30 text-xs">Use double line breaks for new paragraphs.</p>
+          </div>
+
+          {/* Campaign type */}
+          <div>
+            <p className="text-white/35 text-[10px] uppercase tracking-widest mb-2">Campaign type</p>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { key: "general",       label: "General",       sub: "Clean, informational",      color: "border-white/30 bg-white/5 text-white" },
+                { key: "promotional",   label: "Promotional",   sub: "Bold header, high-impact",  color: "border-[#007bff]/50 bg-[#007bff]/10 text-[#007bff]" },
+                { key: "interesting",   label: "Interesting",   sub: "Editorial, story-style",    color: "border-purple-400/50 bg-purple-400/10 text-purple-400" },
+              ] as const).map(({ key, label, sub, color }) => (
+                <button key={key} type="button" onClick={() => setCampaignType(key)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl border text-center transition-all ${
+                    campaignType === key ? color : "border-white/[0.07] text-white/30 hover:text-white/60 hover:border-white/20"
+                  }`}>
+                  <span className="text-xs font-bold">{label}</span>
+                  <span className="text-[10px] opacity-70 leading-tight">{sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Audience */}
+          <div>
+            <p className="text-white/35 text-[10px] uppercase tracking-widest mb-2">Send to</p>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { key: "subscribers", label: "Subscribers", count: totalActive,               sub: "Newsletter list" },
+                { key: "artists",     label: "Artists",     count: artistCount,               sub: "Registered artists" },
+                { key: "both",        label: "Both",        count: totalActive + artistCount, sub: "All contacts" },
+              ] as const).map(({ key, label, count, sub }) => (
+                <button key={key} type="button" onClick={() => setAudience(key)}
+                  className={`flex flex-col items-center gap-1 px-3 py-3 rounded-xl border text-center transition-all ${
+                    audience === key
+                      ? "border-[#007bff]/50 bg-[#007bff]/10 text-[#007bff]"
+                      : "border-white/[0.07] text-white/30 hover:text-white/60 hover:border-white/20"
+                  }`}>
+                  <span className="text-xs font-bold">{label}</span>
+                  <span className="text-sm font-bold tabular-nums">{count.toLocaleString()}</span>
+                  <span className="text-[10px] opacity-70">{sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
@@ -200,11 +254,11 @@ export default function NewsletterPage() {
           {sendError && <p className="text-red-400 text-xs">{sendError}</p>}
           <button
             onClick={() => requestUnlock(sendCampaign)}
-            disabled={sending || activeCount === 0}
+            disabled={sending || recipientCount === 0}
             className="flex items-center gap-2 bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-colors"
           >
             {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-            {sending ? "Sending…" : `Send to ${activeCount} subscriber${activeCount !== 1 ? "s" : ""}`}
+            {sending ? "Sending…" : `Send to ~${recipientCount.toLocaleString()} recipient${recipientCount !== 1 ? "s" : ""}`}
           </button>
         </div>
       )}
@@ -213,7 +267,7 @@ export default function NewsletterPage() {
         <div className="flex items-center gap-3 bg-green-400/10 border border-green-400/20 rounded-2xl px-5 py-4">
           <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
           <p className="text-green-400 text-sm font-medium">
-            Campaign sent: {sendResult.sent} delivered
+            Campaign sent — {sendResult.sent} delivered out of {sendResult.total}
             {sendResult.failed > 0 && `, ${sendResult.failed} failed`}.
           </p>
         </div>

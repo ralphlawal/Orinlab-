@@ -676,3 +676,174 @@ export function revisionRequestEmail(data: {
     ${muted(`Questions about what's needed? Reply to this email or contact us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a> and we will help you get it right.`)}
   `, "#d97706");
 }
+
+/* ══ AUTO FOLLOW-UP TEMPLATES ══════════════════════════════════════════════ */
+
+/* ── 22. Artist welcome (Day 1 auto) ── */
+export function artistWelcomeFollowupEmail(data: { artistName: string }) {
+  return base(`
+    ${label("Welcome to OrinlabÍ Records 🎤", "#1e3a5f", "#dbeafe")}
+    ${h1(`You're in, ${data.artistName}!`)}
+    ${p(`We're excited to have you on board. OrinlabÍ Records distributes your music to Spotify, Apple Music, Boomplay, Audiomack, and 150+ platforms worldwide — and we handle everything from submission to royalty payments.`)}
+    ${divider()}
+    ${sectionLabel("Here's what to do first")}
+    ${noteBox(`<strong style="color:#0d0d0d;">1. Complete your profile</strong> — Add your bio, photo, and social links so we can promote you properly.<br/><br/><strong style="color:#0d0d0d;">2. Submit your first release</strong> — Upload your track, artwork, and metadata. Our team reviews within 48 hours.<br/><br/><strong style="color:#0d0d0d;">3. Pitch for playlists</strong> — Once your release is approved, submit a pitch to get placed on curated playlists and radio stations.`, "#007bff")}
+    ${divider()}
+    ${btn("Get Started", "https://orinlabi.com/portal", "#007bff")}
+    ${muted(`Need help? Email us at <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a> — we respond within 24 hours.`)}
+  `);
+}
+
+/* ── 23. Profile incomplete reminder (Day 3 auto) ── */
+export function artistProfileIncompleteEmail(data: { artistName: string; missing: string[] }) {
+  const list = data.missing.map((m) => `• ${m}`).join("<br/>");
+  return base(`
+    ${label("Action needed on your profile", "#78350f", "#fef3c7")}
+    ${h1(`A few things are missing, ${data.artistName}.`)}
+    ${p(`A complete profile helps us promote your music more effectively and ensures your releases are presented professionally to streaming platforms.`)}
+    ${divider()}
+    ${sectionLabel("Still missing")}
+    ${noteBox(list, "#d97706")}
+    ${divider()}
+    ${p("It takes less than 5 minutes. Head to your portal to fill in the gaps.")}
+    ${btn("Update My Profile", "https://orinlabi.com/portal/profile", "#d97706")}
+    ${muted(`Your profile details are only visible to OrinlabÍ staff — they are not shown publicly unless you opt in.`)}
+  `, "#d97706");
+}
+
+/* ── 24. No release nudge (Day 7 auto) ── */
+export function artistFirstReleaseEmail(data: { artistName: string }) {
+  return base(`
+    ${label("Ready to release?", "#14532d", "#dcfce7")}
+    ${h1(`Let's get your music out there, ${data.artistName}.`)}
+    ${p(`You've been on OrinlabÍ Records for a week and we haven't received a release from you yet. We'd love to help you get your music live on every major platform.`)}
+    ${divider()}
+    ${sectionLabel("What distribution gets you")}
+    ${noteBox(`<strong style="color:#0d0d0d;">150+ platforms</strong> — Spotify, Apple Music, Boomplay, Audiomack, Deezer, and more.<br/><br/><strong style="color:#0d0d0d;">Real-time royalty tracking</strong> — See your streams and earnings from your portal dashboard.<br/><br/><strong style="color:#0d0d0d;">Playlist pitching</strong> — Once live, we pitch your music to curated playlists and radio stations.<br/><br/><strong style="color:#0d0d0d;">48-hour review</strong> — Most submissions are reviewed and approved within two business days.`, "#16a34a")}
+    ${divider()}
+    ${btn("Submit My First Release", "https://orinlabi.com/portal/releases/new", "#16a34a")}
+    ${muted(`Questions about our process? <a href="mailto:info@orinlabi.com" style="color:#007bff;">info@orinlabi.com</a>`)}
+  `, "#16a34a");
+}
+
+/* ── 25. Pitch check-in (auto for stale submitted pitches) ── */
+export function artistPitchCheckinEmail(data: { artistName: string; songTitle: string; pitchType: string }) {
+  return base(`
+    ${label("Pitch status update", "#1e3a5f", "#dbeafe")}
+    ${h1(`We're still working on your pitch, ${data.artistName}.`)}
+    ${p(`Your <strong style="color:#0d0d0d;">${data.pitchType} pitch</strong> for <strong style="color:#0d0d0d;">"${data.songTitle}"</strong> is still active. Curator decisions can take 1–3 weeks depending on submission volume — this is normal.`)}
+    ${divider()}
+    ${p(`We'll notify you the moment we get a response. In the meantime, you can view the full status of all your pitches in your portal.`)}
+    ${btn("View My Pitches", "https://orinlabi.com/portal/pitch", "#007bff")}
+    ${muted(`Want to strengthen your chances? Submit a new pitch with updated notes or target different curators from the Promotion Hub.`)}
+  `);
+}
+
+/* ══ CAMPAIGN EMAIL BUILDERS (for manual newsletter sends) ═════════════════ */
+
+const campaignFooter = (unsubUrl: string) =>
+  `<tr>
+    <td style="padding:20px 32px;text-align:center;color:#999999;font-size:12px;font-family:Arial,sans-serif;line-height:1.6;">
+      © 2026 OrinlabÍ Records · A Ralph Lawal Group Company<br/>
+      <a href="${unsubUrl}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
+      &nbsp;·&nbsp;
+      <a href="https://orinlabi.com" style="color:#999999;text-decoration:none;">orinlabi.com</a>
+    </td>
+  </tr>`;
+
+function campaignParagraphs(body: string) {
+  return body.trim().split(/\n\n+/).map((para) =>
+    `<p style="margin:0 0 18px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.75;color:#444444;">${para.trim().replace(/\n/g, "<br/>")}</p>`
+  ).join("");
+}
+
+export function campaignGeneralEmail(data: { subject: string; body: string; unsubscribeUrl: string }) {
+  const LOGO = "https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png";
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>OrinlabÍ Records</title></head>
+<body style="margin:0;padding:0;background:#f2f2f2;" bgcolor="#f2f2f2">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f2f2f2" style="background:#f2f2f2;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+      <tr><td bgcolor="#0b1120" style="padding:28px 40px;" align="left"><img src="${LOGO}" width="120" height="auto" style="display:block;border:0;" /></td></tr>
+      <tr><td bgcolor="#007bff" style="height:4px;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+      <tr>
+        <td bgcolor="#ffffff" style="padding:44px 40px 36px;">
+          <h2 style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:800;color:#0d0d0d;line-height:1.3;">${data.subject}</h2>
+          ${campaignParagraphs(data.body)}
+          <hr style="border:none;border-top:1px solid #ebebeb;margin:28px 0;"/>
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#aaaaaa;">
+            You received this from OrinlabÍ Records.
+            <a href="${data.unsubscribeUrl}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
+            &nbsp;·&nbsp;<a href="https://orinlabi.com" style="color:#aaaaaa;text-decoration:none;">orinlabi.com</a>
+          </p>
+        </td>
+      </tr>
+      <tr><td bgcolor="#f2f2f2" style="padding:20px;text-align:center;color:#aaaaaa;font-size:12px;font-family:Arial,Helvetica,sans-serif;">© 2026 OrinlabÍ Records · A Ralph Lawal Group Company</td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
+export function campaignPromotionalEmail(data: { subject: string; body: string; unsubscribeUrl: string }) {
+  const LOGO = "https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png";
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>OrinlabÍ Records</title></head>
+<body style="margin:0;padding:0;background:#f2f2f2;" bgcolor="#f2f2f2">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f2f2f2" style="background:#f2f2f2;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+      <tr><td bgcolor="#0b1120" style="padding:28px 40px;" align="left"><img src="${LOGO}" width="120" height="auto" style="display:block;border:0;" /></td></tr>
+      <tr><td bgcolor="#007bff" style="padding:32px 40px;">
+        <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.7);">OrinlabÍ Records</p>
+        <h1 style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:900;color:#ffffff;line-height:1.2;">${data.subject}</h1>
+      </td></tr>
+      <tr>
+        <td bgcolor="#ffffff" style="padding:40px 40px 36px;">
+          ${campaignParagraphs(data.body)}
+          <hr style="border:none;border-top:1px solid #ebebeb;margin:28px 0;"/>
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#aaaaaa;">
+            You received this from OrinlabÍ Records.
+            <a href="${data.unsubscribeUrl}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
+            &nbsp;·&nbsp;<a href="https://orinlabi.com" style="color:#aaaaaa;text-decoration:none;">orinlabi.com</a>
+          </p>
+        </td>
+      </tr>
+      <tr><td bgcolor="#f2f2f2" style="padding:20px;text-align:center;color:#aaaaaa;font-size:12px;font-family:Arial,Helvetica,sans-serif;">© 2026 OrinlabÍ Records · A Ralph Lawal Group Company</td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
+export function campaignInterestingEmail(data: { subject: string; body: string; unsubscribeUrl: string }) {
+  const LOGO = "https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png";
+  const paras = data.body.trim().split(/\n\n+/);
+  const [first, ...rest] = paras;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>OrinlabÍ Records</title></head>
+<body style="margin:0;padding:0;background:#f2f2f2;" bgcolor="#f2f2f2">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f2f2f2" style="background:#f2f2f2;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);">
+      <tr><td bgcolor="#0b1120" style="padding:28px 40px;" align="left">
+        <img src="${LOGO}" width="120" height="auto" style="display:block;border:0;margin-bottom:14px;" />
+        <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:11px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:#7ba7e0;">Industry Insight</p>
+      </td></tr>
+      <tr><td bgcolor="#ffffff" style="padding:44px 40px 8px;">
+        <h1 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:#0d0d0d;line-height:1.3;">${data.subject}</h1>
+        <div style="background:#f8f9fa;border-left:4px solid #007bff;padding:18px 20px;margin:0 0 24px;border-radius:0 8px 8px 0;">
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.7;color:#333333;font-style:italic;">${first?.trim().replace(/\n/g, "<br/>") ?? ""}</p>
+        </div>
+        ${rest.map((para) => `<p style="margin:0 0 18px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.75;color:#444444;">${para.trim().replace(/\n/g, "<br/>")}</p>`).join("")}
+        <hr style="border:none;border-top:1px solid #ebebeb;margin:28px 0;"/>
+        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#aaaaaa;">
+          You received this from OrinlabÍ Records.
+          <a href="${data.unsubscribeUrl}" style="color:#007bff;text-decoration:none;">Unsubscribe</a>
+          &nbsp;·&nbsp;<a href="https://orinlabi.com" style="color:#aaaaaa;text-decoration:none;">orinlabi.com</a>
+        </p>
+      </td></tr>
+      <tr><td bgcolor="#f2f2f2" style="padding:20px;text-align:center;color:#aaaaaa;font-size:12px;font-family:Arial,Helvetica,sans-serif;">© 2026 OrinlabÍ Records · A Ralph Lawal Group Company</td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
