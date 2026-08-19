@@ -51,7 +51,7 @@ export default function ArtworkGuidelinesPage() {
       </div>
 
       {/* Quick spec card */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 mb-8">
+      <div className="bg-[#0d0d10] border border-white/[0.08] rounded-2xl p-6 mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Ruler size={14} className="text-purple-400" />
           <h2 className="text-white font-semibold text-sm">Technical Specifications</h2>
@@ -69,7 +69,7 @@ export default function ArtworkGuidelinesPage() {
 
       {/* What's allowed */}
       <Section title="What's Allowed">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-4">
+        <div className="bg-white/[0.02] border border-white/[0.09] rounded-xl px-4">
           <ul>
             <Rule ok={true}>High-resolution, sharp and clear imagery</Rule>
             <Rule ok={true}>Original photography, illustrations, or digital art</Rule>
@@ -82,7 +82,7 @@ export default function ArtworkGuidelinesPage() {
 
       {/* What's not allowed */}
       <Section title="What's Not Allowed">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-4">
+        <div className="bg-white/[0.02] border border-white/[0.09] rounded-xl px-4">
           <ul>
             <Rule ok={false}>Social media handles, @usernames, or hashtags</Rule>
             <Rule ok={false}>Website URLs or promotional text (e.g. "Out Now", "Available on Spotify")</Rule>
@@ -105,7 +105,7 @@ export default function ArtworkGuidelinesPage() {
             { icon: "📱", tip: "Leave breathing room", desc: "Keep important elements away from the edges — streaming apps may crop corners on some displays." },
             { icon: "🖼️", tip: "Save as PNG for text-heavy artwork", desc: "JPG compression creates visible artefacts around sharp text. Use PNG to keep it crisp." },
           ].map((item) => (
-            <div key={item.tip} className="flex gap-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+            <div key={item.tip} className="flex gap-4 bg-white/[0.02] border border-white/[0.09] rounded-xl p-4">
               <span className="text-xl flex-shrink-0">{item.icon}</span>
               <div>
                 <p className="text-white text-sm font-medium mb-0.5">{item.tip}</p>

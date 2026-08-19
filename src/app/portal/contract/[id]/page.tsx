@@ -133,9 +133,9 @@ export default function ContractViewerPage() {
           </div>
 
           {/* Contract details card */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden mb-6">
+          <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl overflow-hidden mb-6">
             {/* Card header */}
-            <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+            <div className="px-6 py-4 border-b border-white/[0.09] flex items-center gap-3">
               <Building2 size={16} className="text-white/30" />
               <div>
                 <p className="text-white font-bold text-sm">OrinlabÍ Records</p>

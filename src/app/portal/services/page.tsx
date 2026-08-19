@@ -108,7 +108,7 @@ export default function ServicesPage() {
             {group.items.map((item) => (
               <div
                 key={item.key}
-                className="bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.12] rounded-2xl p-5 transition-colors flex flex-col"
+                className="bg-[#0d0d10] border border-white/[0.07] hover:border-white/[0.12] rounded-2xl p-5 transition-colors flex flex-col"
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -165,14 +165,14 @@ export default function ServicesPage() {
                 </div>
                 <form onSubmit={sendInquiry} className="space-y-4">
                   <div>
-                    <label className="text-white/40 text-xs uppercase tracking-widest block mb-2">Your message</label>
+                    <label className="text-white/55 text-xs uppercase tracking-widest block mb-2">Your message</label>
                     <textarea
                       value={inquiryMsg}
                       onChange={(e) => setInquiryMsg(e.target.value)}
                       rows={4}
                       required
                       placeholder="Tell us about your release, your goals, and what you need…"
-                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl resize-none transition-colors"
+                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors"
                     />
                   </div>
                   <button

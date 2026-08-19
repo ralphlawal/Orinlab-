@@ -40,7 +40,7 @@ const TYPE_CONFIG: Record<string, { Icon: typeof Bell; color: string; ring: stri
   music:            { Icon: Music2,         color: "text-[#60a5fa]",    ring: "border-[#60a5fa]/20",   bg: "bg-[#60a5fa]/[0.05]"   },
 };
 
-const FALLBACK = { Icon: Bell, color: "text-white/40", ring: "border-white/[0.08]", bg: "bg-white/[0.03]" };
+const FALLBACK = { Icon: Bell, color: "text-white/40", ring: "border-white/[0.08]", bg: "bg-[#0d0d10]" };
 
 function groupByDate(items: Notification[]) {
   const now       = new Date();
@@ -152,7 +152,7 @@ export default function NotificationsPage() {
       {loading ? (
         <div className="space-y-3">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-20 rounded-2xl bg-white/[0.04] animate-pulse" />
+            <div key={i} className="h-20 rounded-2xl bg-[#0f0f12] animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
                       }`}
                     >
                       {/* Icon */}
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${n.read ? "bg-white/[0.04]" : cfg.bg} border ${cfg.ring}`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${n.read ? "bg-[#0f0f12]" : cfg.bg} border ${cfg.ring}`}>
                         <Icon size={16} className={n.read ? "text-white/25" : cfg.color} />
                       </div>
 

@@ -54,7 +54,7 @@ const statusCfg = {
   completed:   { label: "Completed",   color: "text-green-400",  bg: "bg-green-400/10 border-green-400/20",   icon: <CheckCircle2 size={14} /> },
 };
 
-const input = "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors";
+const input = "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors";
 
 export default function AssetsPage() {
   const [email, setEmail] = useState("");
@@ -189,7 +189,7 @@ export default function AssetsPage() {
                       className={`flex items-start gap-3 text-left p-4 rounded-2xl border transition-all ${
                         active
                           ? "bg-[#007bff]/10 border-[#007bff]/40"
-                          : "bg-white/[0.03] border-white/[0.06] hover:border-white/[0.15]"
+                          : "bg-[#0d0d10] border-white/[0.09] hover:border-white/[0.15]"
                       }`}
                     >
                       <div className={`flex-shrink-0 mt-0.5 ${active ? "text-[#007bff]" : "text-white/30"}`}>
@@ -321,7 +321,7 @@ export default function AssetsPage() {
             const hasDelivered = req.delivered_assets && Object.keys(req.delivered_assets).length > 0;
 
             return (
-              <div key={req.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 space-y-4">
+              <div key={req.id} className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5 space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <p className="text-white font-semibold text-sm">
@@ -342,7 +342,7 @@ export default function AssetsPage() {
                 </div>
 
                 {req.admin_notes && (
-                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3">
+                  <div className="bg-[#0d0d10] border border-white/[0.09] rounded-xl px-4 py-3">
                     <p className="text-white/30 text-xs uppercase tracking-widest mb-1">Note from OrinlabÍ Records</p>
                     <p className="text-white/70 text-sm leading-relaxed">{req.admin_notes}</p>
                   </div>

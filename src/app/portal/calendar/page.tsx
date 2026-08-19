@@ -97,7 +97,7 @@ export default function CalendarPage() {
     return (
       <section className="max-w-3xl mx-auto px-4 py-10 space-y-6">
         <div className="h-8 w-48 rounded-xl bg-white/[0.06] animate-pulse" />
-        <div className="h-96 rounded-2xl bg-white/[0.04] animate-pulse" />
+        <div className="h-96 rounded-2xl bg-[#0f0f12] animate-pulse" />
       </section>
     );
   }
@@ -130,12 +130,12 @@ export default function CalendarPage() {
       )}
 
       {/* Calendar card */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden mb-6">
+      <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl overflow-hidden mb-6">
         {/* Month nav */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.09]">
           <button
             onClick={() => { setSelected([]); setViewDate(new Date(year, month - 1, 1)); }}
-            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-[#141418] transition-colors"
           >
             <ChevronLeft size={16} />
           </button>
@@ -152,7 +152,7 @@ export default function CalendarPage() {
           </div>
           <button
             onClick={() => { setSelected([]); setViewDate(new Date(year, month + 1, 1)); }}
-            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+            className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-[#141418] transition-colors"
           >
             <ChevronRight size={16} />
           </button>
@@ -188,7 +188,7 @@ export default function CalendarPage() {
                   }
                 }}
                 className={`h-[72px] border-b border-r border-white/[0.03] p-2 flex flex-col transition-colors ${
-                  dayRels.length > 0 ? "cursor-pointer hover:bg-white/[0.04]" : ""
+                  dayRels.length > 0 ? "cursor-pointer hover:bg-[#0f0f12]" : ""
                 } ${isSelected ? "bg-[#007bff]/[0.07] border-[#007bff]/20" : ""}`}
               >
                 <span
@@ -274,7 +274,7 @@ export default function CalendarPage() {
               const Icon = cfg.Icon;
               return (
                 <Link key={r.id} href={`/portal/releases/${r.id}`}
-                  className="flex items-center gap-4 bg-white/[0.03] border border-white/[0.05] rounded-xl p-3.5 hover:bg-white/[0.06] transition-colors">
+                  className="flex items-center gap-4 bg-[#0d0d10] border border-white/[0.05] rounded-xl p-3.5 hover:bg-[#141418] transition-colors">
                   <div className="w-9 h-9 rounded-lg flex-shrink-0 overflow-hidden bg-white/[0.05] flex items-center justify-center">
                     {r.cover_art_url
                       // eslint-disable-next-line @next/next/no-img-element

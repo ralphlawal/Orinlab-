@@ -399,44 +399,45 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   return (
     <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-64 md:w-56 flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{ background: "linear-gradient(180deg, #050505 0%, #080808 100%)", borderRight: "1px solid rgba(255,255,255,0.05)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-[240px] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        style={{ background: "#08080b", borderRight: "1px solid rgba(255,255,255,0.07)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
 
         {/* Logo + identity */}
-        <div className="flex flex-col px-4 py-5 border-b border-white/[0.05]">
-          <Link href="/">
+        <div className="flex flex-col px-5 pt-5 pb-4 border-b border-white/[0.06]">
+          <Link href="/" className="inline-block">
             <Image
               src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
-              alt="OrinlabÍ Records" width={88} height={24} className="object-contain opacity-80 hover:opacity-100 transition-opacity"
+              alt="OrinlabÍ Records" width={92} height={24} className="object-contain opacity-85 hover:opacity-100 transition-opacity"
             />
           </Link>
-          <p className="text-white/20 text-[10px] mt-1.5 font-semibold tracking-widest uppercase">Artist Portal</p>
+          <p className="text-white/20 text-[9px] mt-1.5 font-bold tracking-[0.14em] uppercase">Artist Portal</p>
         </div>
 
         {/* Artist identity card */}
-        <div className="px-3 py-3 border-b border-white/[0.05]">
-          <div className="flex items-center gap-2.5 px-2 py-2 rounded-xl bg-white/[0.03]">
+        <div className="px-3 py-3 border-b border-white/[0.06]">
+          <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-2xl" style={{ background: "rgba(255,255,255,0.035)" }}>
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden relative">
+            <div className="w-10 h-10 rounded-full flex-shrink-0 overflow-hidden relative ring-2 ring-white/10">
               {artistImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={artistImage} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div
-                  className="w-full h-full flex items-center justify-center text-white text-[11px] font-bold"
-                  style={{ background: "linear-gradient(135deg, #007bff, #8B5CF6)" }}
+                  className="w-full h-full flex items-center justify-center text-white text-[13px] font-bold"
+                  style={{ background: "linear-gradient(135deg, #007bff 0%, #8B5CF6 100%)" }}
                 >
                   {initials}
                 </div>
               )}
-              {/* Online indicator */}
-              <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-400 rounded-full border border-[#050505]" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#08080b]" />
             </div>
             <div className="flex-1 min-w-0">
-              {artistName
-                ? <p className="text-white text-xs font-semibold truncate">{artistName}</p>
-                : <p className="text-white/40 text-xs truncate">{email ?? "Artist"}</p>}
-              <p className="text-white/30 text-[10px] truncate">Active</p>
+              <p className="text-white text-[13px] font-semibold truncate leading-tight">
+                {artistName || email?.split("@")[0] || "Artist"}
+              </p>
+              {artistName && email && (
+                <p className="text-white/30 text-[11px] truncate mt-0.5 leading-tight">{email}</p>
+              )}
             </div>
           </div>
         </div>
@@ -445,13 +446,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
           {NAV_SECTIONS.map((section) => (
             <div key={section.label}>
-              <div className="flex items-center gap-1.5 px-3 mb-1">
-                <div className="w-1 h-1 rounded-full" style={{ background: section.color, opacity: 0.6 }} />
-                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: section.color, opacity: 0.5 }}>
-                  {section.label}
-                </p>
-              </div>
-              <div className="space-y-0.5">
+              <p className="px-4 mb-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">
+                {section.label}
+              </p>
+              <div className="space-y-px">
                 {section.items.map((item) => {
                   const active = item.exact
                     ? pathname === item.href
@@ -460,26 +458,35 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     : item.badge === "notifications" ? counts.notifications : 0;
                   const isLocked = accessRevoked && !REVOKED_FREE_PATHS.some((p) => item.href.startsWith(p));
                   return (
-                    <Link
-                      key={item.href}
-                      href={isLocked ? "/portal/billing?reason=access_revoked" : item.href}
-                      onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
-                        isLocked
-                          ? "text-white/20 cursor-not-allowed"
-                          : active ? "text-white" : "text-white/40 hover:text-white/80 hover:bg-white/[0.04]"
-                      }`}
-                      style={active && !isLocked ? {
-                        background: `${section.color}18`,
-                        boxShadow: `inset 0 0 0 1px ${section.color}20`,
-                        color: section.color,
-                      } : undefined}
-                    >
-                      <span className="flex-shrink-0">{isLocked ? <Lock size={14} className="text-white/15" /> : item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {!isLocked && badgeCount > 0 && <Badge n={badgeCount} />}
-                      {isLocked && <Lock size={10} className="text-white/15 flex-shrink-0" />}
-                    </Link>
+                    <div key={item.href} className="relative">
+                      {active && !isLocked && (
+                        <div
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] rounded-r-full"
+                          style={{ background: section.color }}
+                        />
+                      )}
+                      <Link
+                        href={isLocked ? "/portal/billing?reason=access_revoked" : item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${
+                          isLocked
+                            ? "text-white/20 cursor-not-allowed"
+                            : active
+                              ? "bg-white/[0.08] text-white"
+                              : "text-white/50 hover:text-white/80 hover:bg-white/[0.05]"
+                        }`}
+                      >
+                        <span
+                          className="flex-shrink-0"
+                          style={active && !isLocked ? { color: section.color } : undefined}
+                        >
+                          {isLocked ? <Lock size={14} className="text-white/15" /> : item.icon}
+                        </span>
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {!isLocked && badgeCount > 0 && <Badge n={badgeCount} />}
+                        {isLocked && <Lock size={10} className="text-white/15 flex-shrink-0" />}
+                      </Link>
+                    </div>
                   );
                 })}
               </div>
@@ -488,12 +495,12 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </nav>
 
         {/* Sign out */}
-        <div className="px-2.5 py-3 border-t border-white/[0.05]">
+        <div className="px-3 py-3 border-t border-white/[0.06]">
           <button
             onClick={signOut}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/30 hover:text-white/70 hover:bg-white/[0.04] transition-all w-full"
+            className="flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-xl text-[13px] font-medium text-white/40 hover:text-white/70 hover:bg-white/[0.05] transition-all w-full"
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
             Sign Out
           </button>
         </div>
@@ -505,7 +512,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
+      <div className="flex-1 lg:ml-[240px] flex flex-col overflow-hidden">
         {navProgress && (
           <div className="h-0.5 bg-white/5 overflow-hidden flex-shrink-0">
             <div
@@ -516,34 +523,49 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         )}
         <style>{`@keyframes navBar { from { width: 0% } to { width: 100% } }`}</style>
         {/* Top bar */}
-        <header className="flex-shrink-0 z-20 px-4 md:px-6 flex items-center gap-3 md:gap-4"
-          style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingTop: "max(14px, env(safe-area-inset-top))", paddingBottom: 14 }}>
-          <button className="hidden md:flex lg:hidden items-center relative text-white/50 hover:text-white transition-colors" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <header className="flex-shrink-0 z-20 px-4 md:px-5 flex items-center gap-3"
+          style={{ background: "rgba(8,8,11,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingTop: "max(16px, env(safe-area-inset-top))", paddingBottom: 16, minHeight: 56 }}>
+          <button className="hidden md:flex lg:hidden items-center relative text-white/50 hover:text-white transition-colors mr-1" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             {!sidebarOpen && totalUnread > 0 && (
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#007bff] rounded-full" />
             )}
           </button>
 
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-4 rounded-full" style={{ background: activeSectionColor }} />
-            <h2 className="text-white font-semibold text-sm">
-              {(() => {
-                if (pathname === "/portal") return "My Releases";
-                if (/^\/portal\/releases\/(?!new)[^/]+/.test(pathname)) return "Release Details";
-                if (pathname.startsWith("/portal/guidelines/")) return "Guidelines";
-                return NAV_SECTIONS.flatMap(s => s.items).find(n =>
-                  n.exact ? pathname === n.href : (pathname.startsWith(n.href) && n.href !== "/portal")
-                )?.label ?? "Portal";
-              })()}
-            </h2>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-[3px] h-5 rounded-full flex-shrink-0" style={{ background: activeSectionColor }} />
+            <div className="min-w-0">
+              <h2 className="text-white font-bold text-[15px] leading-tight truncate">
+                {(() => {
+                  if (pathname === "/portal") return "My Releases";
+                  if (/^\/portal\/releases\/(?!new)[^/]+/.test(pathname)) return "Release Details";
+                  if (pathname.startsWith("/portal/guidelines/")) return "Guidelines";
+                  return NAV_SECTIONS.flatMap(s => s.items).find(n =>
+                    n.exact ? pathname === n.href : (pathname.startsWith(n.href) && n.href !== "/portal")
+                  )?.label ?? "Portal";
+                })()}
+              </h2>
+              <p className="text-white/30 text-[10px] font-semibold tracking-[0.08em] uppercase leading-none mt-0.5 hidden sm:block">
+                {activeSection?.label ?? "Dashboard"}
+              </p>
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2.5">
+            {/* Quick action */}
+            <Link
+              href="/portal/releases/new"
+              className="hidden sm:flex items-center gap-1.5 bg-[#007bff] hover:bg-[#0069d9] text-white text-[12px] font-bold px-3.5 py-1.5 rounded-lg transition-colors"
+            >
+              <Plus size={13} />
+              Upload
+            </Link>
+
+            {/* Notification dot */}
             {totalUnread > 0 && (
-              <Link href="/portal/notifications" className="flex items-center gap-1.5 text-[#007bff] text-xs font-medium hover:text-white transition-colors">
-                <span className="w-1.5 h-1.5 bg-[#007bff] rounded-full animate-pulse inline-block" />
-                {totalUnread} unread
+              <Link href="/portal/notifications" className="relative flex items-center justify-center w-8 h-8 rounded-lg hover:bg-white/[0.06] transition-colors text-white/50 hover:text-white">
+                <Bell size={16} />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-[#007bff] rounded-full border border-[#08080b]" />
               </Link>
             )}
 

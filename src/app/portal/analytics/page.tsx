@@ -196,7 +196,7 @@ export default function AnalyticsPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 rounded-lg bg-[#007bff]/10 flex items-center justify-center">
               <BarChart2 size={13} className="text-[#007bff]" />
@@ -207,7 +207,7 @@ export default function AnalyticsPage() {
           <p className="text-white/20 text-xs mt-1">All time</p>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center">
               <DollarSign size={13} className="text-emerald-400" />
@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
           <p className="text-white/20 text-xs mt-1">Before payouts</p>
         </div>
 
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-6 h-6 rounded-lg bg-purple-500/10 flex items-center justify-center">
               <TrendingUp size={13} className="text-purple-400" />
@@ -235,7 +235,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Performance chart */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+      <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
         <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-white font-semibold text-sm">Performance Data</h2>
@@ -254,7 +254,7 @@ export default function AnalyticsPage() {
       {/* Two columns: store breakdown + release list */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Store breakdown */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-5">
             <Globe size={14} className="text-white/30" />
             <h2 className="text-white font-semibold text-sm">Store Breakdown</h2>
@@ -289,7 +289,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Release breakdown */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/[0.05] flex items-center gap-2">
             <Music2 size={14} className="text-white/30" />
             <h2 className="text-white font-semibold text-sm">Releases</h2>

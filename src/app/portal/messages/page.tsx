@@ -406,7 +406,7 @@ export default function PortalMessagesPage() {
       </div>
 
       {/* Input bar */}
-      <div className="flex-shrink-0 pt-4 border-t border-white/[0.06]">
+      <div className="flex-shrink-0 pt-4 border-t border-white/[0.09]">
         {sendError && <p className="text-red-400 text-xs mb-2 px-1">{sendError}</p>}
 
         {/* Recording indicator */}
@@ -445,7 +445,7 @@ export default function PortalMessagesPage() {
             onClick={pickFile}
             disabled={recording || !!attachment}
             title="Attach file"
-            className="text-white/40 hover:text-white disabled:opacity-30 p-2.5 rounded-xl hover:bg-white/[0.05] transition-colors flex-shrink-0"
+            className="text-white/40 hover:text-white disabled:opacity-30 p-2.5 rounded-xl hover:bg-[#111114] transition-colors flex-shrink-0"
           >
             <Paperclip size={18} />
           </button>
@@ -457,7 +457,7 @@ export default function PortalMessagesPage() {
             className={`p-2.5 rounded-xl transition-colors flex-shrink-0 disabled:opacity-30 ${
               recording
                 ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
-                : "text-white/40 hover:text-white hover:bg-white/[0.05]"
+                : "text-white/40 hover:text-white hover:bg-[#111114]"
             }`}
           >
             {recording ? <MicOff size={18} /> : <Mic size={18} />}
@@ -470,7 +470,7 @@ export default function PortalMessagesPage() {
             placeholder={attachment ? "Add a caption… (optional)" : "Type a message…"}
             rows={1}
             style={{ resize: "none", maxHeight: "120px" }}
-            className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors overflow-y-auto"
+            className="flex-1 bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors overflow-y-auto"
           />
 
           <button

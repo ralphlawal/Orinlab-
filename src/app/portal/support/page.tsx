@@ -30,7 +30,7 @@ const STATUS_STYLES = {
   closed:      { label: "Closed",      color: "text-green-400",  bg: "bg-green-400/10 border-green-400/20",   icon: <CheckCircle2 size={11} /> },
 };
 
-const inp = "w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl resize-none transition-colors";
+const inp = "w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors";
 
 export default function SupportPage() {
   const [tickets, setTickets]     = useState<Ticket[]>([]);
@@ -135,7 +135,7 @@ export default function SupportPage() {
       )}
 
       {showForm && (
-        <div className="mb-8 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 space-y-4">
+        <div className="mb-8 bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-6 space-y-4">
           <h2 className="text-white font-semibold text-sm">New Support Request</h2>
           <div>
             <label className="text-white/40 text-xs mb-1.5 block">Category</label>
@@ -176,7 +176,7 @@ export default function SupportPage() {
             const st = STATUS_STYLES[t.status] ?? STATUS_STYLES.open;
             const isOpen = expanded === t.id;
             return (
-              <div key={t.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+              <div key={t.id} className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl overflow-hidden">
                 <button
                   className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
                   onClick={() => setExpanded(isOpen ? null : t.id)}
@@ -194,7 +194,7 @@ export default function SupportPage() {
                   {isOpen ? <ChevronUp size={16} className="text-white/30 flex-shrink-0" /> : <ChevronDown size={16} className="text-white/30 flex-shrink-0" />}
                 </button>
                 {isOpen && (
-                  <div className="border-t border-white/[0.06] px-5 py-4 space-y-4">
+                  <div className="border-t border-white/[0.09] px-5 py-4 space-y-4">
                     <div>
                       <p className="text-white/30 text-xs uppercase tracking-widest mb-2">Your message</p>
                       <p className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{t.description}</p>

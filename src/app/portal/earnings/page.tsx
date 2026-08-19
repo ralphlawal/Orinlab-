@@ -182,7 +182,7 @@ export default function EarningsPage() {
               a.click();
               URL.revokeObjectURL(a.href);
             }}
-            className="flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors flex-shrink-0"
+            className="flex items-center gap-2 bg-[#0f0f12] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors flex-shrink-0"
           >
             <Download size={14} /> Export CSV
           </button>
@@ -191,12 +191,12 @@ export default function EarningsPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
           <BarChart2 size={16} className="text-[#007bff] mb-2" />
           <p className="text-white font-bold text-2xl">{fmt(totalStreams)}</p>
           <p className="text-white/40 text-xs mt-0.5">Total Streams</p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
           <TrendingUp size={16} className="text-green-400 mb-2" />
           <p className="text-white font-bold text-2xl">
             {totalEarnings > 0 ? `$${totalEarnings.toFixed(2)}` : "—"}
@@ -213,7 +213,7 @@ export default function EarningsPage() {
             const streamTotal = Object.values(r.streams ?? {}).reduce((a, b) => a + b, 0);
             const relSplits   = splits[r.id] ?? [];
             return (
-              <div key={r.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+              <div key={r.id} className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center gap-4 p-5 border-b border-white/[0.04]">
                   <div className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden bg-white/[0.05]">
@@ -357,7 +357,7 @@ export default function EarningsPage() {
                 ? { label: "Rejected", color: "text-red-400", bg: "bg-red-400/10 border-red-400/20" }
                 : { label: "Pending", color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" };
               return (
-                <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+                <div key={p.id} className="bg-[#0d0d10] border border-white/[0.09] rounded-xl px-5 py-4 flex items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-semibold truncate">{p.song_title}</p>
                     <p className="text-white/40 text-xs mt-0.5">

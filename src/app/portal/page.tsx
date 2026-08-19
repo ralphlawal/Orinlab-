@@ -128,7 +128,7 @@ function PlatformChart({ releases }: { releases: Release[] }) {
   const max = entries[0][1];
 
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+    <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Streams by Platform</p>
         <Link href="/portal/earnings" className="text-[#007bff] text-xs hover:underline">Full report →</Link>
@@ -174,14 +174,14 @@ function StatCard({ icon: Icon, gradient, label, target, prefix = "", suffix = "
     ? `${prefix}${count.toFixed(decimals)}${suffix}`
     : target === 0 ? "—" : `${prefix}${fmtN(count)}${suffix}`;
   return (
-    <div className="relative overflow-hidden bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-center card-hover">
+    <div className="relative overflow-hidden bg-[#0e0e10] border border-white/[0.09] rounded-2xl p-4 text-center card-hover">
       <div className="absolute inset-0 opacity-[0.04]" style={{ background: gradient }} />
       <div className="relative z-10">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ background: gradient + "22" }}>
           <Icon size={15} style={{ color: "white" }} />
         </div>
         <p className="text-white font-bold text-xl tabular-nums">{display}</p>
-        <p className="text-white/40 text-xs mt-0.5">{label}</p>
+        <p className="text-white/50 text-xs mt-0.5">{label}</p>
       </div>
     </div>
   );
@@ -202,7 +202,7 @@ const PITCH_STATUS: Record<string, { color: string; bg: string; label: string }>
 function PitchSection({ pitches }: { pitches: Pitch[] }) {
   if (!pitches.length) return null;
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+    <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-3">
         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Promotion Pitches</p>
         <Link href="/portal/pitch" className="text-[#007bff] text-xs hover:underline">Submit New →</Link>
@@ -212,7 +212,7 @@ function PitchSection({ pitches }: { pitches: Pitch[] }) {
           const typeKey = p.pitch_notes?.match(/^\[([A-Z]+)\]/)?.[1] ?? "";
           const cfg = PITCH_STATUS[p.status] ?? PITCH_STATUS.pending;
           return (
-            <div key={p.id} className="flex items-center gap-3 bg-white/[0.03] rounded-xl px-3 py-2.5">
+            <div key={p.id} className="flex items-center gap-3 bg-white/[0.05] rounded-xl px-3 py-2.5">
               <div className="flex-1 min-w-0">
                 <p className="text-white text-xs font-medium truncate">{p.song_title}</p>
                 <p className="text-white/30 text-[11px]">{PITCH_TYPE_LABELS[typeKey] ?? "Pitch"} · {new Date(p.created_at).toLocaleDateString("en-GB", { month: "short", day: "numeric" })}</p>
@@ -235,7 +235,7 @@ const NOTIF_COLORS: Record<string, string> = {
 function ActivitySection({ notifications }: { notifications: Notif[] }) {
   if (!notifications.length) return null;
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+    <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-3">
         <p className="text-white/50 text-xs font-semibold uppercase tracking-wider">Recent Activity</p>
         <Link href="/portal/notifications" className="text-[#007bff] text-xs hover:underline">View All →</Link>
@@ -590,7 +590,7 @@ export default function PortalDashboard() {
           <div className="relative z-10 flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               {artistName && (
-                <p className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-1">Welcome back</p>
+                <p className="text-white/55 text-xs font-semibold uppercase tracking-widest mb-1">Welcome back</p>
               )}
               <h1 className="font-bold text-3xl sm:text-4xl leading-tight mb-2">
                 {artistName
@@ -630,7 +630,7 @@ export default function PortalDashboard() {
                 { label: "Royalties", value: totalEarnings > 0 ? `$${totalEarnings.toFixed(2)}` : "—", color: "#34d399" },
                 { label: "Live", value: String(liveCount), color: "#c084fc" },
               ].map(({ label, value, color }) => (
-                <div key={label} className="bg-white/[0.06] backdrop-blur-sm rounded-xl px-3 py-2.5 text-center border border-white/[0.06]">
+                <div key={label} className="bg-white/[0.06] backdrop-blur-sm rounded-xl px-3 py-2.5 text-center border border-white/[0.09]">
                   <p className="text-white font-bold text-lg tabular-nums" style={{ color }}>{value}</p>
                   <p className="text-white/30 text-[11px]">{label}</p>
                 </div>
@@ -739,7 +739,7 @@ export default function PortalDashboard() {
             <Link
               key={href}
               href={href}
-              className="group flex flex-col items-center gap-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-2xl p-4 transition-all duration-200 text-center card-hover"
+              className="group flex flex-col items-center gap-2.5 bg-[#0e0e10] hover:bg-[#141418] border border-white/[0.09] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-200 text-center card-hover"
               style={{ animationDelay: `${i * 40}ms` }}
             >
               <div
@@ -748,7 +748,7 @@ export default function PortalDashboard() {
               >
                 <Icon size={19} style={{ background: gradient, backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }} />
               </div>
-              <span className="text-white/60 text-xs font-medium group-hover:text-white/90 transition-colors">{label}</span>
+              <span className="text-white/65 text-xs font-semibold group-hover:text-white transition-colors">{label}</span>
             </Link>
           ))}
         </div>
@@ -813,7 +813,7 @@ export default function PortalDashboard() {
                   { num: "2", color: "#8B5CF6", title: "Submit your first release", body: "Upload your track and cover art. We review within 3–5 business days.", href: "/portal/releases/new", cta: "Submit Release" },
                   { num: "3", color: "#10B981", title: "Get your smart link", body: "One link for Spotify, Apple Music, Boomplay, and everywhere else.", href: null, cta: null },
                 ].map(({ num, color, title, body, href, cta }) => (
-                  <div key={num} className="flex items-start gap-4 bg-white/[0.03] rounded-xl px-4 py-4">
+                  <div key={num} className="flex items-start gap-4 bg-white/[0.05] rounded-xl px-4 py-4">
                     <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: color + "25" }}>
                       <span className="text-xs font-bold" style={{ color }}>{num}</span>
                     </div>
@@ -848,7 +848,7 @@ export default function PortalDashboard() {
       ) : (
         <div className="space-y-3">
           <FadeIn delay={480}>
-            <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Your Releases</p>
+            <p className="text-white/50 text-[11px] font-bold uppercase tracking-widest mb-3">Your Releases</p>
           </FadeIn>
           {releases.map((r, i) => {
             const cfg = statusConfig[r.status] ?? statusConfig.pending;
@@ -857,7 +857,7 @@ export default function PortalDashboard() {
               <FadeIn key={r.id} delay={500 + i * 50}>
                 <Link
                   href={`/portal/releases/${r.id}`}
-                  className="group relative flex items-center gap-4 bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] rounded-2xl p-4 transition-all duration-200 overflow-hidden card-hover"
+                  className="group relative flex items-center gap-4 bg-[#0e0e10] hover:bg-[#111114] border border-white/[0.09] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-200 overflow-hidden card-hover"
                 >
                   {/* Left accent by status */}
                   <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ background: cfg.accent }} />
@@ -893,7 +893,7 @@ export default function PortalDashboard() {
           })}
 
           <FadeIn delay={550 + releases.length * 50}>
-            <div className="mt-8 pt-6 border-t border-white/[0.06] text-center">
+            <div className="mt-8 pt-6 border-t border-white/[0.09] text-center">
               <p className="text-white/25 text-sm mb-4">Have more music to release?</p>
               {hasApproved ? (
                 <Link href="/portal/releases/new"

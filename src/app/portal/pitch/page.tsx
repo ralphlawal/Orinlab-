@@ -188,7 +188,7 @@ export default function PromotePage() {
           <button
             key={t.key}
             onClick={() => selectType(t.key)}
-            className="w-full flex items-center gap-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/[0.14] rounded-2xl p-5 text-left transition-all group"
+            className="w-full flex items-center gap-4 bg-[#0d0d10] hover:bg-[#141418] border border-white/[0.07] hover:border-white/[0.14] rounded-2xl p-5 text-left transition-all group"
           >
             <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${t.color}`}>
               <t.icon size={20} />
@@ -227,7 +227,7 @@ export default function PromotePage() {
       <form onSubmit={submit} className="space-y-6">
         {/* Release picker */}
         <div>
-          <label className="block text-white/40 text-xs uppercase tracking-widest mb-2">Release</label>
+          <label className="block text-white/55 text-xs uppercase tracking-widest mb-2">Release</label>
           <div className="relative">
             <select value={releaseId} onChange={(e) => setReleaseId(e.target.value)}
               className="w-full appearance-none bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white text-sm px-4 py-3 rounded-xl transition-colors pr-9">
@@ -242,7 +242,7 @@ export default function PromotePage() {
         {/* Target selection */}
         {typeTargets.length > 0 && (
           <div>
-            <label className="block text-white/40 text-xs uppercase tracking-widest mb-2">
+            <label className="block text-white/55 text-xs uppercase tracking-widest mb-2">
               Target {type.label.split(" ")[0]}s <span className="text-white/20">(select all that apply)</span>
             </label>
             <div className="flex flex-wrap gap-2">
@@ -263,7 +263,7 @@ export default function PromotePage() {
         {/* Mood — playlist & social only */}
         {(pitchType === "playlist" || pitchType === "social") && (
           <div>
-            <label className="block text-white/40 text-xs uppercase tracking-widest mb-2">Mood / Vibe</label>
+            <label className="block text-white/55 text-xs uppercase tracking-widest mb-2">Mood / Vibe</label>
             <div className="flex flex-wrap gap-2">
               {MOODS.map((m) => (
                 <button key={m} type="button" onClick={() => setMood(mood === m ? "" : m)}
@@ -279,19 +279,19 @@ export default function PromotePage() {
 
         {/* Similar artists */}
         <div>
-          <label className="block text-white/40 text-xs uppercase tracking-widest mb-2">Similar Artists</label>
+          <label className="block text-white/55 text-xs uppercase tracking-widest mb-2">Similar Artists</label>
           <input
             type="text"
             placeholder="e.g. Burna Boy, Wizkid, Davido"
             value={similarArtists}
             onChange={(e) => setSimilarArtists(e.target.value)}
-            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors"
+            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors"
           />
         </div>
 
         {/* Pitch notes */}
         <div>
-          <label className="block text-white/40 text-xs uppercase tracking-widest mb-2">
+          <label className="block text-white/55 text-xs uppercase tracking-widest mb-2">
             {pitchType === "sync" ? "Describe your music's mood and use case" :
              pitchType === "blog" ? "Your press story / artist bio" :
              "Why should this be featured?"} <span className="text-red-400">*</span>
@@ -307,7 +307,7 @@ export default function PromotePage() {
               pitchType === "radio" ? "Why would listeners love this? Key streaming numbers, achievements, radio-ready qualities…" :
               "Describe the song's energy, what audience it speaks to, and why it fits these platforms…"
             }
-            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl resize-none transition-colors"
+            className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl resize-none transition-colors"
           />
         </div>
 

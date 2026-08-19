@@ -140,7 +140,7 @@ export default function ToolsPage() {
       </div>
 
       {/* Audio Converter */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 mb-6">
+      <div className="bg-[#0d0d10] border border-white/[0.08] rounded-2xl p-6 mb-6">
         <div className="flex items-center gap-3 mb-5">
           <Music2 size={16} className="text-[#007bff]" />
           <h2 className="text-white font-semibold">Audio Format Converter</h2>
@@ -188,7 +188,7 @@ export default function ToolsPage() {
 
         {/* Output format */}
         <div className="mb-5">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Output Format</p>
+          <p className="text-white/55 text-xs uppercase tracking-widest mb-3">Output Format</p>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {OUTPUT_FORMATS.map((f) => (
               <button
@@ -216,7 +216,7 @@ export default function ToolsPage() {
               <div>
                 <label className="text-white/40 text-xs block mb-1.5">MP3 Quality</label>
                 <select value={mp3Quality} onChange={(e) => setMp3Quality(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] text-white/70 text-xs px-3 py-2 rounded-lg outline-none">
+                  className="w-full bg-[#0f0f12] border border-white/[0.08] text-white/70 text-xs px-3 py-2 rounded-lg outline-none">
                   <option value="0">0 — Best (~245 kbps)</option>
                   <option value="2">2 — High (~190 kbps)</option>
                   <option value="4">4 — Standard (~165 kbps)</option>
@@ -227,7 +227,7 @@ export default function ToolsPage() {
             <div>
               <label className="text-white/40 text-xs block mb-1.5">Sample Rate</label>
               <select value={sampleRate} onChange={(e) => setSampleRate(e.target.value)}
-                className="w-full bg-white/[0.04] border border-white/[0.08] text-white/70 text-xs px-3 py-2 rounded-lg outline-none">
+                className="w-full bg-[#0f0f12] border border-white/[0.08] text-white/70 text-xs px-3 py-2 rounded-lg outline-none">
                 <option value="44100">44,100 Hz (CD quality)</option>
                 <option value="48000">48,000 Hz (Studio)</option>
                 <option value="22050">22,050 Hz (Radio)</option>
@@ -295,7 +295,7 @@ export default function ToolsPage() {
           { icon: "🏷️", title: "Metadata Tagger",      desc: "Edit ID3 tags — title, artist, album, artwork.",        tag: "Coming soon" },
           { icon: "🔊", title: "Loudness Normalizer",  desc: "Match LUFS levels for streaming platform standards.",   tag: "Coming soon" },
         ].map((t) => (
-          <div key={t.title} className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 opacity-50">
+          <div key={t.title} className="bg-white/[0.02] border border-white/[0.09] rounded-2xl p-5 opacity-50">
             <div className="flex items-start justify-between gap-3 mb-2">
               <span className="text-2xl">{t.icon}</span>
               <span className="text-[10px] text-white/30 border border-white/[0.08] rounded-full px-2 py-0.5">{t.tag}</span>

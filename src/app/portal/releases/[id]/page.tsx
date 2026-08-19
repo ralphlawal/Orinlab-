@@ -508,8 +508,8 @@ export default function ReleaseDetailPage() {
 
           {/* Distribution progress */}
           {release.status === "approved" && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-              <p className="text-white/40 text-xs uppercase tracking-widest mb-5">Distribution Progress</p>
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
+              <p className="text-white/55 text-xs uppercase tracking-widest mb-5">Distribution Progress</p>
               <div className="flex items-center">
                 {([
                   { key: "submitted" as const,       label: "Submitted"       },
@@ -522,7 +522,7 @@ export default function ReleaseDetailPage() {
                   return (
                     <div key={key} className="flex items-center flex-1">
                       <div className="flex flex-col items-center flex-1">
-                        <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${done ? "border-[#007bff] bg-[#007bff]/20" : "border-white/10 bg-white/[0.03]"}`}>
+                        <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${done ? "border-[#007bff] bg-[#007bff]/20" : "border-white/10 bg-[#0d0d10]"}`}>
                           {done ? <CheckCircle2 size={15} className={active ? "text-[#007bff]" : "text-[#007bff]/60"} /> : <span className="w-2 h-2 rounded-full bg-white/10" />}
                         </div>
                         <p className={`text-xs mt-2 font-medium text-center leading-tight ${active ? "text-white" : done ? "text-white/40" : "text-white/20"}`}>{label}</p>
@@ -574,7 +574,7 @@ export default function ReleaseDetailPage() {
             </div>
             {release.review_notes && (
               <div className="mt-4 pt-4 border-t border-white/[0.08]">
-                <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Note from OrinlabÍ Records</p>
+                <p className="text-white/55 text-xs uppercase tracking-widest mb-2">Note from OrinlabÍ Records</p>
                 <p className="text-white/80 text-sm leading-relaxed">{release.review_notes}</p>
               </div>
             )}
@@ -584,7 +584,7 @@ export default function ReleaseDetailPage() {
           {editingMeta && (release.status === "pending" || release.status === "revision_requested") && (() => {
             const inp = "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-4 py-2.5 rounded-xl transition-colors";
             return (
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+              <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
                 <p className="text-white font-semibold mb-4">Edit Release Info</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -626,7 +626,7 @@ export default function ReleaseDetailPage() {
 
           {/* Resubmit after rejection */}
           {release.status === "rejected" && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
               <p className="text-white font-semibold mb-1">Want to try again?</p>
               <p className="text-white/40 text-sm mb-4 leading-relaxed">
                 You can resubmit this release after making changes. Your info will be pre-filled so you only need to fix what&apos;s needed.
@@ -661,7 +661,7 @@ export default function ReleaseDetailPage() {
                 const [mainReason, ...rest] = raw.split(/\n\n/);
                 const extra = rest.join("\n\n").trim();
                 return (
-                  <div className="mx-5 mb-4 bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+                  <div className="mx-5 mb-4 bg-[#0f0f12] border border-white/[0.09] rounded-xl p-4">
                     <p className="text-white/35 text-[10px] uppercase tracking-widest mb-2">Issue reported by OrinlabÍ Records</p>
                     <p className="text-white/80 text-sm leading-relaxed">{mainReason}</p>
                     {extra && <p className="text-white/50 text-xs leading-relaxed mt-2 whitespace-pre-wrap">{extra}</p>}
@@ -738,7 +738,7 @@ export default function ReleaseDetailPage() {
 
           {/* Pre-save — artists can self-enable for pending/approved releases */}
           {(release.status === "pending" || release.status === "approved") && (
-            <div className={`border rounded-2xl p-5 ${release.presave_enabled ? "bg-[#1db954]/5 border-[#1db954]/20" : "bg-white/[0.03] border-white/[0.06]"}`}>
+            <div className={`border rounded-2xl p-5 ${release.presave_enabled ? "bg-[#1db954]/5 border-[#1db954]/20" : "bg-[#0d0d10] border-white/[0.09]"}`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <Star size={17} className={release.presave_enabled ? "text-[#1db954]" : "text-white/30"} />
@@ -762,7 +762,7 @@ export default function ReleaseDetailPage() {
                   : "Create a shareable page where fans can register to be notified on release day."}
               </p>
               {release.presave_enabled && (
-                <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
+                <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/[0.08] rounded-xl px-4 py-3">
                   <span className="text-white/60 text-xs flex-1 truncate font-mono">https://orinlabi.com/presave/{release.id}</span>
                   <button onClick={() => { navigator.clipboard.writeText(`https://orinlabi.com/presave/${release.id}`); setPresaveCopied(true); setTimeout(() => setPresaveCopied(false), 2000); }} className="flex items-center gap-1.5 text-xs font-semibold text-[#1db954] hover:text-white transition-colors flex-shrink-0">
                     {presaveCopied ? <CheckCircle2 size={13} /> : <Copy size={13} />}{presaveCopied ? "Copied!" : "Copy"}
@@ -785,7 +785,7 @@ export default function ReleaseDetailPage() {
               : `orinlabi.com/listen/${release.id}`;
 
             return (
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+              <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
                 <div className="flex items-center gap-3 mb-2">
                   <Share2 size={17} className="text-[#007bff]" />
                   <p className="text-white font-semibold">Your Smart Link</p>
@@ -797,7 +797,7 @@ export default function ReleaseDetailPage() {
                     ? "Your Ditto smart link is live. Share it — fans pick their platform on Ditto."
                     : "Your smart link is ready. Share it now — streaming links will appear as your release goes live."}
                 </p>
-                <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3">
+                <div className="flex items-center gap-3 bg-[#0f0f12] border border-white/[0.08] rounded-xl px-4 py-3">
                   <span className="text-white/60 text-xs flex-1 truncate font-mono">{displayUrl}</span>
                   <button
                     onClick={() => { navigator.clipboard.writeText(primaryUrl); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }}
@@ -813,7 +813,7 @@ export default function ReleaseDetailPage() {
                 </a>
                 {/* When individual store links exist and a Ditto link is also set, show it as a secondary option */}
                 {hasStoreLinks && release.ditto_smart_link && (
-                  <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                  <div className="mt-3 pt-3 border-t border-white/[0.09]">
                     <p className="text-white/25 text-[10px] mb-2 uppercase tracking-widest">Permalink (always works)</p>
                     <span className="text-white/30 text-xs font-mono">orinlabi.com/listen/{release.id}</span>
                   </div>
@@ -846,7 +846,7 @@ export default function ReleaseDetailPage() {
               },
             ];
             return (
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+              <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
                 <div className="flex items-center gap-3 mb-2">
                   <Send size={17} className="text-violet-400" />
                   <p className="text-white font-semibold">Share Your Release</p>
@@ -854,7 +854,7 @@ export default function ReleaseDetailPage() {
                 <p className="text-white/40 text-sm mb-4">Ready-made captions — tap to copy, paste anywhere.</p>
                 <div className="space-y-3">
                   {captions.map(({ label, key, text }) => (
-                    <div key={key} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4">
+                    <div key={key} className="bg-[#0f0f12] border border-white/[0.09] rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-white/50 text-xs font-semibold uppercase tracking-widest">{label}</p>
                         <button
@@ -875,7 +875,7 @@ export default function ReleaseDetailPage() {
 
           {/* Stream analytics */}
           {release.status === "approved" && totalStreams > 0 && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <BarChart2 size={17} className="text-[#007bff]" />
@@ -890,7 +890,7 @@ export default function ReleaseDetailPage() {
                 {Object.entries(release.streams!).filter(([, v]) => v > 0).sort(([, a], [, b]) => b - a).map(([key, count]) => {
                   const pct = totalStreams > 0 ? Math.round((count / totalStreams) * 100) : 0;
                   return (
-                    <div key={key} className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-3.5">
+                    <div key={key} className="bg-[#0f0f12] border border-white/[0.09] rounded-xl p-3.5">
                       <p className="text-white/40 text-[10px] mb-1 truncate">{key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
                       <p className="text-white font-bold text-base tabular-nums">{fmtStreams(count)}</p>
                       <div className="flex items-center gap-1.5 mt-1.5">
@@ -928,7 +928,7 @@ export default function ReleaseDetailPage() {
 
           {/* Content ID status */}
           {release.status === "approved" && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-2">
                 <ShieldCheck size={17} className={release.youtube_content_id ? "text-green-400" : "text-white/25"} />
                 <p className="text-white font-semibold">YouTube Content ID</p>
@@ -955,7 +955,7 @@ export default function ReleaseDetailPage() {
           )}
 
           {/* Credits */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+          <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4"><Mic2 size={16} className="text-[#007bff]" /><p className="text-white/60 text-xs uppercase tracking-widest font-medium">Credits</p></div>
             <div className="space-y-3">
               <Row label="Songwriters" value={release.songwriters} />
@@ -984,7 +984,7 @@ export default function ReleaseDetailPage() {
                       <p className="text-white/25 text-[11px] mt-1">First-time artists who haven&apos;t released yet don&apos;t have IDs — leave those fields blank.</p>
                     </div>
                     {featuredArtists.map((fa, i) => (
-                      <div key={i} className="space-y-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                      <div key={i} className="space-y-1.5 bg-[#0d0d10] border border-white/[0.09] rounded-xl p-3">
                         <div className="flex items-center gap-2">
                           <input type="text" placeholder="Artist / Stage name *" value={fa.name} onChange={(e) => { const n = [...featuredArtists]; n[i] = { ...n[i], name: e.target.value }; setFeaturedArtists(n); }} className="flex-1 bg-white/[0.05] border border-white/[0.08] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
                           <button type="button" onClick={() => setFeaturedArtists(featuredArtists.filter((_, j) => j !== i))} className="text-white/20 hover:text-red-400 transition-colors text-sm flex-shrink-0">✕</button>
@@ -1021,7 +1021,7 @@ export default function ReleaseDetailPage() {
 
           {/* Claim artist profiles */}
           {release.status === "approved" && release.store_links?.spotify && (
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-white/[0.02] border border-white/[0.09] rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-3"><Star size={17} className="text-green-400" /><p className="text-white font-semibold">Claim Your Artist Profile</p></div>
               <p className="text-white/40 text-sm leading-relaxed mb-4">Claim your official artist profile on streaming platforms to update your bio and access your stats directly.</p>
               <div className="space-y-2.5">
@@ -1062,7 +1062,7 @@ export default function ReleaseDetailPage() {
           </div>
 
           {editingLinks && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
               <p className="text-white/50 text-sm mb-4">Paste your streaming URLs. Leave blank if not yet available.</p>
               <div className="space-y-2 mb-5">
                 {DITTO_PLATFORMS.map((p) => (
@@ -1072,7 +1072,7 @@ export default function ReleaseDetailPage() {
                     </div>
                     <span className="text-white/50 text-xs w-28 flex-shrink-0">{p.label}</span>
                     <input type="url" placeholder="https://…" value={localLinks[p.key] ?? ""} onChange={(e) => { setLocalLinks(prev => ({ ...prev, [p.key]: e.target.value })); setLinksSaved(false); }}
-                      className="flex-1 bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
+                      className="flex-1 bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/70 placeholder-white/20 text-xs px-3 py-2 rounded-lg transition-colors" />
                   </div>
                 ))}
               </div>
@@ -1096,7 +1096,7 @@ export default function ReleaseDetailPage() {
               const statusColor = (link || isLive) ? "text-green-400" : isProcessing ? "text-blue-400" : "text-white/25";
 
               return (
-                <div key={p.key} className="bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.06] rounded-2xl p-4 transition-colors flex flex-col gap-3">
+                <div key={p.key} className="bg-[#0d0d10] hover:bg-[#111114] border border-white/[0.09] rounded-2xl p-4 transition-colors flex flex-col gap-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${p.color}20`, color: p.color }}>
                       {PlatformIcon({ platformKey: p.key, size: 16 }) ?? <span className="text-[11px] font-bold">{p.label.charAt(0)}</span>}
@@ -1144,15 +1144,15 @@ export default function ReleaseDetailPage() {
           </div>
 
           {/* Lyrics */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Lyrics</p>
+          <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
+            <p className="text-white/55 text-xs uppercase tracking-widest mb-3">Lyrics</p>
             {editingContent ? (
               <textarea
                 value={lyricsText}
                 onChange={(e) => setLyricsText(e.target.value)}
                 rows={14}
                 placeholder={"[Verse 1]\nYour lyrics here…\n\n[Chorus]\n…"}
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors resize-y font-mono leading-relaxed"
+                className="w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors resize-y font-mono leading-relaxed"
               />
             ) : lyricsText ? (
               <pre className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap font-mono">{lyricsText}</pre>
@@ -1162,15 +1162,15 @@ export default function ReleaseDetailPage() {
           </div>
 
           {/* Music Video URL */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Music Video</p>
+          <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
+            <p className="text-white/55 text-xs uppercase tracking-widest mb-3">Music Video</p>
             {editingContent ? (
               <input
                 type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
                 placeholder="https://youtube.com/watch?v=…"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors"
+                className="w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors"
               />
             ) : videoUrl ? (
               (() => {
@@ -1204,15 +1204,15 @@ export default function ReleaseDetailPage() {
           </div>
 
           {/* Song Story */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Song Story / Press Notes</p>
+          <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
+            <p className="text-white/55 text-xs uppercase tracking-widest mb-3">Song Story / Press Notes</p>
             {editingContent ? (
               <textarea
                 value={songStory}
                 onChange={(e) => setSongStory(e.target.value)}
                 rows={5}
                 placeholder="Share the story behind this track — what inspired it, the creative process, what it means to you…"
-                className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors resize-y leading-relaxed"
+                className="w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-4 py-3 rounded-xl transition-colors resize-y leading-relaxed"
               />
             ) : songStory ? (
               <p className="text-white/60 text-sm leading-relaxed whitespace-pre-wrap">{songStory}</p>
@@ -1222,8 +1222,8 @@ export default function ReleaseDetailPage() {
           </div>
 
           {/* Production Credits */}
-          <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-4">Production Credits</p>
+          <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
+            <p className="text-white/55 text-xs uppercase tracking-widest mb-4">Production Credits</p>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-white/30 text-xs block mb-1.5">Mixing Engineer</label>
@@ -1233,7 +1233,7 @@ export default function ReleaseDetailPage() {
                     value={mixingEngineer}
                     onChange={(e) => setMixingEngineer(e.target.value)}
                     placeholder="e.g. DJ Coublon"
-                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                    className="w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
                   />
                 ) : (
                   <p className={mixingEngineer ? "text-white/70 text-sm" : "text-white/20 text-sm"}>{mixingEngineer || "Not specified"}</p>
@@ -1247,7 +1247,7 @@ export default function ReleaseDetailPage() {
                     value={masteringEngineer}
                     onChange={(e) => setMasteringEngineer(e.target.value)}
                     placeholder="e.g. Sterling Sound"
-                    className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                    className="w-full bg-[#0f0f12] border border-white/[0.08] focus:border-[#007bff] outline-none text-white/80 placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
                   />
                 ) : (
                   <p className={masteringEngineer ? "text-white/70 text-sm" : "text-white/20 text-sm"}>{masteringEngineer || "Not specified"}</p>
@@ -1334,7 +1334,7 @@ export default function ReleaseDetailPage() {
               action: <a href="/portal/support" className="text-xs font-semibold text-white/40 hover:text-white transition-colors">Report via Support →</a>,
             },
           ].map((svc, i) => (
-            <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 flex items-start gap-4">
+            <div key={i} className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5 flex items-start gap-4">
               <div className="flex-shrink-0 mt-0.5">{svc.icon}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -1351,7 +1351,7 @@ export default function ReleaseDetailPage() {
 
           {/* Takedown request */}
           {release.status === "approved" && (
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 flex items-start gap-4">
+            <div className="bg-white/[0.02] border border-white/[0.09] rounded-2xl p-5 flex items-start gap-4">
               <Trash2 size={22} className="text-red-400/50 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -1389,7 +1389,7 @@ export default function ReleaseDetailPage() {
           <p className="text-white/40 text-sm -mt-4">Add &amp; edit royalty splits to automatically share earnings with your collaborators.</p>
 
           {/* Track card — Ditto style */}
-          <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5">
+          <div className="bg-[#0f0f12] border border-white/[0.08] rounded-2xl p-5">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#007bff]/20 to-black flex items-center justify-center">
                 {release.cover_art_url
@@ -1403,7 +1403,7 @@ export default function ReleaseDetailPage() {
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-between gap-4 flex-wrap border-t border-white/[0.06] pt-4">
+            <div className="mt-4 flex items-center justify-between gap-4 flex-wrap border-t border-white/[0.09] pt-4">
               <div className="flex items-center gap-6">
                 <div>
                   <p className="text-white/30 text-[10px] uppercase tracking-widest mb-0.5">My release split</p>
@@ -1433,7 +1433,7 @@ export default function ReleaseDetailPage() {
             <div className="space-y-2">
               <p className="text-white/30 text-xs uppercase tracking-widest px-1">Collaborators</p>
               {splits.map((s, i) => (
-                <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl px-5 py-4 flex items-center justify-between gap-4">
+                <div key={i} className="bg-[#0d0d10] border border-white/[0.09] rounded-xl px-5 py-4 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-white/80 text-sm font-medium">{s.role}</p>
                     {s.email && <p className="text-white/30 text-xs mt-0.5">{s.email}</p>}
@@ -1446,7 +1446,7 @@ export default function ReleaseDetailPage() {
 
           {/* Edit form */}
           {editingSplits && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 space-y-4">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5 space-y-4">
               {splits.length > 0 && (
                 <div className="hidden sm:grid grid-cols-[1fr_1fr_80px_28px] gap-3 px-1">
                   <span className="text-white/25 text-[10px] uppercase tracking-widest">Role</span>
@@ -1501,7 +1501,7 @@ export default function ReleaseDetailPage() {
 
           {/* Earnings in splits tab */}
           {release.status === "approved" && release.royalties_usd != null && release.royalties_usd > 0 && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
               <div className="flex items-center gap-3 mb-4"><DollarSign size={17} className="text-green-400" /><p className="text-white font-semibold">Earnings</p></div>
               <div className="flex items-end gap-2 mb-4">
                 <span className="text-green-400 text-3xl font-bold">${release.royalties_usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -1510,7 +1510,7 @@ export default function ReleaseDetailPage() {
               {payoutState === "sent" ? (
                 <div className="flex items-center gap-2 bg-green-400/10 border border-green-400/20 rounded-xl px-4 py-3"><CheckCircle2 size={16} className="text-green-400 flex-shrink-0" /><p className="text-green-400 text-sm">Payout request sent! Our team will reach out within 3–5 business days.</p></div>
               ) : payoutState === "confirm" ? (
-                <div className="bg-white/[0.04] border border-white/[0.1] rounded-xl p-4 space-y-3">
+                <div className="bg-[#0f0f12] border border-white/[0.1] rounded-xl p-4 space-y-3">
                   {!hasPayoutDetails && <div className="flex items-start gap-2 bg-yellow-400/10 border border-yellow-400/20 rounded-xl px-4 py-3"><span className="text-yellow-400 text-xs flex-1">You haven&apos;t added your payout details yet. <Link href="/portal/profile" className="underline font-semibold">Add them in your profile</Link>.</span></div>}
                   <p className="text-white/70 text-sm">Submit a payout request for <span className="text-white font-semibold">${release.royalties_usd.toFixed(2)} USD</span>?</p>
                   <div className="flex gap-3">

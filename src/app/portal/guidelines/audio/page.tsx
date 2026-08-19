@@ -69,7 +69,7 @@ export default function AudioGuidelinesPage() {
       </div>
 
       {/* Quick spec card */}
-      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-6 mb-8">
+      <div className="bg-[#0d0d10] border border-white/[0.08] rounded-2xl p-6 mb-8">
         <div className="flex items-center gap-2 mb-4">
           <Gauge size={14} className="text-blue-400" />
           <h2 className="text-white font-semibold text-sm">Technical Specifications</h2>
@@ -87,7 +87,7 @@ export default function AudioGuidelinesPage() {
 
       {/* Loudness targets */}
       <Section title="Loudness Targets by Platform">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-5 mb-3">
+        <div className="bg-white/[0.02] border border-white/[0.09] rounded-xl px-5 mb-3">
           <LufsRow platform="Spotify"      target="−14 LUFS" max="−1.0 dBTP" />
           <LufsRow platform="Apple Music"  target="−16 LUFS" max="−1.0 dBTP" />
           <LufsRow platform="YouTube Music" target="−14 LUFS" max="−1.0 dBTP" />
@@ -103,7 +103,7 @@ export default function AudioGuidelinesPage() {
 
       {/* What's required */}
       <Section title="What's Required">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-4">
+        <div className="bg-white/[0.02] border border-white/[0.09] rounded-xl px-4">
           <ul>
             <Rule ok={true}>Lossless source file (WAV or FLAC) — not a re-encoded MP3</Rule>
             <Rule ok={true}>Professionally mastered or well-balanced mix</Rule>
@@ -116,7 +116,7 @@ export default function AudioGuidelinesPage() {
 
       {/* What's not allowed */}
       <Section title="What's Not Allowed">
-        <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-4">
+        <div className="bg-white/[0.02] border border-white/[0.09] rounded-xl px-4">
           <ul>
             <Rule ok={false}>MP3, AAC, OGG, or any lossy format as the submission file</Rule>
             <Rule ok={false}>Audible clipping or distortion anywhere in the track</Rule>
@@ -153,7 +153,7 @@ export default function AudioGuidelinesPage() {
               desc: "If your DAW exports 32-bit float, convert to 24-bit WAV before submitting using the built-in converter.",
             },
           ].map((item) => (
-            <div key={item.tip} className="flex gap-4 bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+            <div key={item.tip} className="flex gap-4 bg-white/[0.02] border border-white/[0.09] rounded-xl p-4">
               <span className="text-xl flex-shrink-0">{item.icon}</span>
               <div>
                 <p className="text-white text-sm font-medium mb-0.5">{item.tip}</p>

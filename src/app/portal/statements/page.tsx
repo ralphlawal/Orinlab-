@@ -100,9 +100,9 @@ export default function StatementsPage() {
       <section className="max-w-3xl mx-auto px-4 py-10 space-y-6">
         <div className="h-8 w-48 rounded-xl bg-white/[0.06] animate-pulse" />
         <div className="grid grid-cols-3 gap-3">
-          {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-white/[0.04] animate-pulse" />)}
+          {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded-2xl bg-[#0f0f12] animate-pulse" />)}
         </div>
-        <div className="h-64 rounded-2xl bg-white/[0.04] animate-pulse" />
+        <div className="h-64 rounded-2xl bg-[#0f0f12] animate-pulse" />
       </section>
     );
   }
@@ -133,17 +133,17 @@ export default function StatementsPage() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-center">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5 text-center">
           <DollarSign size={18} className="text-[#34d399] mx-auto mb-2 opacity-70" />
           <p className="text-white font-bold text-2xl tabular-nums">{formatUsd(totals.royalties)}</p>
           <p className="text-white/35 text-xs mt-1">Total Royalties</p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-center">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5 text-center">
           <BarChart3 size={18} className="text-[#60a5fa] mx-auto mb-2 opacity-70" />
           <p className="text-white font-bold text-2xl tabular-nums">{fmtNum(totals.streams)}</p>
           <p className="text-white/35 text-xs mt-1">Total Streams</p>
         </div>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 text-center">
+        <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5 text-center">
           <TrendingUp size={18} className="text-[#f472b6] mx-auto mb-2 opacity-70" />
           <p className="text-white font-bold text-2xl tabular-nums">{totals.live}</p>
           <p className="text-white/35 text-xs mt-1">Live Releases</p>
@@ -171,7 +171,7 @@ export default function StatementsPage() {
                   const streamBreakdown = r.streams ? Object.entries(r.streams).filter(([, v]) => v > 0).sort(([, a], [, b]) => b - a) : [];
 
                   return (
-                    <div key={r.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+                    <div key={r.id} className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl overflow-hidden">
                       <button
                         className="w-full flex items-center gap-4 p-4 text-left hover:bg-white/[0.02] transition-colors"
                         onClick={() => setExpanded(isOpen ? null : r.id)}

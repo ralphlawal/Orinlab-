@@ -127,10 +127,10 @@ export default function BillingPage() {
       )}
 
       {/* Current plan */}
-      <div className={`rounded-2xl border p-6 ${activePlan ? "bg-violet-500/10 border-violet-400/30" : "bg-white/[0.03] border-white/[0.08]"}`}>
+      <div className={`rounded-2xl border p-6 ${activePlan ? "bg-violet-500/10 border-violet-400/30" : "bg-[#0d0d10] border-white/[0.08]"}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-1">Current Plan</p>
+            <p className="text-white/55 text-xs uppercase tracking-widest mb-1">Current Plan</p>
             {activePlan ? (
               <>
                 <div className="flex items-center gap-2 mb-1">

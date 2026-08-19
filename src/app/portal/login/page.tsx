@@ -133,7 +133,7 @@ export default function PortalLoginPage() {
                     placeholder="your@email.com"
                     required
                     autoFocus
-                    className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm pl-10 pr-4 py-3.5 rounded-xl transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm pl-10 pr-4 py-3.5 rounded-xl transition-colors"
                   />
                 </div>
               </div>

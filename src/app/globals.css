@@ -228,6 +228,178 @@ body {
 }
 .input::placeholder { color: rgba(255,255,255,0.25); }
 
+/* ─── Portal design system ───────────────────────────────────────────────────── */
+
+/* Base card — elevated surface against the portal background */
+.p-card {
+  background: #0e0e10;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  transition: border-color 0.2s ease;
+}
+.p-card-hover:hover {
+  border-color: rgba(255,255,255,0.14);
+  background: #111114;
+}
+
+/* High-emphasis card (hero / CTA areas) */
+.p-card-high {
+  background: #111114;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+}
+
+/* Form inputs — visible, not harsh */
+.p-input {
+  display: block;
+  width: 100%;
+  background: #111114;
+  border: 1.5px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.875rem;
+  padding: 0.6875rem 0.875rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  font-family: inherit;
+  line-height: 1.5;
+  -webkit-appearance: none;
+}
+.p-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0,123,255,0.12);
+}
+.p-input::placeholder { color: rgba(255,255,255,0.22); }
+.p-input:disabled { opacity: 0.4; cursor: not-allowed; }
+select.p-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+/* Section divider label */
+.p-section {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.28);
+  margin-bottom: 6px;
+}
+
+/* Stat display */
+.p-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: -0.03em;
+}
+.p-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.32);
+  margin-top: 4px;
+}
+
+/* Status chip */
+.p-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.p-chip-amber  { color: #f59e0b; background: rgba(245,158,11,0.10); border-color: rgba(245,158,11,0.20); }
+.p-chip-green  { color: #34d399; background: rgba(52,211,153,0.10); border-color: rgba(52,211,153,0.20); }
+.p-chip-red    { color: #f87171; background: rgba(248,113,113,0.10); border-color: rgba(248,113,113,0.20); }
+.p-chip-blue   { color: #60a5fa; background: rgba(96,165,250,0.10); border-color: rgba(96,165,250,0.20); }
+.p-chip-purple { color: #c084fc; background: rgba(192,132,252,0.10); border-color: rgba(192,132,252,0.20); }
+
+/* Primary button */
+.p-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #007bff;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+  text-decoration: none;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.p-btn:hover { background: #0069d9; }
+.p-btn:active { transform: scale(0.98); }
+.p-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Ghost button */
+.p-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  text-decoration: none;
+  font-family: inherit;
+}
+.p-btn-ghost:hover {
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+  border-color: rgba(255,255,255,0.18);
+}
+
+/* Empty state wrapper */
+.p-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 56px 24px;
+  gap: 12px;
+}
+.p-empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+/* Portal page wrapper — consistent max-width + padding */
+.portal-page {
+  padding: 28px 20px 48px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+@media (min-width: 640px) {
+  .portal-page { padding: 32px 28px 64px; }
+}
+
 /* ─── Blog post prose ───────────────────────────────────────────────────────── */
 
 .prose-orinlabi { color: rgba(255,255,255,0.7); font-size: 1.0625rem; line-height: 1.8; }

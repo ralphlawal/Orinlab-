@@ -76,7 +76,7 @@ const EMPTY: Profile = {
 };
 
 const inp =
-  "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-3 rounded-xl transition-colors";
+  "w-full bg-white/[0.05] border border-white/[0.1] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-3 rounded-xl transition-colors";
 
 const ARTIST_TYPES = ["Solo Artist", "Band / Group", "DJ", "Producer", "Duo"];
 
@@ -98,7 +98,7 @@ const COUNTRIES = [
 
 function Card({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 space-y-5">
+    <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-6 space-y-5">
       <div>
         <p className="text-white font-semibold text-sm">{title}</p>
         {hint && <p className="text-white/40 text-xs mt-1 leading-relaxed">{hint}</p>}
@@ -470,7 +470,7 @@ export default function ProfilePage() {
           </Field>
           <Field label="Public Profile Slug" hint={`Your page: orinlabi.com/artist/${profile.public_slug || "your-name"}`}>
             <div className="flex items-center gap-0">
-              <span className="bg-white/[0.04] border border-r-0 border-white/[0.1] text-white/30 text-sm px-3 py-3 rounded-l-xl whitespace-nowrap">orinlabi.com/artist/</span>
+              <span className="bg-[#0f0f12] border border-r-0 border-white/[0.1] text-white/30 text-sm px-3 py-3 rounded-l-xl whitespace-nowrap">orinlabi.com/artist/</span>
               <input
                 value={profile.public_slug}
                 onChange={(e) => set("public_slug")({ target: { value: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-") } } as React.ChangeEvent<HTMLInputElement>)}
@@ -556,7 +556,7 @@ export default function ProfilePage() {
           <div className="space-y-2 mb-3">
             {roster.map((name, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="flex-1 bg-white/[0.04] border border-white/[0.08] text-white/70 text-sm px-4 py-2.5 rounded-xl">{name}</span>
+                <span className="flex-1 bg-[#0f0f12] border border-white/[0.08] text-white/70 text-sm px-4 py-2.5 rounded-xl">{name}</span>
                 <button onClick={() => { setRoster(roster.filter((_, j) => j !== i)); setRosterSaved(false); }}
                   className="text-white/30 hover:text-red-400 transition-colors p-1">
                   <Trash2 size={14} />

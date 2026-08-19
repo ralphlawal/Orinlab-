@@ -547,7 +547,7 @@ export default function NewReleasePage() {
               className={`rounded-2xl border p-5 flex flex-col gap-4 ${
                 plan.highlight
                   ? "border-violet-400/30 bg-violet-500/5"
-                  : "border-white/[0.08] bg-white/[0.03]"
+                  : "border-white/[0.08] bg-[#0d0d10]"
               }`}
             >
               {plan.highlight && (
@@ -600,7 +600,7 @@ export default function NewReleasePage() {
         </div>
 
         {/* Invite request */}
-        <div className="mt-8 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 text-center">
+        <div className="mt-8 bg-white/[0.02] border border-white/[0.09] rounded-2xl p-6 text-center">
           <p className="text-white font-semibold mb-2">Not in a position to subscribe yet?</p>
           <p className="text-white/40 text-sm leading-relaxed mb-6 max-w-xs mx-auto">
             Tell us about your music. We review every application personally and
@@ -677,7 +677,7 @@ export default function NewReleasePage() {
       </div>
 
       {profile && (
-        <div className="mb-8 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+        <div className="mb-8 bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
           <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Submitting As</p>
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-[#007bff]/15 rounded-full flex items-center justify-center flex-shrink-0">
@@ -846,7 +846,7 @@ export default function NewReleasePage() {
                 Add all tracks in order. WAV, MP3, or FLAC · Min. 16-bit / 44.1kHz
               </p>
               {tracks.map((track, i) => (
-                <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+                <div key={i} className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-[#007bff] text-xs font-bold uppercase tracking-widest">
                       Track {i + 1}
@@ -904,7 +904,7 @@ export default function NewReleasePage() {
                         </select>
                       </div>
                     </div>
-                    <label className="flex items-center gap-3 bg-white/[0.03] border border-dashed border-white/[0.12] hover:border-[#007bff]/50 rounded-xl px-4 py-3 cursor-pointer transition-colors group">
+                    <label className="flex items-center gap-3 bg-[#0d0d10] border border-dashed border-white/[0.12] hover:border-[#007bff]/50 rounded-xl px-4 py-3 cursor-pointer transition-colors group">
                       {track.file ? (
                         <>
                           <CheckCircle2 size={16} className="text-[#007bff] flex-shrink-0" />
@@ -979,7 +979,7 @@ export default function NewReleasePage() {
 
               <div className="space-y-3 mb-2">
                 {featuredArtists.map((fa, i) => (
-                  <div key={i} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-2.5">
+                  <div key={i} className="bg-[#0d0d10] border border-white/[0.09] rounded-xl p-4 space-y-2.5">
                     <div className="flex items-center gap-2">
                       <span className="text-[#007bff] text-[10px] font-bold uppercase tracking-widest flex-1">Featured Artist {featuredArtists.length > 1 ? i + 1 : ""}</span>
                       <button
@@ -997,7 +997,7 @@ export default function NewReleasePage() {
                         n[i] = { ...n[i], name: e.target.value };
                         setFeaturedArtists(n);
                       }}
-                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/25 text-sm px-4 py-2.5 rounded-xl transition-colors"
+                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/30 text-sm px-4 py-2.5 rounded-xl transition-colors"
                     />
                     <div className="grid sm:grid-cols-2 gap-2.5">
                       <div>
@@ -1035,7 +1035,7 @@ export default function NewReleasePage() {
               <button
                 type="button"
                 onClick={() => setFeaturedArtists([...featuredArtists, { name: "", spotify_id: "", apple_id: "" }])}
-                className="text-xs font-medium bg-white/[0.04] hover:bg-white/[0.08] text-white/50 hover:text-white/80 px-3 py-2 rounded-lg transition-colors border border-white/[0.06]"
+                className="text-xs font-medium bg-[#0f0f12] hover:bg-white/[0.08] text-white/50 hover:text-white/80 px-3 py-2 rounded-lg transition-colors border border-white/[0.09]"
               >
                 + Add Featured Artist
               </button>
@@ -1230,7 +1230,7 @@ export default function NewReleasePage() {
               </div>
             )}
             {/* YouTube Content ID */}
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
+            <div className="bg-[#0d0d10] border border-white/[0.09] rounded-2xl p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-white font-medium text-sm mb-1">YouTube Content ID</p>
@@ -1251,7 +1251,7 @@ export default function NewReleasePage() {
         </div>
 
         {/* Distribution priority */}
-        <div className={`rounded-2xl p-6 ${isUrgentRelease ? "bg-amber-500/[0.06] border border-amber-400/25" : "bg-white/[0.03] border border-white/[0.08]"}`}>
+        <div className={`rounded-2xl p-6 ${isUrgentRelease ? "bg-amber-500/[0.06] border border-amber-400/25" : "bg-[#0d0d10] border border-white/[0.08]"}`}>
           <div className="flex items-center gap-2 mb-1">
             <p className="text-white/70 text-xs uppercase tracking-widest font-medium">Distribution Speed</p>
             {isUrgentRelease && (
@@ -1405,7 +1405,7 @@ function FileUpload({
       <label className="block text-white/70 text-sm font-medium mb-2">
         {label}{required && <span className="text-[#007bff] ml-1">*</span>}
       </label>
-      <label className="flex flex-col items-center justify-center gap-3 bg-white/[0.03] border border-dashed border-white/[0.12] hover:border-[#007bff]/50 rounded-xl p-8 cursor-pointer transition-colors group min-h-[140px]">
+      <label className="flex flex-col items-center justify-center gap-3 bg-[#0d0d10] border border-dashed border-white/[0.12] hover:border-[#007bff]/50 rounded-xl p-8 cursor-pointer transition-colors group min-h-[140px]">
         {file ? (
           <>
             <CheckCircle2 size={24} className="text-[#007bff]" />
