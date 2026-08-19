@@ -16,15 +16,18 @@ function isAuthorized(req: NextRequest): boolean {
   return (ADMIN_EMAILS.includes(email) && !!email) || (!!ADMIN_PIN && pin === ADMIN_PIN);
 }
 
-// GET /api/admin/pitches — returns all pitches (admin only)
+// GET /api/admin/pitches — returns all pitches (admin only); ?email= filters to one artist
 export async function GET(req: NextRequest) {
   if (!isAuthorized(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data, error } = await serviceClient()
+  const emailFilter = req.nextUrl.searchParams.get("email");
+  let query = serviceClient()
     .from("playlist_pitches")
     .select("*")
     .order("created_at", { ascending: false });
+  if (emailFilter) query = query.eq("email", emailFilter);
 
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ pitches: data ?? [] });
 }
@@ -42,6 +45,7 @@ export async function PATCH(req: NextRequest) {
   const update: Record<string, unknown> = {};
   if ("status" in body) update.status = body.status;
   if ("admin_notes" in body) update.admin_notes = body.admin_notes;
+  if ("placement_url" in body) update.placement_url = body.placement_url ?? null;
 
   if (Object.keys(update).length === 0) return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
 

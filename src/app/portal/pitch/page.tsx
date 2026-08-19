@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Loader2, CheckCircle2, ChevronDown, Radio, Tv, Mic2,
-  Globe, Music2, Newspaper, ChevronRight, ArrowLeft, Clock, XCircle,
+  Globe, Music2, Newspaper, ChevronRight, ArrowLeft, Clock, XCircle, ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -17,6 +17,7 @@ type PitchHistory = {
   pitch_notes: string | null;
   status: "pending" | "submitted" | "placed" | "declined";
   admin_notes: string | null;
+  placement_url: string | null;
   created_at: string;
 };
 
@@ -343,6 +344,23 @@ export default function PromotePage() {
                       <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1.5">Your pitch</p>
                       <p className="text-white/70 text-sm leading-relaxed bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 whitespace-pre-wrap">{parsed.notes}</p>
                     </div>
+                  )}
+
+                  {/* Placement link */}
+                  {selected.status === "placed" && selected.placement_url && (
+                    <a
+                      href={selected.placement_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 bg-green-400/[0.07] border border-green-400/20 rounded-xl p-3.5 hover:bg-green-400/10 transition-colors"
+                    >
+                      <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-green-400 text-xs font-bold uppercase tracking-widest mb-0.5">Your song was placed!</p>
+                        <p className="text-white/60 text-xs truncate">{selected.placement_url}</p>
+                      </div>
+                      <ExternalLink size={13} className="text-green-400/60 flex-shrink-0" />
+                    </a>
                   )}
 
                   {/* Admin notes */}

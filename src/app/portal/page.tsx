@@ -867,48 +867,52 @@ export default function PortalDashboard() {
             const Icon = cfg.icon;
             return (
               <FadeIn key={r.id} delay={500 + i * 50}>
-                <Link
-                  href={`/portal/releases/${r.id}`}
-                  className="group relative flex items-center gap-4 bg-[#0e0e10] hover:bg-[#111114] border border-white/[0.09] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-200 overflow-hidden card-hover"
-                >
-                  {/* Left accent by status */}
-                  <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ background: cfg.accent }} />
+                {/* Outer div is the group — no interactive elements nested inside Link */}
+                <div className="group relative">
+                  <Link
+                    href={`/portal/releases/${r.id}`}
+                    className="relative flex items-center gap-4 bg-[#0e0e10] hover:bg-[#111114] border border-white/[0.09] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-200 overflow-hidden card-hover pr-14"
+                  >
+                    {/* Left accent by status */}
+                    <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl" style={{ background: cfg.accent }} />
 
-                  <div className="w-14 h-14 rounded-xl flex-shrink-0 overflow-hidden ml-2" style={{ background: `linear-gradient(135deg, ${cfg.accent}20, #000)` }}>
-                    {r.cover_art_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={r.cover_art_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Music2 size={20} style={{ color: cfg.accent + "60" }} />
-                      </div>
-                    )}
-                  </div>
+                    <div className="w-14 h-14 rounded-xl flex-shrink-0 overflow-hidden ml-2" style={{ background: `linear-gradient(135deg, ${cfg.accent}20, #000)` }}>
+                      {r.cover_art_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={r.cover_art_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Music2 size={20} style={{ color: cfg.accent + "60" }} />
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold truncate">{r.song_title}</p>
-                    <p className="text-white/40 text-xs mt-0.5">{r.release_type} · {r.genre}</p>
-                    <p className="text-white/20 text-xs mt-1">
-                      Applied {new Date(r.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                    </p>
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold truncate">{r.song_title}</p>
+                      <p className="text-white/40 text-xs mt-0.5">{r.release_type} · {r.genre}</p>
+                      <p className="text-white/20 text-xs mt-1">
+                        Applied {new Date(r.submitted_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </p>
+                    </div>
 
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                    <span className="hidden sm:block">{cfg.label}</span>
-                    <Icon size={13} className="sm:hidden" />
-                  </div>
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold flex-shrink-0 ${cfg.bg} ${cfg.color}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                      <span className="hidden sm:block">{cfg.label}</span>
+                      <Icon size={13} className="sm:hidden" />
+                    </div>
+                    <ChevronRight size={16} className="text-white/20 group-hover:text-white/50 flex-shrink-0 transition-colors" />
+                  </Link>
+                  {/* Duplicate button lives OUTSIDE the Link to avoid button-in-anchor */}
                   {r.status === "approved" && (
                     <button
                       onClick={(e) => handleDuplicate(r, e)}
                       title="Duplicate as new release"
-                      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] flex-shrink-0 transition-all duration-150"
+                      className="absolute right-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] transition-all duration-150 z-10"
                     >
                       <Copy size={13} />
                     </button>
                   )}
-                  <ChevronRight size={16} className="text-white/20 group-hover:text-white/50 flex-shrink-0 transition-colors" />
-                </Link>
+                </div>
               </FadeIn>
             );
           })}

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase"; // used for auth.getSession()
 import { usePinGate } from "@/context/AdminPinContext";
-import { Loader2, Radio, Music2, Newspaper, Tv, Mic2, ChevronRight } from "lucide-react";
+import { Loader2, Radio, Music2, Newspaper, Tv, Mic2, ChevronRight, Link2, CheckCircle2, X } from "lucide-react";
 
 type Pitch = {
   id: string;
@@ -15,6 +15,7 @@ type Pitch = {
   pitch_notes: string | null;
   status: "pending" | "submitted" | "placed" | "declined";
   admin_notes: string | null;
+  placement_url: string | null;
   created_at: string;
 };
 
@@ -51,17 +52,40 @@ function parsePitchNotes(raw: string | null): { type: PitchType | null; targets:
   };
 }
 
+function detectPlatform(url: string): { name: string; color: string } | null {
+  try { new URL(url); } catch { return null; }
+  if (url.includes("spotify.com"))      return { name: "Spotify",     color: "#1DB954" };
+  if (url.includes("music.apple.com"))  return { name: "Apple Music", color: "#FC3C44" };
+  if (url.includes("deezer.com"))       return { name: "Deezer",      color: "#A238FF" };
+  if (url.includes("youtube.com") || url.includes("youtu.be")) return { name: "YouTube", color: "#FF0000" };
+  if (url.includes("audiomack.com"))    return { name: "Audiomack",   color: "#F5A623" };
+  if (url.includes("boomplay.com"))     return { name: "Boomplay",    color: "#FF6B35" };
+  if (url.includes("soundcloud.com"))   return { name: "SoundCloud",  color: "#FF5500" };
+  if (url.startsWith("http"))           return { name: "Link",        color: "#007bff" };
+  return null;
+}
+
 export default function PitchesPage() {
   const { requestUnlock } = usePinGate();
   const adminEmailRef = useRef<string>("");
   const [pitches, setPitches]       = useState<Pitch[]>([]);
   const [loading, setLoading]       = useState(true);
   const [selected, setSelected]     = useState<Pitch | null>(null);
-  const [adminNotes, setAdminNotes] = useState("");
-  const [status, setStatus]         = useState<Pitch["status"]>("pending");
-  const [saving, setSaving]         = useState(false);
+  const [adminNotes, setAdminNotes]     = useState("");
+  const [status, setStatus]             = useState<Pitch["status"]>("pending");
+  const [modalPlacementUrl, setModalPlacementUrl] = useState("");
+  const [saving, setSaving]             = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | Pitch["status"]>("all");
   const [typeFilter, setTypeFilter]     = useState<"all" | PitchType>("all");
+
+  // Record Placement panel
+  const [showPlacement, setShowPlacement]       = useState(false);
+  const [placementUrl, setPlacementUrl]         = useState("");
+  const [placementPitchId, setPlacementPitchId] = useState("");
+  const [placementNotes, setPlacementNotes]     = useState("");
+  const [placementOutcome, setPlacementOutcome] = useState<"submitted" | "placed" | "declined">("submitted");
+  const [recording, setRecording]               = useState(false);
+  const [recordDone, setRecordDone]             = useState(false);
 
   function adminHeaders(): HeadersInit {
     return { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current };
@@ -88,6 +112,7 @@ export default function PitchesPage() {
     setSelected(p);
     setAdminNotes(p.admin_notes ?? "");
     setStatus(p.status);
+    setModalPlacementUrl(p.placement_url ?? "");
   }
 
   async function save() {
@@ -96,11 +121,63 @@ export default function PitchesPage() {
     await fetch(`/api/admin/pitches?id=${selected.id}`, {
       method: "PATCH",
       headers: adminHeaders(),
-      body: JSON.stringify({ status, admin_notes: adminNotes }),
+      body: JSON.stringify({ status, admin_notes: adminNotes, placement_url: modalPlacementUrl.trim() || null }),
     });
     setSaving(false);
     setSelected(null);
     load();
+  }
+
+  async function recordPlacement() {
+    if (!placementPitchId || !placementUrl.trim()) return;
+    setRecording(true);
+    const pitch = pitches.find((p) => p.id === placementPitchId);
+    await fetch(`/api/admin/pitches?id=${placementPitchId}`, {
+      method: "PATCH",
+      headers: adminHeaders(),
+      body: JSON.stringify({
+        status: placementOutcome,
+        placement_url: placementOutcome !== "declined" ? placementUrl.trim() : null,
+        ...(placementNotes.trim() ? { admin_notes: placementNotes.trim() } : {}),
+      }),
+    });
+    // Notify the artist in-app with outcome-appropriate message
+    if (pitch) {
+      const notifMap = {
+        submitted: {
+          type: "info" as const,
+          title: "Your pitch is being reviewed",
+          body: `"${pitch.song_title}" has been submitted to a playlist curator and is currently pending their decision.`,
+        },
+        placed: {
+          type: "success" as const,
+          title: "Your song was placed! 🎉",
+          body: `"${pitch.song_title}" has been placed on a playlist. Check your pitch history to see the link.`,
+        },
+        declined: {
+          type: "warning" as const,
+          title: "Pitch update for your song",
+          body: `A curator has passed on "${pitch.song_title}" this time. We'll keep pitching — check your pitch history for details.`,
+        },
+      };
+      const notif = notifMap[placementOutcome];
+      await supabase.from("notifications").insert({
+        email: pitch.email,
+        link: "/portal/pitch",
+        ...notif,
+      });
+    }
+    setRecording(false);
+    setRecordDone(true);
+    await load();
+    setTimeout(() => {
+      setRecordDone(false);
+      setShowPlacement(false);
+      setPlacementUrl("");
+      setPlacementPitchId("");
+      setPlacementNotes("");
+      setPlacementOutcome("submitted");
+    }, 2500);
   }
 
   const filtered = pitches.filter((p) => {
@@ -114,13 +191,163 @@ export default function PitchesPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-white font-bold text-2xl">Promotion Pitches</h1>
-        <p className="text-white/40 text-sm mt-1">
-          Review and action artist promotion pitch submissions.
-          {pendingCount > 0 && <span className="ml-2 text-yellow-400 font-semibold">{pendingCount} pending</span>}
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-white font-bold text-2xl">Promotion Pitches</h1>
+          <p className="text-white/40 text-sm mt-1">
+            Review and action artist promotion pitch submissions.
+            {pendingCount > 0 && <span className="ml-2 text-yellow-400 font-semibold">{pendingCount} pending</span>}
+          </p>
+        </div>
+        <button
+          onClick={() => { setShowPlacement(!showPlacement); setRecordDone(false); }}
+          className="flex items-center gap-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
+        >
+          <Link2 size={14} /> Record Placement
+        </button>
       </div>
+
+      {/* ── Record Placement panel ─────────────────────────────────────────── */}
+      {showPlacement && (
+        <div className="bg-[#0d0d10] border border-green-500/20 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white font-semibold text-sm flex items-center gap-2">
+                <Link2 size={14} className="text-green-400" /> Record a Placement
+              </p>
+              <p className="text-white/35 text-xs mt-0.5">
+                Paste the playlist link from Spotify, Apple Music, or any platform — then pick which artist&apos;s pitch it matches.
+              </p>
+            </div>
+            <button onClick={() => setShowPlacement(false)} className="text-white/25 hover:text-white transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+
+          {recordDone ? (
+            <div className="flex items-center gap-3 bg-green-400/10 border border-green-400/20 rounded-xl px-4 py-3.5">
+              <CheckCircle2 size={18} className="text-green-400 flex-shrink-0" />
+              <div>
+                <p className="text-green-400 font-semibold text-sm">Saved & artist notified!</p>
+                <p className="text-white/40 text-xs mt-0.5">The artist has been notified in-app.</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Outcome selector */}
+              <div>
+                <label className="text-white/35 text-[10px] uppercase tracking-widest block mb-1.5">What happened with this pitch?</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { key: "submitted", label: "Pending", sub: "Submitted, awaiting curator decision", color: "border-blue-400/40 bg-blue-400/10 text-blue-400" },
+                    { key: "placed",    label: "Approved", sub: "Curator accepted the song",           color: "border-green-400/40 bg-green-400/10 text-green-400" },
+                    { key: "declined",  label: "Declined", sub: "Curator passed on it",               color: "border-red-400/40 bg-red-400/10 text-red-400" },
+                  ] as const).map(({ key, label, sub, color }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setPlacementOutcome(key)}
+                      className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-xl border text-center transition-all ${
+                        placementOutcome === key ? color : "border-white/[0.08] text-white/30 hover:text-white/60 hover:border-white/20"
+                      }`}
+                    >
+                      <span className="text-xs font-bold">{label}</span>
+                      <span className="text-[10px] leading-tight opacity-70">{sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* URL input — hidden for declined */}
+              {placementOutcome !== "declined" && (
+                <div>
+                  <label className="text-white/35 text-[10px] uppercase tracking-widest block mb-1.5">
+                    {placementOutcome === "placed" ? "Playlist URL" : "Platform / Submission URL"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      placeholder={placementOutcome === "placed" ? "https://open.spotify.com/playlist/…" : "https://pitchplaylists.com/…"}
+                      value={placementUrl}
+                      onChange={(e) => setPlacementUrl(e.target.value)}
+                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-green-500/50 outline-none text-white placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors pr-28"
+                    />
+                    {(() => {
+                      const platform = placementUrl ? detectPlatform(placementUrl) : null;
+                      return platform ? (
+                        <span
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                          style={{ background: platform.color + "22", color: platform.color, border: `1px solid ${platform.color}44` }}
+                        >
+                          {platform.name}
+                        </span>
+                      ) : null;
+                    })()}
+                  </div>
+                </div>
+              )}
+
+              {/* Pitch selector */}
+              <div>
+                <label className="text-white/35 text-[10px] uppercase tracking-widest block mb-1.5">Which artist&apos;s pitch is this for?</label>
+                <select
+                  value={placementPitchId}
+                  onChange={(e) => setPlacementPitchId(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-green-500/50 outline-none text-white text-sm px-3 py-2.5 rounded-xl transition-colors"
+                >
+                  <option value="">— Select artist &amp; song —</option>
+                  {pitches
+                    .filter((p) => p.status !== "declined")
+                    .map((p) => {
+                      const { type } = parsePitchNotes(p.pitch_notes);
+                      const typeName = type ? type.charAt(0) + type.slice(1).toLowerCase() : "Pitch";
+                      return (
+                        <option key={p.id} value={p.id}>
+                          {p.artist_name} — {p.song_title} ({typeName}){p.status === "placed" ? " ✓ placed" : p.status === "submitted" ? " · submitted" : ""}
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+
+              {/* Optional note to artist */}
+              <div>
+                <label className="text-white/35 text-[10px] uppercase tracking-widest block mb-1.5">
+                  Note to artist <span className="text-white/20 normal-case tracking-normal">(optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder={
+                    placementOutcome === "placed"   ? "e.g. You're on Lofi Summer Beats — great work!" :
+                    placementOutcome === "declined" ? "e.g. We're pitching to more curators next week" :
+                    "e.g. Submitted to Spotify Editorial — decision in 5–7 days"
+                  }
+                  value={placementNotes}
+                  onChange={(e) => setPlacementNotes(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-green-500/50 outline-none text-white placeholder-white/20 text-sm px-3 py-2.5 rounded-xl transition-colors"
+                />
+              </div>
+
+              <button
+                onClick={() => requestUnlock(recordPlacement)}
+                disabled={
+                  recording ||
+                  !placementPitchId ||
+                  (placementOutcome !== "declined" && (!placementUrl.trim() || !detectPlatform(placementUrl)))
+                }
+                className={`flex items-center gap-2 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors disabled:opacity-40 ${
+                  placementOutcome === "placed"   ? "bg-green-500 hover:bg-green-400" :
+                  placementOutcome === "declined" ? "bg-red-500/80 hover:bg-red-500" :
+                  "bg-[#007bff] hover:bg-[#0066dd]"
+                }`}
+              >
+                {recording ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                {recording ? "Saving…" : "Save & Notify Artist"}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -190,7 +417,18 @@ export default function PitchesPage() {
                     <p className="text-white/40 text-xs mt-0.5">{p.artist_name} · {p.genre ?? "—"} · {date}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {p.status === "placed" && p.placement_url && (
+                    <a
+                      href={p.placement_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-400/10 border border-green-400/20 px-2.5 py-1 rounded-full hover:bg-green-400/20 transition-colors"
+                    >
+                      <Link2 size={9} /> View
+                    </a>
+                  )}
                   <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${statusCfg.bg} ${statusCfg.color}`}>
                     {statusCfg.label}
                   </span>
@@ -285,6 +523,37 @@ export default function PitchesPage() {
                       <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
                     ))}
                   </select>
+                </div>
+
+                {/* Placement URL */}
+                <div>
+                  <label className="text-white/30 text-[10px] uppercase tracking-widest block mb-1.5">Placement URL</label>
+                  <div className="relative">
+                    <input
+                      type="url"
+                      value={modalPlacementUrl}
+                      onChange={(e) => setModalPlacementUrl(e.target.value)}
+                      placeholder="https://open.spotify.com/playlist/…"
+                      className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-sm px-3 py-2 rounded-xl transition-colors pr-24"
+                    />
+                    {(() => {
+                      const platform = modalPlacementUrl ? detectPlatform(modalPlacementUrl) : null;
+                      return platform ? (
+                        <span
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: platform.color + "22", color: platform.color, border: `1px solid ${platform.color}44` }}
+                        >
+                          {platform.name}
+                        </span>
+                      ) : null;
+                    })()}
+                  </div>
+                  {modalPlacementUrl && detectPlatform(modalPlacementUrl) && (
+                    <a href={modalPlacementUrl} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-green-400 text-xs mt-1.5 hover:underline">
+                      <Link2 size={10} /> Open link
+                    </a>
+                  )}
                 </div>
 
                 {/* Admin Notes */}

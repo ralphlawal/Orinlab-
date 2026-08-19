@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -9,7 +9,8 @@ import {
   ArrowLeft, Music2, CheckCircle2, Clock, XCircle, Globe,
   DollarSign, BarChart3, Loader2, ExternalLink, ShieldCheck, ShieldOff,
   MessageSquare, Bell, Send, Zap, AlertTriangle, User2, Calendar,
-  Radio, CreditCard, FileText, Link2,
+  Radio, CreditCard, FileText, Link2, Newspaper, Tv, Mic2, Link as LinkIcon,
+  Pencil, X,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -62,6 +63,42 @@ type Profile = {
   created_at: string | null;
 };
 
+type ArtistPitch = {
+  id: string;
+  song_title: string;
+  genre: string | null;
+  pitch_notes: string | null;
+  status: "pending" | "submitted" | "placed" | "declined";
+  admin_notes: string | null;
+  placement_url: string | null;
+  created_at: string;
+};
+
+type PitchEdit = { status: ArtistPitch["status"]; url: string };
+
+type UpperPitchType = "PLAYLIST" | "RADIO" | "BLOG" | "SYNC" | "SOCIAL";
+
+const PITCH_TYPE_CFG: Record<UpperPitchType, { icon: React.ElementType; color: string; label: string }> = {
+  PLAYLIST: { icon: Music2,     color: "text-green-400",  label: "Playlist" },
+  RADIO:    { icon: Radio,      color: "text-orange-400", label: "Radio" },
+  BLOG:     { icon: Newspaper,  color: "text-purple-400", label: "Blog/Press" },
+  SYNC:     { icon: Tv,         color: "text-[#007bff]",  label: "Sync" },
+  SOCIAL:   { icon: Mic2,       color: "text-pink-400",   label: "Social" },
+};
+
+const PITCH_STATUS_CFG = {
+  pending:   { label: "Pending",   color: "text-yellow-400", bg: "bg-yellow-400/10 border-yellow-400/20" },
+  submitted: { label: "Submitted", color: "text-blue-400",   bg: "bg-blue-400/10 border-blue-400/20"    },
+  placed:    { label: "Placed",    color: "text-green-400",  bg: "bg-green-400/10 border-green-400/20"  },
+  declined:  { label: "Declined",  color: "text-red-400",    bg: "bg-red-400/10 border-red-400/20"      },
+};
+
+function parsePitchType(pitchNotes: string | null): UpperPitchType | null {
+  if (!pitchNotes) return null;
+  const m = pitchNotes.match(/^\[([A-Z]+)\]/);
+  return (m?.[1] as UpperPitchType) ?? null;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtN(n: number) {
@@ -97,10 +134,17 @@ export default function ArtistProfilePage() {
   const router = useRouter();
 
   const artistEmail = decodeURIComponent(params.email);
+  const adminEmailRef = useRef<string>("");
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [releases, setReleases] = useState<Release[]>([]);
   const [loading, setLoading]   = useState(true);
+
+  // Pitches & placements
+  const [pitches, setPitches]         = useState<ArtistPitch[]>([]);
+  const [pitchEdits, setPitchEdits]   = useState<Record<string, PitchEdit>>({});
+  const [editingPitch, setEditingPitch] = useState<string | null>(null);
+  const [savingPitch, setSavingPitch]   = useState<string | null>(null);
 
   // Notify panel
   const [showNotify, setShowNotify]   = useState(false);
@@ -120,15 +164,32 @@ export default function ArtistProfilePage() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: prof }, { data: rels }] = await Promise.all([
+      const { data: sessionData } = await supabase.auth.getSession();
+      adminEmailRef.current = sessionData.session?.user?.email ?? "";
+
+      const [{ data: prof }, { data: rels }, pitchRes] = await Promise.all([
         supabase.from("artist_profiles").select("*").eq("email", artistEmail).maybeSingle(),
         supabase.from("releases")
           .select("id, song_title, release_type, genre, status, submitted_at, release_date, cover_art_url, streams, royalties_usd, distribution_stage, isrc")
           .eq("email", artistEmail)
           .order("submitted_at", { ascending: false }),
+        fetch(`/api/admin/pitches?email=${encodeURIComponent(artistEmail)}`, {
+          headers: { "x-admin-email": adminEmailRef.current },
+        }),
       ]);
+
       setProfile(prof as Profile | null);
       setReleases((rels ?? []) as Release[]);
+
+      if (pitchRes.ok) {
+        const { pitches: pts } = await pitchRes.json();
+        const loaded = (pts ?? []) as ArtistPitch[];
+        setPitches(loaded);
+        setPitchEdits(
+          Object.fromEntries(loaded.map((p) => [p.id, { status: p.status, url: p.placement_url ?? "" }]))
+        );
+      }
+
       setLoading(false);
     }
     load();
@@ -174,6 +235,22 @@ export default function ArtistProfilePage() {
     }
     setProfile((p) => p ? { ...p, account_status: status as Profile["account_status"] } : p);
     setChangingStatus(false);
+  }
+
+  async function savePitchPlacement(pitchId: string) {
+    setSavingPitch(pitchId);
+    const edit = pitchEdits[pitchId];
+    await fetch(`/api/admin/pitches?id=${pitchId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current },
+      body: JSON.stringify({ status: edit.status, placement_url: edit.url || null }),
+    });
+    setPitches((ps) => ps.map((p) => p.id === pitchId
+      ? { ...p, status: edit.status, placement_url: edit.url || null }
+      : p
+    ));
+    setSavingPitch(null);
+    setEditingPitch(null);
   }
 
   if (loading) {
@@ -558,6 +635,121 @@ export default function ArtistProfilePage() {
                     <span className="text-[#34d399] text-xs font-bold tabular-nums flex-shrink-0">{fmtUsd(r.royalties_usd!)}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Pitches & Placements ─────────────────────────── */}
+          {pitches.length > 0 && (
+            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+                <p className="text-white font-semibold text-sm flex items-center gap-2">
+                  <Radio size={15} className="text-orange-400" /> Pitches &amp; Placements
+                  <span className="text-white/30 font-normal">({pitches.length})</span>
+                </p>
+                {pitches.filter((p) => p.status === "placed").length > 0 && (
+                  <span className="text-xs font-semibold text-green-400">
+                    {pitches.filter((p) => p.status === "placed").length} placed
+                  </span>
+                )}
+              </div>
+
+              <div className="divide-y divide-white/[0.04]">
+                {pitches.map((p) => {
+                  const pitchType = parsePitchType(p.pitch_notes);
+                  const typeCfg = pitchType ? PITCH_TYPE_CFG[pitchType] : null;
+                  const TypeIcon = typeCfg?.icon ?? Radio;
+                  const statusCfg = PITCH_STATUS_CFG[p.status] ?? PITCH_STATUS_CFG.pending;
+                  const isEditing = editingPitch === p.id;
+                  const edit = pitchEdits[p.id] ?? { status: p.status, url: p.placement_url ?? "" };
+                  const date = new Date(p.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+                  return (
+                    <div key={p.id} className="px-5 py-4">
+                      {/* Row */}
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/[0.05]`}>
+                          <TypeIcon size={14} className={typeCfg?.color ?? "text-white/30"} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white/90 text-sm font-medium truncate">{p.song_title}</p>
+                          <p className="text-white/30 text-[10px] mt-0.5">
+                            {typeCfg?.label ?? "Pitch"} · {date}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {p.placement_url && p.status === "placed" && (
+                            <a href={p.placement_url} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400 hover:text-green-300 bg-green-400/10 border border-green-400/20 px-2 py-1 rounded-full transition-colors">
+                              <LinkIcon size={9} /> View
+                            </a>
+                          )}
+                          <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${statusCfg.bg} ${statusCfg.color}`}>
+                            {statusCfg.label}
+                          </span>
+                          <button
+                            onClick={() => setEditingPitch(isEditing ? null : p.id)}
+                            className="w-6 h-6 rounded-lg flex items-center justify-center text-white/25 hover:text-white hover:bg-white/[0.06] transition-colors"
+                          >
+                            {isEditing ? <X size={11} /> : <Pencil size={11} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Inline edit */}
+                      {isEditing && (
+                        <div className="mt-3 ml-11 space-y-2.5">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1">Status</p>
+                              <select
+                                value={edit.status}
+                                onChange={(e) => setPitchEdits((prev) => ({
+                                  ...prev,
+                                  [p.id]: { ...prev[p.id], status: e.target.value as ArtistPitch["status"] },
+                                }))}
+                                className="w-full bg-white/[0.05] border border-white/[0.10] outline-none text-white text-xs px-2.5 py-2 rounded-lg"
+                              >
+                                {(["pending", "submitted", "placed", "declined"] as const).map((s) => (
+                                  <option key={s} value={s}>{PITCH_STATUS_CFG[s].label}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1">Placement URL</p>
+                            <input
+                              type="url"
+                              placeholder="https://open.spotify.com/playlist/…"
+                              value={edit.url}
+                              onChange={(e) => setPitchEdits((prev) => ({
+                                ...prev,
+                                [p.id]: { ...prev[p.id], url: e.target.value },
+                              }))}
+                              className="w-full bg-white/[0.05] border border-white/[0.10] focus:border-[#007bff] outline-none text-white placeholder-white/20 text-xs px-2.5 py-2 rounded-lg transition-colors"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => requestUnlock(() => savePitchPlacement(p.id))}
+                              disabled={savingPitch === p.id}
+                              className="flex items-center gap-1.5 bg-[#007bff] hover:bg-[#0066dd] disabled:opacity-40 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+                            >
+                              {savingPitch === p.id && <Loader2 size={10} className="animate-spin" />}
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingPitch(null)}
+                              className="text-white/30 hover:text-white text-xs px-3 py-2 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
