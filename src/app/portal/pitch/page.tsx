@@ -91,25 +91,32 @@ export default function PromotePage() {
   // History detail
   const [selected, setSelected] = useState<PitchHistory | null>(null);
 
+  async function loadPitches(accessToken: string) {
+    const res = await fetch("/api/pitch", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (res.ok) {
+      const { pitches: data } = await res.json();
+      setPitches((data ?? []) as PitchHistory[]);
+    }
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
       const userEmail = data.session.user.email!;
+      const accessToken = data.session.access_token;
       setEmail(userEmail);
-      setToken(data.session.access_token);
+      setToken(accessToken);
 
-      const [{ data: rls }, { data: pitchData }] = await Promise.all([
+      const [{ data: rls }] = await Promise.all([
         supabase
           .from("releases")
           .select("id, song_title, genre, status, artist_name")
           .eq("email", userEmail)
           .neq("status", "rejected")
           .order("submitted_at", { ascending: false }),
-        supabase
-          .from("playlist_pitches")
-          .select("id, song_title, genre, pitch_notes, status, admin_notes, created_at")
-          .eq("email", userEmail)
-          .order("created_at", { ascending: false }),
+        loadPitches(accessToken),
       ]);
 
       const list = (rls ?? []) as Release[];
@@ -118,10 +125,9 @@ export default function PromotePage() {
         setReleaseId(list[0].id);
         setArtistName(list[0].artist_name);
       }
-      setPitches((pitchData ?? []) as PitchHistory[]);
       setLoading(false);
     });
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function selectType(key: PitchType) {
     setPitchType(key);
@@ -180,13 +186,7 @@ export default function PromotePage() {
       }).catch(() => {});
       setSubmitting(false);
       setDone(true);
-      // Refresh pitch history
-      const { data: pitchData } = await supabase
-        .from("playlist_pitches")
-        .select("id, song_title, genre, pitch_notes, status, admin_notes, created_at")
-        .eq("email", email)
-        .order("created_at", { ascending: false });
-      setPitches((pitchData ?? []) as PitchHistory[]);
+      await loadPitches(token);
     } catch {
       setSubmitError("Something went wrong. Please try again.");
       setSubmitting(false);
@@ -396,13 +396,20 @@ export default function PromotePage() {
   }
 
   if (releases.length === 0) return (
-    <section className="max-w-lg mx-auto px-4 py-16 text-center">
-      <Globe size={36} className="text-white/10 mx-auto mb-4" />
-      <h1 className="text-white font-bold text-xl mb-2">No releases yet</h1>
-      <p className="text-white/40 text-sm mb-6">Submit a release first to access promotion services.</p>
-      <Link href="/portal/releases/new" className="inline-flex items-center gap-2 bg-[#007bff] text-white text-sm font-semibold px-5 py-3 rounded-xl">
-        Submit a Release <ChevronRight size={14} />
-      </Link>
+    <section className="max-w-2xl mx-auto px-4 py-10">
+      <div className="mb-6">
+        <h1 className="text-white font-bold text-2xl mb-1">Promotion Hub</h1>
+        <p className="text-white/40 text-sm">Pitch your music for playlists, radio, press, and more.</p>
+      </div>
+      <TabBar />
+      <div className="text-center py-16">
+        <Globe size={36} className="text-white/10 mx-auto mb-4" />
+        <h2 className="text-white font-semibold text-lg mb-2">No releases yet</h2>
+        <p className="text-white/40 text-sm mb-6">Submit a release first to access promotion services.</p>
+        <Link href="/portal/releases/new" className="inline-flex items-center gap-2 bg-[#007bff] text-white text-sm font-semibold px-5 py-3 rounded-xl">
+          Submit a Release <ChevronRight size={14} />
+        </Link>
+      </div>
     </section>
   );
 
