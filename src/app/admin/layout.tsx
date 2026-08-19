@@ -225,28 +225,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
+  const currentNavItem = allNavItems.find(n =>
+    n.href === "/admin" ? pathname === "/admin" : (n.href !== "/admin" && pathname.startsWith(n.href))
+  );
+  const currentSection = visibleSections.find(s => s.items.some(i => i === currentNavItem));
+
   return (
     <div className="fixed inset-0 z-[60] bg-[#050505] flex overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-72 md:w-56 bg-black border-r border-white/[0.06] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-[220px] bg-[#08080b] border-r border-white/[0.07] flex flex-col transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
         {/* Logo */}
-        <div className="flex flex-col px-4 py-5 border-b border-white/[0.06]">
-          <Link href="/">
+        <div className="flex flex-col px-5 pt-5 pb-4">
+          <Link href="/" className="block">
             <Image
               src="https://res.cloudinary.com/dco9drzzp/image/upload/v1783353777/94573a59-02c9-4066-b6ab-5ce4ce3c1c54_inmopu.png"
               alt="OrinlabÍ Records" width={88} height={24} className="object-contain opacity-80 hover:opacity-100 transition-opacity"
             />
           </Link>
-          <p className="text-white/25 text-[11px] mt-1.5 font-medium tracking-wide uppercase">Admin Panel</p>
+          <p className="text-white/25 text-[10px] mt-1.5 font-bold tracking-[0.1em] uppercase">Admin Panel</p>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-2.5 py-3 space-y-4 overflow-y-auto">
+        <nav className="flex-1 px-3 py-2 space-y-5 overflow-y-auto">
           {visibleSections.map((section) => (
             <div key={section.label || "top"}>
               {section.label && (
-                <p className="px-3 text-[10px] font-semibold text-white/20 uppercase tracking-widest mb-1">
+                <p className="px-2 mb-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/25">
                   {section.label}
                 </p>
               )}
@@ -256,20 +263,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     ? pathname === "/admin"
                     : pathname.startsWith(item.href);
                   return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                        active
-                          ? "bg-[#007bff]/10 text-[#007bff]"
-                          : "text-white/45 hover:text-white hover:bg-white/[0.05]"
-                      }`}
-                    >
-                      <span className="flex-shrink-0">{item.icon}</span>
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {item.badge > 0 && <Badge n={item.badge} />}
-                    </Link>
+                    <div key={item.href} className="relative">
+                      {active && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] bg-[#007bff] rounded-r-full" />
+                      )}
+                      <Link
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className={`flex items-center gap-2.5 pl-4 pr-3 py-2 rounded-xl text-[13px] font-medium transition-colors ${
+                          active
+                            ? "bg-white/[0.07] text-white"
+                            : "text-white/45 hover:text-white/80 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <span className={`flex-shrink-0 ${active ? "text-[#007bff]" : ""}`}>{item.icon}</span>
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {item.badge > 0 && <Badge n={item.badge} />}
+                      </Link>
+                    </div>
                   );
                 })}
               </div>
@@ -277,13 +288,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="px-2.5 py-3 border-t border-white/[0.06]">
+        {/* Admin identity + Logout */}
+        <div className="px-3 py-3 border-t border-white/[0.07] space-y-1">
+          {adminEmail && (
+            <div className="flex items-center gap-2.5 px-4 py-2.5 mb-1">
+              <div className="w-7 h-7 rounded-full bg-[#007bff]/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#007bff] text-[11px] font-bold">
+                  {adminEmail.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-white/70 text-xs font-semibold truncate">{adminEmail.split("@")[0]}</p>
+                <p className="text-white/25 text-[10px] truncate">{isSuperAdmin ? "Super Admin" : "Admin"}</p>
+              </div>
+            </div>
+          )}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-white/35 hover:text-white hover:bg-white/[0.05] transition-colors w-full"
+            className="flex items-center gap-2.5 pl-4 pr-3 py-2 rounded-xl text-[13px] font-medium text-white/35 hover:text-white/70 hover:bg-white/[0.04] transition-colors w-full"
           >
-            <LogOut size={17} />
+            <LogOut size={16} />
             Sign Out
           </button>
         </div>
@@ -295,31 +319,43 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-56 flex flex-col overflow-hidden">
+      <div className="flex-1 lg:ml-[220px] flex flex-col overflow-hidden">
         {navProgress && (
           <div className="h-0.5 bg-white/5 overflow-hidden flex-shrink-0">
             <div className="h-full bg-[#007bff]" style={{ animation: "navBar 0.6s ease-out forwards" }} />
           </div>
         )}
         <style>{`@keyframes navBar { from { width: 0% } to { width: 100% } }`}</style>
+
         {/* Top bar */}
-        <header className="flex-shrink-0 z-20 bg-[#050505]/90 backdrop-blur border-b border-white/[0.06] px-4 md:px-6 flex items-center gap-4"
-          style={{ paddingTop: "max(14px, env(safe-area-inset-top))", paddingBottom: 14 }}>
-          <button className="lg:hidden relative text-white/60 hover:text-white" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <header
+          className="flex-shrink-0 z-20 bg-[#050505]/95 backdrop-blur-md border-b border-white/[0.07] px-4 md:px-6 flex items-center gap-3"
+          style={{ minHeight: 56, paddingTop: "env(safe-area-inset-top)" }}
+        >
+          <button className="lg:hidden relative text-white/50 hover:text-white transition-colors" onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             {!sidebarOpen && totalPending > 0 && (
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-yellow-400 rounded-full" />
             )}
           </button>
-          <h2 className="text-white font-semibold text-sm">
-            {allNavItems.find(n => n.href === pathname || (n.href !== "/admin" && pathname.startsWith(n.href)))?.label ?? "Admin"}
-          </h2>
-          {totalPending > 0 && (
-            <span className="ml-auto text-yellow-400/80 text-xs flex items-center gap-1.5 font-medium">
-              <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse inline-block" />
-              {totalPending} pending
-            </span>
-          )}
+
+          <div className="flex flex-col justify-center">
+            <h2 className="text-white font-bold text-[15px] leading-tight">
+              {currentNavItem?.label ?? "Admin"}
+            </h2>
+            {currentSection?.label && (
+              <p className="text-white/30 text-[10px] leading-tight">{currentSection.label}</p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 ml-auto">
+            {totalPending > 0 && (
+              <span className="text-yellow-400/80 text-xs flex items-center gap-1.5 font-semibold">
+                <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse inline-block" />
+                {totalPending} pending
+              </span>
+            )}
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">

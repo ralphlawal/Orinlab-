@@ -155,7 +155,7 @@ export default function PitchesPage() {
             return (
               <div key={p.id}
                 onClick={() => open(p)}
-                className="bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] rounded-2xl px-5 py-4 cursor-pointer transition-colors flex items-center justify-between gap-4">
+                className="bg-[#0d0d10] border border-white/[0.08] hover:border-white/[0.16] rounded-2xl px-5 py-4 cursor-pointer transition-all hover:bg-[#111114] flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-9 h-9 rounded-xl bg-[#007bff]/10 flex items-center justify-center flex-shrink-0">
                     {typeCfg ? (

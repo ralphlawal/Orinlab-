@@ -104,7 +104,7 @@ function StatCard({ icon, label, value, sub, color, bg, href, urgent }: {
   sub?: string; color: string; bg: string; href?: string; urgent?: boolean;
 }) {
   const inner = (
-    <div className={`bg-white/[0.03] border rounded-2xl p-5 transition-all ${urgent && Number(value) > 0 ? "border-yellow-400/30 shadow-[0_0_20px_rgba(251,191,36,0.05)]" : "border-white/[0.06]"} ${href ? "hover:border-white/20 cursor-pointer" : ""}`}>
+    <div className={`bg-[#0e0e10] border rounded-2xl p-5 transition-all ${urgent && Number(value) > 0 ? "border-yellow-400/30 shadow-[0_0_20px_rgba(251,191,36,0.05)]" : "border-white/[0.09]"} ${href ? "hover:border-white/[0.18] cursor-pointer" : ""}`}>
       <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center ${color} mb-4`}>
         {icon}
       </div>
@@ -177,7 +177,7 @@ function QuickReleaseCard({ release, onDone }: { release: PendingRelease; onDone
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl">
+    <div className="flex items-center gap-3 px-4 py-3 bg-[#0d0d10] border border-white/[0.08] rounded-xl">
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm font-medium truncate">{release.song_title}</p>
         <p className="text-white/40 text-xs">{release.artist_name} · {release.genre ?? release.release_type} · {reltime(release.submitted_at)}</p>
@@ -229,7 +229,7 @@ function QuickLabelCard({ label, onDone }: { label: PendingLabel; onDone: () => 
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-white/[0.02] border border-white/[0.05] rounded-xl">
+    <div className="flex items-center gap-3 px-4 py-3 bg-[#0d0d10] border border-white/[0.08] rounded-xl">
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm font-medium truncate">{label.name}</p>
         <p className="text-white/40 text-xs">{label.email} · {label.country ?? "—"} · {reltime(label.submitted_at)}</p>
@@ -281,7 +281,7 @@ function QuickAnnounce() {
   }
 
   return (
-    <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+    <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
@@ -501,7 +501,7 @@ export default function AdminDashboard() {
 
           {/* Pending releases */}
           {pendingReleases.length > 0 && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
                   <Music size={14} className="text-yellow-400" /> Pending Releases
@@ -523,7 +523,7 @@ export default function AdminDashboard() {
 
           {/* Pending labels */}
           {pendingLabels.length > 0 && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
                   <Globe size={14} className="text-cyan-400" /> Pending Label Applications
@@ -545,7 +545,7 @@ export default function AdminDashboard() {
 
           {/* Open tickets */}
           {openTickets.length > 0 && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
                   <LifeBuoy size={14} className="text-orange-400" /> Open Support Tickets
@@ -574,7 +574,7 @@ export default function AdminDashboard() {
 
           {/* Compliance */}
           {stats.complianceIssues > 0 && (
-            <div className="bg-white/[0.03] border border-amber-400/20 rounded-2xl overflow-hidden">
+            <div className="bg-[#0e0e10] border border-amber-400/20 rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
                   <ShieldAlert size={14} className="text-amber-400" /> Artist Compliance
@@ -594,7 +594,7 @@ export default function AdminDashboard() {
 
           {/* Pending payouts */}
           {pendingPayouts.length > 0 && (
-            <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+            <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
                   <DollarSign size={14} className="text-emerald-400" /> Pending Payouts
@@ -642,7 +642,7 @@ export default function AdminDashboard() {
               { label: "Blog",              sub: "Manage articles",     href: "/admin/blog",           icon: <MessageSquare size={16} />, color: "text-green-400" },
             ].map(q => (
               <Link key={q.label} href={q.href}
-                className="bg-white/[0.03] border border-white/[0.06] hover:border-white/20 rounded-xl p-4 flex items-start gap-3 transition-all hover:bg-white/[0.05]">
+                className="bg-[#0d0d10] border border-white/[0.09] hover:border-white/[0.18] rounded-xl p-4 flex items-start gap-3 transition-all hover:bg-[#111114]">
                 <span className={q.color}>{q.icon}</span>
                 <div className="min-w-0">
                   <p className="text-white text-xs font-semibold">{q.label}</p>
@@ -654,7 +654,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent activity */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl overflow-hidden">
+        <div className="bg-[#0e0e10] border border-white/[0.09] rounded-2xl overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-4 border-b border-white/[0.06]">
             <RefreshCw size={14} className="text-[#007bff]" />
             <h3 className="text-white font-semibold text-sm">Recent Activity</h3>
@@ -684,7 +684,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Platform summary */}
-      <div className="bg-white/[0.02] border border-white/[0.05] rounded-2xl px-6 py-4 flex flex-wrap items-center gap-6">
+      <div className="bg-[#0d0d10] border border-white/[0.08] rounded-2xl px-6 py-4 flex flex-wrap items-center gap-6">
         <div className="text-center">
           <p className="text-white font-bold text-xl">{stats.totalArtists}</p>
           <p className="text-white/30 text-xs mt-0.5">Artists</p>
