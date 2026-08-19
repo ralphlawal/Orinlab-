@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { PlatformIcon } from "@/components/PlatformIcon";
 import {
   Music2, Clock, CheckCircle2, XCircle,
   ChevronRight, Loader2, ArrowRight, UserCircle2, PlusCircle,
   BarChart2, DollarSign, Radio, Megaphone, AlertTriangle, Info,
-  ImageIcon, AtSign, CreditCard, Mic2, X,
+  ImageIcon, AtSign, CreditCard, Mic2, X, Copy,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -362,7 +363,10 @@ function getDismissed(): string[] {
   try { return JSON.parse(localStorage.getItem(DISMISSED_KEY) ?? "[]"); } catch { return []; }
 }
 
+const RELEASE_DRAFT_KEY = "orinlabi_release_draft";
+
 export default function PortalDashboard() {
+  const router = useRouter();
   const [releases, setReleases]         = useState<Release[]>([]);
   const [pitches, setPitches]           = useState<Pitch[]>([]);
   const [recentNotifs, setRecentNotifs] = useState<Notif[]>([]);
@@ -379,6 +383,14 @@ export default function PortalDashboard() {
     const next = [...dismissed, id];
     setDismissed(next);
     try { localStorage.setItem(DISMISSED_KEY, JSON.stringify(next)); } catch {}
+  }
+
+  function handleDuplicate(r: Release, e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const snapshot = { songTitle: `${r.song_title} (Copy)`, genre: r.genre, releaseType: r.release_type };
+    try { localStorage.setItem(RELEASE_DRAFT_KEY, JSON.stringify(snapshot)); } catch {}
+    router.push("/portal/releases/new");
   }
 
   useEffect(() => {
@@ -886,6 +898,15 @@ export default function PortalDashboard() {
                     <span className="hidden sm:block">{cfg.label}</span>
                     <Icon size={13} className="sm:hidden" />
                   </div>
+                  {r.status === "approved" && (
+                    <button
+                      onClick={(e) => handleDuplicate(r, e)}
+                      title="Duplicate as new release"
+                      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.08] flex-shrink-0 transition-all duration-150"
+                    >
+                      <Copy size={13} />
+                    </button>
+                  )}
                   <ChevronRight size={16} className="text-white/20 group-hover:text-white/50 flex-shrink-0 transition-colors" />
                 </Link>
               </FadeIn>

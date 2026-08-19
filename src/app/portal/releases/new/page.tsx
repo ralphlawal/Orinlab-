@@ -85,6 +85,7 @@ export default function NewReleasePage() {
   const [samplesUsed, setSamplesUsed] = useState(draftStateRef.current.samplesUsed);
   const [coverSong, setCoverSong] = useState(draftStateRef.current.coverSong);
   const [artworkError, setArtworkError] = useState("");
+  const [artworkPreviewUrl, setArtworkPreviewUrl] = useState("");
   const [selectedStores, setSelectedStores] = useState<"all" | string[]>("all");
   const [youtubeContentId, setYoutubeContentId] = useState(false);
   const [featuredArtists, setFeaturedArtists] = useState<{ name: string; spotify_id: string; apple_id: string }[]>(draftStateRef.current.featuredArtists);
@@ -134,6 +135,14 @@ export default function NewReleasePage() {
     if (!profile) return;
     saveDraft();
   }, [samplesUsed, coverSong, featuredArtists, tracks, releaseType, genre, language, explicitContent, trackVersion, newLyrics, newVideoUrl, newSongStory, newMixingEngineer, newMasteringEngineer]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Manage artwork preview URL lifecycle
+  useEffect(() => {
+    if (!coverFile || artworkError) { setArtworkPreviewUrl(""); return; }
+    const url = URL.createObjectURL(coverFile);
+    setArtworkPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [coverFile, artworkError]);
 
   useEffect(() => {
     async function load() {
@@ -830,6 +839,45 @@ export default function NewReleasePage() {
             <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 text-red-400 text-xs px-4 py-3 rounded-xl mt-2">
               <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
               {artworkError}
+            </div>
+          )}
+
+          {/* Platform previews — shown when artwork passes validation */}
+          {artworkPreviewUrl && (
+            <div className="mt-5">
+              <p className="text-white/30 text-[10px] uppercase tracking-widest mb-3 font-bold">Platform Previews</p>
+              <div className="grid grid-cols-3 gap-3">
+                {/* Spotify */}
+                <div className="flex flex-col gap-2">
+                  <div className="relative overflow-hidden rounded-lg aspect-square bg-black shadow-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={artworkPreviewUrl} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                      <div className="w-3 h-3 rounded-full bg-[#1DB954] absolute top-2 right-2" />
+                    </div>
+                  </div>
+                  <p className="text-white/25 text-[10px] text-center">Spotify</p>
+                </div>
+                {/* Apple Music */}
+                <div className="flex flex-col gap-2">
+                  <div className="relative overflow-hidden rounded-xl aspect-square shadow-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={artworkPreviewUrl} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 ring-1 ring-white/10 rounded-xl pointer-events-none" />
+                  </div>
+                  <p className="text-white/25 text-[10px] text-center">Apple Music</p>
+                </div>
+                {/* Social / Square */}
+                <div className="flex flex-col gap-2">
+                  <div className="relative overflow-hidden rounded-2xl aspect-square shadow-xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={artworkPreviewUrl} alt="" className="w-full h-full object-cover" />
+                    <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                  </div>
+                  <p className="text-white/25 text-[10px] text-center">Social / Story</p>
+                </div>
+              </div>
+              <p className="text-white/20 text-[10px] text-center mt-2">How your artwork will appear across platforms</p>
             </div>
           )}
         </div>

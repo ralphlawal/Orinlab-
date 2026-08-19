@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import {
   LayoutDashboard, DollarSign, Megaphone, Wrench, FolderOpen,
   MessageSquare, LifeBuoy, User, Bell, LogOut, Loader2, Menu, X, Plus, ShieldOff, Globe,
-  ImageIcon, Music2, CreditCard, BarChart3, Radio, CalendarDays, FileText, Lock,
+  ImageIcon, Music2, CreditCard, BarChart3, Radio, CalendarDays, FileText, Lock, Trophy,
 } from "lucide-react";
 
 export const PORTAL_LANG_KEY = "orinlabi_portal_lang";
@@ -132,8 +132,9 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Account",
     color: "#f472b6",
     items: [
-      { href: "/portal/profile",       label: "Profile",       icon: <User size={16} />, exact: false, badge: "none" as const },
-      { href: "/portal/notifications", label: "Notifications", icon: <Bell size={16} />, exact: false, badge: "notifications" as const },
+      { href: "/portal/profile",       label: "Profile",       icon: <User    size={16} />, exact: false, badge: "none"          as const },
+      { href: "/portal/milestones",    label: "Milestones",    icon: <Trophy  size={16} />, exact: false, badge: "none"          as const },
+      { href: "/portal/notifications", label: "Notifications", icon: <Bell    size={16} />, exact: false, badge: "notifications" as const },
     ],
   },
 ];
