@@ -210,9 +210,9 @@ export default function PortalLoginPage() {
                 <input
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={8}
                   value={code}
-                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }}
+                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 8)); setError(""); }}
                   placeholder="········"
                   required
                   autoFocus
@@ -235,7 +235,7 @@ export default function PortalLoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || code.length !== 6 || timeLeft === 0}
+                disabled={loading || code.length !== 8 || timeLeft === 0}
                 className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
