@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase"; // used for auth.getSession()
 import { usePinGate } from "@/context/AdminPinContext";
 import { Loader2, Radio, Music2, Newspaper, Tv, Mic2, ChevronRight } from "lucide-react";
 
@@ -53,6 +53,7 @@ function parsePitchNotes(raw: string | null): { type: PitchType | null; targets:
 
 export default function PitchesPage() {
   const { requestUnlock } = usePinGate();
+  const adminEmailRef = useRef<string>("");
   const [pitches, setPitches]       = useState<Pitch[]>([]);
   const [loading, setLoading]       = useState(true);
   const [selected, setSelected]     = useState<Pitch | null>(null);
@@ -62,17 +63,26 @@ export default function PitchesPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | Pitch["status"]>("all");
   const [typeFilter, setTypeFilter]     = useState<"all" | PitchType>("all");
 
+  function adminHeaders(): HeadersInit {
+    return { "Content-Type": "application/json", "x-admin-email": adminEmailRef.current };
+  }
+
   async function load() {
     setLoading(true);
-    const { data } = await supabase
-      .from("playlist_pitches")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setPitches((data ?? []) as Pitch[]);
+    const res = await fetch("/api/admin/pitches", { headers: { "x-admin-email": adminEmailRef.current } });
+    if (res.ok) {
+      const { pitches: data } = await res.json();
+      setPitches((data ?? []) as Pitch[]);
+    }
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      adminEmailRef.current = data.session?.user?.email ?? "";
+      load();
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function open(p: Pitch) {
     setSelected(p);
@@ -83,7 +93,11 @@ export default function PitchesPage() {
   async function save() {
     if (!selected) return;
     setSaving(true);
-    await supabase.from("playlist_pitches").update({ status, admin_notes: adminNotes }).eq("id", selected.id);
+    await fetch(`/api/admin/pitches?id=${selected.id}`, {
+      method: "PATCH",
+      headers: adminHeaders(),
+      body: JSON.stringify({ status, admin_notes: adminNotes }),
+    });
     setSaving(false);
     setSelected(null);
     load();
