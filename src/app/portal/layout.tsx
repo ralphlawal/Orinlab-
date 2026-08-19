@@ -461,7 +461,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                     <div key={item.href} className="relative">
                       {active && !isLocked && (
                         <div
-                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] rounded-r-full"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] rounded-r-full"
                           style={{ background: section.color }}
                         />
                       )}

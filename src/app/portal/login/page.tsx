@@ -16,6 +16,7 @@ export default function PortalLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -55,6 +56,28 @@ export default function PortalLoginPage() {
     } else {
       setTimeLeft(300);
       setStep("code");
+    }
+  }
+
+  async function resendCode() {
+    setResending(true);
+    setError("");
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email: email.trim().toLowerCase(),
+      options: { shouldCreateUser: true },
+    });
+    setResending(false);
+    if (authError) {
+      const msg = authError.message.toLowerCase();
+      if (msg.includes("rate limit") || msg.includes("too many")) {
+        setError("Too many requests. Please wait a few minutes.");
+      } else {
+        setError("Failed to resend code. Please try again.");
+      }
+    } else {
+      setCode("");
+      setTimeLeft(300);
+      setError("");
     }
   }
 
@@ -187,9 +210,9 @@ export default function PortalLoginPage() {
                 <input
                   type="text"
                   inputMode="numeric"
-                  maxLength={12}
+                  maxLength={6}
                   value={code}
-                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setError(""); }}
+                  onChange={(e) => { setCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(""); }}
                   placeholder="········"
                   required
                   autoFocus
@@ -212,7 +235,7 @@ export default function PortalLoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || code.length < 4 || timeLeft === 0}
+                disabled={loading || code.length !== 6 || timeLeft === 0}
                 className="w-full bg-[#007bff] hover:bg-[#0069d9] disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 size={16} className="animate-spin" />}
@@ -220,12 +243,21 @@ export default function PortalLoginPage() {
               </button>
             </form>
 
-            <button
-              onClick={() => { setStep("email"); setCode(""); setError(""); setTimeLeft(null); }}
-              className="w-full text-center text-white/30 hover:text-white/60 text-xs mt-5 transition-colors"
-            >
-              Use a different email or resend code
-            </button>
+            <div className="mt-5 flex flex-col items-center gap-2">
+              <button
+                onClick={resendCode}
+                disabled={resending || timeLeft === null || timeLeft > 240}
+                className="text-[#007bff] text-xs font-medium hover:underline disabled:opacity-40 disabled:cursor-default transition-opacity"
+              >
+                {resending ? "Sending…" : "Resend code"}
+              </button>
+              <button
+                onClick={() => { setStep("email"); setCode(""); setError(""); setTimeLeft(null); }}
+                className="text-white/30 hover:text-white/60 text-xs transition-colors"
+              >
+                Use a different email
+              </button>
+            </div>
           </>
         )}
       </div>
