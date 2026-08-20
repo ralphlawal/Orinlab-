@@ -55,7 +55,7 @@ const ORG_SCHEMA = {
   name: "OrinlabÍ Records",
   url: "https://orinlabi.com",
   logo: "https://orinlabi.com/icon.png",
-  sameAs: [],
+  sameAs: ["https://instagram.com/orinlabi_ltd", "https://x.com/orinlabi_ltd"],
   description:
     "OrinlabÍ Records is a global music distribution platform for independent artists. Distribute to 150+ platforms worldwide — Spotify, Apple Music, Boomplay, TikTok, and more.",
   contactPoint: {

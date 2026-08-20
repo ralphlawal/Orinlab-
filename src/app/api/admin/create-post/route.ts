@@ -4,8 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 const ADMIN_PIN = process.env.ADMIN_PIN ?? "";
 
 function serviceClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY not set in environment");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
 }
 
@@ -22,12 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "title, slug, and content are required" }, { status: 400 });
   }
 
-  let supabase;
-  try {
-    supabase = serviceClient();
-  } catch (e: unknown) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
-  }
+  const supabase = serviceClient();
 
   const { data, error } = await supabase
     .from("blog_posts")

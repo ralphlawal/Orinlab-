@@ -832,7 +832,7 @@ export default function ReleaseDetailPage() {
               {
                 label: "Instagram / TikTok",
                 key: "ig",
-                text: `🎵 "${release.song_title}" by ${release.artist_name} is OUT NOW!\n\nStream on all platforms 👇\n${smartLink}\n\n#${release.artist_name.replace(/\s+/g, "")} #NewMusic #OrinlabiRecords`,
+                text: `🎵 "${release.song_title}" by ${release.artist_name} is OUT NOW!\n\nStream on all platforms 👇\n${smartLink}\n\n#${release.artist_name.replace(/\s+/g, "")} #NewMusic #orinlabi_ltd`,
               },
               {
                 label: "Twitter / X",
