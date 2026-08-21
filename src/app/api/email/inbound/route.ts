@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const db = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function db() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
+}
 
 function str(v: unknown): string {
   if (v == null) return "";
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
   console.log("INBOUND: from=", from, "subject=", subject, "html length=", html.length, "text length=", text.length);
 
-  const { error } = await db.from("received_emails").upsert(
+  const { error } = await db().from("received_emails").upsert(
     {
       message_id:   messageId,
       from_address: from,
