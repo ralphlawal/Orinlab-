@@ -399,10 +399,15 @@ function EmailPageInner() {
   const refresh = useCallback(async () => {
     if (!adminRef.current) return;
     setLoading(true); setLoadErr("");
-    const res = await fetch("/api/admin/inbox", { headers: { "x-admin-email": adminRef.current } });
-    if (res.ok) setReceived(await res.json());
-    else { const j = await res.json().catch(() => ({})); setLoadErr(j.error ?? `HTTP ${res.status}`); }
-    setLoading(false);
+    try {
+      const res = await fetch("/api/admin/inbox", { headers: { "x-admin-email": adminRef.current } });
+      if (res.ok) setReceived(await res.json());
+      else { const j = await res.json().catch(() => ({})); setLoadErr(j.error ?? `HTTP ${res.status}`); }
+    } catch {
+      setLoadErr("Network error — check your connection.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -413,8 +418,10 @@ function EmailPageInner() {
       setAdminEmail(email);
       if (!email) { setLoadErr("Not signed in"); setLoading(false); return; }
       refresh();
-      const r2 = await fetch("/api/admin/sent", { headers: { "x-admin-email": email } });
-      if (r2.ok) setSent(await r2.json());
+      try {
+        const r2 = await fetch("/api/admin/sent", { headers: { "x-admin-email": email } });
+        if (r2.ok) setSent(await r2.json());
+      } catch { /* sent emails unavailable */ }
       supabase.channel("email-inbox-live")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "received_emails" }, p => {
           setReceived(prev => [p.new as RxEmail, ...prev]);
@@ -511,8 +518,17 @@ function EmailPageInner() {
             <button onClick={refresh} className="text-[#007bff] text-xs hover:underline">Retry</button>
           </div>
         ) : list.length === 0 ? (
-          <div className="py-16 text-center text-white/20 text-sm">
-            {folder === "inbox" ? "Inbox empty" : folder === "starred" ? "No starred emails" : "Nothing sent yet"}
+          <div className="py-16 text-center px-6">
+            {folder === "inbox" ? (
+              <>
+                <p className="text-white/30 text-sm mb-1">No emails received yet</p>
+                <p className="text-white/15 text-xs leading-relaxed">Inbound emails appear here once Resend inbound routing is pointed at <span className="font-mono">/api/email/inbound</span></p>
+              </>
+            ) : folder === "starred" ? (
+              <p className="text-white/20 text-sm">No starred emails</p>
+            ) : (
+              <p className="text-white/20 text-sm">Nothing sent yet — use Compose to send</p>
+            )}
           </div>
         ) : list.map(email => (
           <EmailRow
