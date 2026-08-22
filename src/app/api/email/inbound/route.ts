@@ -9,7 +9,75 @@ function db() {
 function str(v: unknown): string {
   if (v == null) return "";
   if (typeof v === "string") return v;
+  if (Buffer.isBuffer(v)) return v.toString("utf-8");
+  if (v instanceof Uint8Array) return Buffer.from(v).toString("utf-8");
   return String(v);
+}
+
+function extractBody(obj: Record<string, unknown>): { html: string; text: string } {
+  // Direct string fields — most common (Resend, SendGrid, Mailgun variants)
+  let html =
+    str(obj.html) ||
+    str(obj.html_body) ||
+    str(obj.htmlBody) ||
+    str(obj.body_html) ||
+    str(obj.Html) ||
+    "";
+  let text =
+    str(obj.text) ||
+    str(obj.text_body) ||
+    str(obj.textBody) ||
+    str(obj.body_text) ||
+    str(obj.plain) ||
+    str(obj.Text) ||
+    "";
+
+  // Nested { body: { html, text } }
+  if (!html && !text && obj.body && typeof obj.body === "object" && !Array.isArray(obj.body)) {
+    const b = obj.body as Record<string, unknown>;
+    html = str(b.html) || str(b.htmlBody) || str(b.value) || "";
+    text = str(b.text) || str(b.plain) || str(b.value) || "";
+  }
+
+  // Nested { payload: { html, text } } — some Resend versions
+  if (!html && !text && obj.payload && typeof obj.payload === "object") {
+    const p = obj.payload as Record<string, unknown>;
+    html = str(p.html) || "";
+    text = str(p.text) || str(p.plain) || "";
+  }
+
+  // content: [{ type: "text/html", value/body/data: "..." }]
+  if (!html && !text && Array.isArray(obj.content)) {
+    for (const part of obj.content as Array<Record<string, unknown>>) {
+      const t = str(part.type || part.mimeType || part.contentType).toLowerCase();
+      const v = str(part.value || part.body || part.data || part.content);
+      if (t.includes("html")) html = html || v;
+      else if (t.includes("plain") || t === "text") text = text || v;
+    }
+  }
+
+  // parts: [{ mimeType: "text/html", body: "..." }]
+  if (!html && !text && Array.isArray(obj.parts)) {
+    for (const part of obj.parts as Array<Record<string, unknown>>) {
+      const t = str(part.mimeType || part.type || part.contentType).toLowerCase();
+      const v = str(part.body || part.data || part.value || part.content);
+      if (t.includes("html")) html = html || v;
+      else if (t.includes("plain") || t === "text") text = text || v;
+    }
+  }
+
+  // attachments used as body (mimeType text/html or text/plain, no filename)
+  if (!html && !text && Array.isArray(obj.attachments)) {
+    for (const att of obj.attachments as Array<Record<string, unknown>>) {
+      if (att.filename) continue; // real attachment, skip
+      const t = str(att.mimeType || att.contentType || att.type).toLowerCase();
+      const v = str(att.content || att.data || att.body || att.value);
+      if (t.includes("html")) html = html || v;
+      else if (t.includes("plain") || t === "text") text = text || v;
+    }
+  }
+
+  return { html, text };
 }
 
 export async function POST(req: NextRequest) {
@@ -20,64 +88,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bad JSON" }, { status: 400 });
   }
 
-  // Full payload log — search "INBOUND PAYLOAD" in Vercel logs to see structure
+  // Search "INBOUND PAYLOAD" in Vercel logs to see the full structure
   console.log("INBOUND PAYLOAD:", JSON.stringify(payload, null, 2));
 
-  // Resend wraps fields under data: { type, created_at, data: { from, to, ... } }
+  // Resend wraps fields: { type, created_at, data: { from, to, subject, html, text, ... } }
   const email = (payload.data && typeof payload.data === "object")
     ? payload.data as Record<string, unknown>
     : payload;
 
-  console.log("INBOUND EMAIL OBJECT:", JSON.stringify(email, null, 2));
-
-  const from = str(email.from);
+  const from    = str(email.from);
   const toField = email.to;
-  const to = Array.isArray(toField) ? toField.join(", ") : str(toField);
+  const to      = Array.isArray(toField) ? toField.join(", ") : str(toField);
   const subject = str(email.subject) || "(no subject)";
 
-  // Log all available keys for debugging
-  console.log("INBOUND EMAIL KEYS:", Object.keys(email));
+  const { html, text } = extractBody(email);
 
-  // Try every field name Resend might use for body content
-  let html = str(email.html) || str(email.html_body) || str(email.htmlBody) || str(email.body_html) || "";
-  let text = str(email.text) || str(email.text_body) || str(email.textBody) || str(email.body_text) || str(email.body) || "";
+  // Key diagnostic: tells you exactly which fields held content
+  console.log(
+    "INBOUND PARSED —",
+    `from="${from}"`,
+    `subject="${subject}"`,
+    `html_chars=${html.length}`,
+    `text_chars=${text.length}`,
+    `keys=[${Object.keys(email).join(",")}]`,
+  );
 
-  // Nested body object: { body: { html, text } }
-  if (!html && !text && email.body && typeof email.body === "object" && !Array.isArray(email.body)) {
-    const b = email.body as Record<string, unknown>;
-    html = str(b.html) || str(b.htmlBody) || "";
-    text = str(b.text) || str(b.plain) || str(b.value) || "";
-  }
-
-  // Content array: [{ type: "text/html", value: "..." }, { type: "text/plain", value: "..." }]
-  if (!html && !text && Array.isArray(email.content)) {
-    for (const part of email.content as Array<Record<string, unknown>>) {
-      const t = str(part.type || part.mimeType || part.contentType).toLowerCase();
-      const v = str(part.value || part.body || part.data || part.content);
-      if (t.includes("html")) html = v;
-      else if (t.includes("plain") || t === "text") text = v;
-    }
-  }
-
-  // Parts array: [{ mimeType: "text/html", body: "..." }, ...]
-  if (!html && !text && Array.isArray(email.parts)) {
-    for (const part of email.parts as Array<Record<string, unknown>>) {
-      const t = str(part.mimeType || part.type || part.contentType).toLowerCase();
-      const v = str(part.body || part.data || part.value || part.content);
-      if (t.includes("html")) html = v;
-      else if (t.includes("plain") || t === "text") text = v;
-    }
+  if (!html && !text) {
+    // Last-resort: log all string fields >10 chars that might be body
+    const candidates = Object.entries(email)
+      .filter(([, v]) => typeof v === "string" && (v as string).length > 10)
+      .map(([k, v]) => `${k}(${(v as string).length})`);
+    console.warn("INBOUND: no body found. String fields:", candidates.join(", "));
   }
 
   const messageId = str(email.message_id || email.messageId || email["message-id"] || payload.id) || crypto.randomUUID();
-  const date = str(email.date || email.created_at || payload.created_at) || new Date().toISOString();
+  const date      = str(email.date || email.created_at || payload.created_at) || new Date().toISOString();
 
   if (!from) {
-    console.warn("INBOUND: no 'from' field. email keys:", Object.keys(email));
+    console.warn("INBOUND: no 'from' field in keys:", Object.keys(email));
     return NextResponse.json({ received: true, warning: "No from field" });
   }
-
-  console.log("INBOUND: from=", from, "subject=", subject, "html length=", html.length, "text length=", text.length);
 
   const { error } = await db().from("received_emails").upsert(
     {
@@ -93,10 +143,10 @@ export async function POST(req: NextRequest) {
   );
 
   if (error) {
-    console.error("INBOUND DB error:", error.message, "code:", error.code);
+    console.error("INBOUND DB error:", error.message);
     return NextResponse.json({ error: "DB error", detail: error.message }, { status: 500 });
   }
 
-  console.log("INBOUND: saved. from=", from, "html=", html.length > 0 ? "yes" : "no", "text=", text.length > 0 ? "yes" : "no");
+  console.log("INBOUND saved — html:", html.length > 0 ? "yes" : "NO", "text:", text.length > 0 ? "yes" : "NO");
   return NextResponse.json({ success: true });
 }
