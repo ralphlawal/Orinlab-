@@ -57,7 +57,7 @@ async function getRelease(id: string): Promise<PresaveRelease | null> {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const data = await getRelease(id);
-  if (!data) return { title: "Pre-save | OrinlabÍ" };
+  if (!data) return { title: "Pre-save" };
 
   const title =
     data.release_type === "Album" || data.release_type === "EP"
@@ -85,7 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: data.cover_art_url
         ? [{ url: data.cover_art_url, width: 1200, height: 1200 }]
         : [],
-      siteName: "OrinlabÍ",
+      siteName: data.artist_name,
     },
     twitter: {
       card: "summary_large_image",
@@ -124,7 +124,6 @@ export default async function PresavePage({ params }: Props) {
               className="w-40 h-40 object-cover rounded-2xl mx-auto mb-6 shadow-2xl"
             />
           )}
-          <p className="text-white/30 text-xs uppercase tracking-widest mb-3">Distributed by ORINLABÍ</p>
           <h1 className="text-white font-bold text-2xl mb-2">{release.song_title}</h1>
           <p className="text-white/50 text-sm mb-6">{release.artist_name}</p>
           <div className="bg-white/[0.06] border border-white/[0.10] rounded-2xl px-6 py-5">
@@ -201,9 +200,6 @@ export default async function PresavePage({ params }: Props) {
           songTitle={title}
         />
 
-        <p className="text-white/20 text-xs text-center mt-10">
-          Distributed by OrinlabÍ Records
-        </p>
       </div>
     </div>
   );
