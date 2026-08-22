@@ -201,7 +201,10 @@ function ReadingPane({ rx, tx, adminEmail, starred, onBack, onToggleStar, onDele
   const date = rx?.received_at  ?? tx!.sent_at;
   const subj = rx?.subject ?? tx?.subject ?? "";
   const html = rx?.html_body ?? null;
-  const text = rx?.text_body ?? tx?.body ?? null;
+  // tx.body is the canonical field; also check alternate column names in case
+  // the sent_emails DB schema uses a different name
+  const txAny = tx as unknown as Record<string, string | null> | undefined;
+  const text = rx?.text_body ?? tx?.body ?? txAny?.html_body ?? txAny?.text_body ?? txAny?.content ?? null;
 
   const iDoc = html
     ? `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
@@ -289,7 +292,11 @@ function ReadingPane({ rx, tx, adminEmail, starred, onBack, onToggleStar, onDele
           ) : text ? (
             <p className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{text}</p>
           ) : (
-            <p className="text-white/25 text-sm italic">No content in this email.</p>
+            <div className="text-white/25 text-sm">
+              <p className="italic mb-2">No message body found.</p>
+              {tx && <p className="text-white/15 text-xs">This email was sent successfully — the body may not have been saved to the database. Run the SQL below in Supabase to ensure the <span className="font-mono">sent_emails</span> table has a <span className="font-mono">body TEXT</span> column.</p>}
+              {rx && <p className="text-white/15 text-xs">The inbound email arrived but had no readable body — check Vercel logs for the raw payload under &quot;INBOUND PAYLOAD&quot;.</p>}
+            </div>
           )}
 
           {/* Reply sent confirmation */}
